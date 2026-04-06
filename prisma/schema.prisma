@@ -4,20 +4,280 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  role      String   @default("STUDENT") // ADMIN, TEACHER, STUDENT
-  createdAt DateTime @default(now())
+// ==========================================
+// QUẢN LÝ TÀI KHOẢN & PHÂN QUYỀN
+// ==========================================
+
+model Quyen {
+  ma_quyen      Int        @id @default(autoincrement())
+  ten_quyen     String     @unique // Admin, Quản lý tuyển sinh, Quản lý đào tạo, Quản lý tài chính, Xem báo cáo
+  trang_thai    Boolean    @default(true)
+  
+  tai_khoan     TaiKhoan[]
 }
 
-model Course {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  price       Float
-  createdAt   DateTime @default(now())
+model TaiKhoan {
+  ma_tai_khoan  Int      @id @default(autoincrement())
+  ten_dang_nhap String   @unique
+  mat_khau      String
+  trang_thai    Boolean  @default(false)
+  email         String?  @unique
+
+  ma_nhan_su    Int
+  nhan_su       NhanSu   @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
+
+  ma_quyen      Int
+  quyen         Quyen    @relation(fields: [ma_quyen], references: [ma_quyen])
+}
+
+// ==========================================
+// QUẢN LÝ NHÂN SỰ & HỢP ĐỒNG
+// ==========================================
+
+model BangCap {
+  ma_bang_cap   Int      @id @default(autoincrement())
+  ten_bang_cap  String
+  noi_cap       String?
+  ngay_cap      DateTime?
+  
+  nhan_su       NhanSu[]
+}
+
+model NhanSu {
+  ma_nhan_su    Int      @id @default(autoincrement())
+  ho_ten        String
+  ngay_sinh     DateTime?
+  gioi_tinh     String?
+  so_dien_thoai String?
+  dia_chi       String?
+  chuc_vu       String?
+
+  ma_bang_cap   Int?
+  bang_cap      BangCap? @relation(fields: [ma_bang_cap], references: [ma_bang_cap])
+
+  tai_khoan              TaiKhoan[]
+  bang_luong             BangLuong[]
+  bang_thuong            BangThuong[]
+  hoat_dong_ngoai_khoa   HoatDongNgoaiKhoa[]
+  phieu_chi              PhieuChi[]
+  phieu_thu              PhieuThu[]
+  hop_dong_lao_dong      HopDongLaoDong[]
+  chuong_trinh_marketing ChuongTrinhMarketing[]
+}
+
+model PhongBan {
+  ma_phong_ban    Int      @id @default(autoincrement())
+  ten_phong_ban   String
+  mo_ta           String?
+  ngay_thanh_lap  DateTime?
+
+  phieu_chi         PhieuChi[]
+  hop_dong_lao_dong HopDongLaoDong[]
+}
+
+model HopDongLaoDong {
+  ma_hop_dong     Int      @id @default(autoincrement())
+  so_hop_dong     String   @unique
+  ngay_ky         DateTime
+  ten_cong_viec   String
+  tg_thu_viec     String?
+  tg_nghi         String?
+  update_at       DateTime @updatedAt
+
+  ma_nhan_su      Int
+  nhan_su         NhanSu   @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
+
+  ma_phong_ban    Int?
+  phong_ban       PhongBan? @relation(fields: [ma_phong_ban], references: [ma_phong_ban])
+}
+
+// ==========================================
+// QUẢN LÝ LƯƠNG THƯỞNG
+// ==========================================
+
+model BangLuong {
+  ma_bang_luong   Int      @id @default(autoincrement())
+  thang           Int
+  nam             Int
+  luong_co_ban    Float
+  so_cong_thuc_te Float
+  hinh_thuc_tinh  String
+  tang_ca         Float?
+  phu_cap         Float?
+  tong_thuong     Float?
+  thu_nhap_khac   Float?
+  ung_luong       Float?
+  khau_tru_khac   Float?
+  thuc_linh       Float
+  ghi_chu         String?
+  trang_thai      String?
+
+  ma_nhan_su      Int
+  nhan_su         NhanSu   @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
+
+  bang_thuong     BangThuong[]
+}
+
+model BangThuong {
+  ma_thuong         Int       @id @default(autoincrement())
+  ten_khoan_thuong  String
+  so_tien           Float
+  ngay_quyet_dinh   DateTime
+  ly_do             String?
+  trang_thai        String?
+
+  ma_nhan_su        Int
+  nhan_su           NhanSu    @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
+
+  ma_bang_luong     Int?      // Để NULL được theo thiết kế trước đó của bạn
+  bang_luong        BangLuong? @relation(fields: [ma_bang_luong], references: [ma_bang_luong])
+}
+
+// ==========================================
+// HOẠT ĐỘNG, MARKETING & TÀI CHÍNH
+// ==========================================
+
+model HoatDongNgoaiKhoa {
+  ma_hoat_dong    Int      @id @default(autoincrement())
+  ten_hoat_dong   String
+  mo_ta           String?
+  ngay_to_chuc    DateTime
+  dia_diem        String?
+  chi_phi         Float?
+
+  ma_nhan_su      Int
+  nhan_su         NhanSu   @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
+}
+
+model ChuongTrinhMarketing {
+  ma_marketing     Int      @id @default(autoincrement())
+  ten_chuong_trinh String
+  noi_dung         String?
+  ngay_bat_dau     DateTime
+  ngay_ket_thuc    DateTime
+  ngan_sach        Float
+
+  ma_nhan_su       Int
+  nhan_su          NhanSu   @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
+}
+
+model PhieuChi {
+  ma_phieu_chi    Int      @id @default(autoincrement())
+  so_tien         Float
+  ngay_chi        DateTime
+  noi_dung        String?
+
+  ma_phong_ban    Int?
+  phong_ban       PhongBan? @relation(fields: [ma_phong_ban], references: [ma_phong_ban])
+
+  ma_nhan_su      Int
+  nhan_su         NhanSu   @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
+}
+
+model PhieuThu {
+  ma_phieu_thu    Int      @id @default(autoincrement())
+  so_tien         Float
+  ngay_thu        DateTime
+  noi_dung        String?
+
+  ma_hoc_vien     Int
+  hoc_vien        HocVien  @relation(fields: [ma_hoc_vien], references: [ma_hoc_vien])
+
+  ma_nhan_su      Int
+  nhan_su         NhanSu   @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
+}
+
+// ==========================================
+// QUẢN LÝ ĐÀO TẠO & HỌC VIÊN
+// ==========================================
+
+model ChuongTrinhHoc {
+  ma_chuong_trinh  Int      @id @default(autoincrement())
+  ten_chuong_trinh String
+  mo_ta            String?
+  muc_tieu         String?
+
+  khoa_hoc         KhoaHoc[]
+}
+
+model KhoaHoc {
+  ma_khoa_hoc     Int      @id @default(autoincrement())
+  ten_khoa_hoc    String
+  mo_ta           String?
+  thoi_luong      Int?
+  hoc_phi         Float
+  trinh_do        String?
+
+  ma_chuong_trinh Int
+  chuong_trinh    ChuongTrinhHoc @relation(fields: [ma_chuong_trinh], references: [ma_chuong_trinh])
+
+  hoc_vien                HocVien[]
+  ke_hoach_giang_day      KeHoachGiangDay[]
+  chuong_trinh_khuyen_mai ChuongTrinhKhuyenMai[]
+}
+
+model HocVien {
+  ma_hoc_vien     Int      @id @default(autoincrement())
+  ho_ten          String
+  ngay_sinh       DateTime?
+  gioi_tinh       String?
+  so_dien_thoai   String?
+  email           String?  @unique
+  dia_chi         String?
+  ngay_dang_ky    DateTime @default(now())
+
+  ma_khoa_hoc     Int?
+  khoa_hoc        KhoaHoc? @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
+
+  phieu_thu       PhieuThu[]
+  cong_no         CongNo[]
+  cam_ket         CamKet[]
+}
+
+model KeHoachGiangDay {
+  ma_ke_hoach     Int      @id @default(autoincrement())
+  noi_dung        String
+  lich_day        String?
+  thoi_gian       String?
+  giao_vien       String?
+
+  ma_khoa_hoc     Int
+  khoa_hoc        KhoaHoc  @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
+}
+
+model ChuongTrinhKhuyenMai {
+  ma_khuyen_mai    Int      @id @default(autoincrement())
+  ten_chuong_trinh String
+  mo_ta            String?
+  phan_tram_giam   Float
+  ngay_bat_dau     DateTime
+  ngay_ket_thuc    DateTime
+
+  ma_khoa_hoc      Int
+  khoa_hoc         KhoaHoc  @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
+}
+
+model CongNo {
+  ma_cong_no      Int      @id @default(autoincrement())
+  so_tien_no      Float
+  ngay_phat_sinh  DateTime
+  han_thanh_toan  DateTime?
+  trang_thai      String?
+
+  ma_hoc_vien     Int
+  hoc_vien        HocVien  @relation(fields: [ma_hoc_vien], references: [ma_hoc_vien])
+}
+
+model CamKet {
+  ma_cam_ket       Int      @id @default(autoincrement())
+  ngay_ky          DateTime
+  ngay_het_han     DateTime?
+  noi_dung_cam_ket String
+  trang_thai       String?
+
+  ma_hoc_vien      Int
+  hoc_vien         HocVien  @relation(fields: [ma_hoc_vien], references: [ma_hoc_vien])
 }
