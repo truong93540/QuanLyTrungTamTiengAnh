@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict TcGTzNcl8gBNKvtWHmUT1LddqlvnKwjIMUl4iBEdCWvvgozbOUpehOngMhB4Bq3
+\restrict dCUYXYAzTObYVvPJgZ7tB1fZzdSD1KNeuh3ul3VLAuVZvoUbP78klLMCcR9cwHC
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
 
--- Started on 2026-04-06 21:14:33
+-- Started on 2026-04-07 10:54:15
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -962,6 +962,10 @@ COPY public."CamKet" (ma_cam_ket, ngay_ky, ngay_het_han, noi_dung_cam_ket, trang
 --
 
 COPY public."ChuongTrinhHoc" (ma_chuong_trinh, ten_chuong_trinh, mo_ta, muc_tieu) FROM stdin;
+1	Luyện thi IELTS Cao độ	Chương trình đào tạo chuẩn quốc tế với lộ trình cá nhân hóa, giúp học viên phát triển toàn diện 4 kỹ năng Nghe - Nói - Đọc - Viết.	Đạt chứng chỉ IELTS tối thiểu 6.5+
+2	Luyện thi TOEIC Thực chiến	Khóa học tập trung giải quyết các bẫy đề thi TOEIC, phù hợp cho sinh viên cần chuẩn đầu ra và người đi làm cần nâng cao nghiệp vụ.	Đạt chứng chỉ TOEIC 650 - 800+
+3	Tiếng Anh Giao tiếp (ESL)	Tập trung rèn luyện phản xạ nghe nói, chỉnh sửa phát âm chuẩn bản xứ và xây dựng sự tự tin khi giao tiếp trong môi trường quốc tế.	Giao tiếp trôi chảy, tự tin thuyết trình bằng tiếng Anh
+4	Tiếng Anh Trẻ em (Cambridge)	Xây dựng nền tảng tiếng Anh vững chắc cho trẻ từ 6-12 tuổi thông qua các phương pháp trực quan, trò chơi và các hoạt động tương tác.	Đạt các chứng chỉ Cambridge (Starters, Movers, Flyers)
 \.
 
 
@@ -1012,6 +1016,11 @@ COPY public."HoatDongNgoaiKhoa" (ma_hoat_dong, ten_hoat_dong, mo_ta, ngay_to_chu
 --
 
 COPY public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi, ngay_dang_ky, ma_khoa_hoc) FROM stdin;
+1	Lê Hoàng Anh	2005-08-15 00:00:00	Nam	0901111222	hoanganh.le@email.com	Lê Lợi, Hải Phòng	2026-03-25 00:00:00	1
+2	Trần Thị Bích	1998-05-20 00:00:00	Nữ	0912333444	bich.tran@email.com	Ngô Quyền, Hải Phòng	2026-03-26 00:00:00	4
+3	Vũ Hải Đăng	2003-11-10 00:00:00	Nam	0988555666	haidang.vu@email.com	Lê Chân, Hải Phòng	2026-03-27 00:00:00	3
+4	Đặng Thu Thảo	2004-02-28 00:00:00	Nữ	0933777888	thuthao.dang@email.com	Hồng Bàng, Hải Phòng	2026-03-28 00:00:00	2
+5	Nguyễn Văn Nam	2015-09-05 00:00:00	Nam	0909999000	phuhuynh.nam@email.com	Kiến An, Hải Phòng	2026-03-29 00:00:00	5
 \.
 
 
@@ -1042,6 +1051,11 @@ COPY public."KeHoachGiangDay" (ma_ke_hoach, noi_dung, lich_day, thoi_gian, giao_
 --
 
 COPY public."KhoaHoc" (ma_khoa_hoc, ten_khoa_hoc, mo_ta, thoi_luong, hoc_phi, trinh_do, ma_chuong_trinh) FROM stdin;
+1	IELTS Foundation	Xây dựng nền tảng từ vựng, ngữ pháp và làm quen format đề thi IELTS.	24	4500000	4.0 - 5.0	1
+2	IELTS Intensive 6.5+	Luyện đề thực chiến, tập trung chuyên sâu kĩ năng Writing và Speaking.	36	7500000	6.5+	1
+3	TOEIC 500+ Cơ bản	Nắm vững ngữ pháp trọng tâm và chiến thuật làm bài nghe (Part 1-4).	24	3000000	Mới bắt đầu	2
+4	Giao tiếp Công sở	Thực hành các tình huống giao tiếp, viết email, thuyết trình trong công việc.	30	4200000	Trung cấp	3
+5	Cambridge Movers	Tiếng Anh tương tác qua trò chơi, giúp trẻ phản xạ tự nhiên.	48	5500000	Movers (A1)	4
 \.
 
 
@@ -1077,6 +1091,11 @@ COPY public."PhieuChi" (ma_phieu_chi, so_tien, ngay_chi, noi_dung, ma_phong_ban,
 --
 
 COPY public."PhieuThu" (ma_phieu_thu, so_tien, ngay_thu, noi_dung, ma_hoc_vien, ma_nhan_su) FROM stdin;
+1	5500000	2026-03-28 00:00:00	Thu học phí đợt 1 khóa IELTS 6.5	1	5
+2	2000000	2026-03-29 00:00:00	Đóng cọc giữ chỗ khóa Giao Tiếp	2	5
+3	7000000	2026-03-29 00:00:00	Thu học phí toàn khóa TOEIC 700	3	4
+4	1500000	2026-03-30 00:00:00	Thu phí thi thử IELTS tháng 4	4	5
+5	5500000	2026-03-31 00:00:00	Thu học phí khóa Cambridge Movers	5	4
 \.
 
 
@@ -1162,7 +1181,7 @@ SELECT pg_catalog.setval('public."CamKet_ma_cam_ket_seq"', 1, false);
 -- Name: ChuongTrinhHoc_ma_chuong_trinh_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."ChuongTrinhHoc_ma_chuong_trinh_seq"', 1, false);
+SELECT pg_catalog.setval('public."ChuongTrinhHoc_ma_chuong_trinh_seq"', 4, true);
 
 
 --
@@ -1207,7 +1226,7 @@ SELECT pg_catalog.setval('public."HoatDongNgoaiKhoa_ma_hoat_dong_seq"', 1, false
 -- Name: HocVien_ma_hoc_vien_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."HocVien_ma_hoc_vien_seq"', 1, false);
+SELECT pg_catalog.setval('public."HocVien_ma_hoc_vien_seq"', 5, true);
 
 
 --
@@ -1234,7 +1253,7 @@ SELECT pg_catalog.setval('public."KeHoachGiangDay_ma_ke_hoach_seq"', 1, false);
 -- Name: KhoaHoc_ma_khoa_hoc_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."KhoaHoc_ma_khoa_hoc_seq"', 1, false);
+SELECT pg_catalog.setval('public."KhoaHoc_ma_khoa_hoc_seq"', 5, true);
 
 
 --
@@ -1261,7 +1280,7 @@ SELECT pg_catalog.setval('public."PhieuChi_ma_phieu_chi_seq"', 1, false);
 -- Name: PhieuThu_ma_phieu_thu_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."PhieuThu_ma_phieu_thu_seq"', 1, false);
+SELECT pg_catalog.setval('public."PhieuThu_ma_phieu_thu_seq"', 7, true);
 
 
 --
@@ -1682,11 +1701,11 @@ ALTER TABLE ONLY public."TaiKhoan"
     ADD CONSTRAINT "TaiKhoan_ma_quyen_fkey" FOREIGN KEY (ma_quyen) REFERENCES public."Quyen"(ma_quyen) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
--- Completed on 2026-04-06 21:14:33
+-- Completed on 2026-04-07 10:54:15
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict TcGTzNcl8gBNKvtWHmUT1LddqlvnKwjIMUl4iBEdCWvvgozbOUpehOngMhB4Bq3
+\unrestrict dCUYXYAzTObYVvPJgZ7tB1fZzdSD1KNeuh3ul3VLAuVZvoUbP78klLMCcR9cwHC
 
