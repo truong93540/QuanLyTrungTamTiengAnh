@@ -198,11 +198,11 @@ export default function PhieuThuHocPhiPage() {
                 Quản lý phiếu thu học phí
             </h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6 text-gray-700">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-20 mb-6 text-gray-700">
                 <div className="space-y-4">
                     <div className="flex items-center">
-                        <label className="w-1/3 text-sm font-medium text-gray-700">
-                            Mã phiếu thu
+                        <label className="w-1/4 text-sm font-medium text-gray-700">
+                            Mã phiếu thu:
                         </label>
                         <input
                             type="number"
@@ -211,12 +211,12 @@ export default function PhieuThuHocPhiPage() {
                             onChange={handleChange}
                             placeholder={editingId ? 'Đang sửa đổi...' : 'Nhập mã để tìm...'}
                             disabled={editingId !== null} // Khóa ô này nếu đang Sửa
-                            className={`w-2/3 border rounded p-2 focus:outline-blue-500  ${editingId ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-300'}`}
+                            className={`w-3/4 border rounded p-2 focus:outline-blue-500  ${editingId ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-300'}`}
                         />
                     </div>
                     <div className="flex items-center">
-                        <label className="w-1/3 text-sm font-medium text-gray-700">Số tiền</label>
-                        <div className="w-2/3 relative">
+                        <label className="w-1/4 text-sm font-medium text-gray-700">Số tiền:</label>
+                        <div className="w-3/4 relative">
                             <input
                                 type="number"
                                 name="so_tien"
@@ -230,25 +230,25 @@ export default function PhieuThuHocPhiPage() {
                         </div>
                     </div>
                     <div className="flex items-center">
-                        <label className="w-1/3 text-sm font-medium text-gray-700">Ngày thu</label>
+                        <label className="w-1/4 text-sm font-medium text-gray-700">Ngày thu:</label>
                         <input
                             type="date"
                             name="ngay_thu"
                             value={formData.ngay_thu}
                             onChange={handleChange}
-                            className="w-2/3 border border-gray-300 rounded p-2 focus:outline-blue-500"
+                            className="w-3/4 border border-gray-300 rounded p-2 focus:outline-blue-500 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                         />
                     </div>
                     <div className="flex items-center">
-                        <label className="w-1/3 text-sm font-medium text-gray-700">
-                            Mã học viên
+                        <label className="w-1/4 text-sm font-medium text-gray-700">
+                            Mã học viên:
                         </label>
                         <input
                             type="number"
                             name="ma_hoc_vien"
                             value={formData.ma_hoc_vien}
                             onChange={handleChange}
-                            className="w-2/3 border border-gray-300 rounded p-2 focus:outline-blue-500"
+                            className="w-3/4 border border-gray-300 rounded p-2 focus:outline-blue-500"
                         />
                     </div>
                 </div>
@@ -256,7 +256,7 @@ export default function PhieuThuHocPhiPage() {
                 <div className="space-y-4 flex flex-col">
                     <div className="flex items-center">
                         <label className="w-1/3 text-sm font-medium text-gray-700">
-                            Mã nhân sự lập phiếu
+                            Mã nhân sự lập phiếu:
                         </label>
                         <input
                             type="number"
@@ -268,13 +268,13 @@ export default function PhieuThuHocPhiPage() {
                     </div>
                     <div className="flex items-start flex-1">
                         <label className="w-1/3 text-sm font-medium text-gray-700 pt-2">
-                            Nội dung
+                            Nội dung:
                         </label>
                         <textarea
                             name="noi_dung"
                             value={formData.noi_dung}
                             onChange={handleChange}
-                            className="w-2/3 h-full min-h-[120px] border border-gray-300 rounded p-2 focus:outline-blue-500 resize-none"></textarea>
+                            className="w-2/3 h-full min-h-30 border border-gray-300 rounded p-2 focus:outline-blue-500 resize-none"></textarea>
                     </div>
                 </div>
             </div>
@@ -285,12 +285,12 @@ export default function PhieuThuHocPhiPage() {
                     <>
                         <button
                             onClick={handleSearch}
-                            className="flex items-center gap-2 px-6 py-2 border border-gray-400 rounded hover:bg-gray-100 font-medium transition text-gray-600">
+                            className="flex items-center gap-2 px-6 py-2 border border-gray-400 rounded hover:bg-gray-100 font-medium transition text-gray-600 cursor-pointer">
                             <FaSearch /> Tìm kiếm
                         </button>
                         <button
                             onClick={handleSavePhieuThu}
-                            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium transition shadow-sm">
+                            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium transition shadow-sm cursor-pointer">
                             <FaPlus /> Thêm phiếu thu
                         </button>
                     </>
@@ -298,12 +298,12 @@ export default function PhieuThuHocPhiPage() {
                     <>
                         <button
                             onClick={handleCancelEdit}
-                            className="flex items-center gap-2 px-6 py-2 border border-gray-400 rounded hover:bg-gray-100 font-medium transition text-gray-600">
+                            className="flex items-center gap-2 px-6 py-2 border border-gray-400 rounded hover:bg-gray-100 font-medium transition text-gray-600 cursor-pointer">
                             <FaTimes /> Hủy sửa
                         </button>
                         <button
                             onClick={handleSavePhieuThu}
-                            className="flex items-center gap-2 px-6 py-2 bg-[#16a34a] text-white rounded hover:bg-green-700 font-medium transition shadow-sm">
+                            className="flex items-center gap-2 px-6 py-2 bg-[#16a34a] text-white rounded hover:bg-green-700 font-medium transition shadow-sm cursor-pointer">
                             <FaSave /> Cập nhật phiếu thu
                         </button>
                     </>
@@ -361,13 +361,13 @@ export default function PhieuThuHocPhiPage() {
                                         <div className="flex justify-center">
                                             <button
                                                 onClick={() => handleEditClick(row)}
-                                                className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-yellow-100 hover:text-yellow-600 transition"
+                                                className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-yellow-100 hover:text-yellow-600 transition cursor-pointer"
                                                 title="Sửa phiếu thu">
                                                 <FaEdit />
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteClick(row.ma_phieu_thu)}
-                                                className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-red-100 hover:text-red-600 transition"
+                                                className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-red-100 hover:text-red-600 transition ml-1 cursor-pointer"
                                                 title="Xóa phiếu thu">
                                                 <FaTrash />
                                             </button>

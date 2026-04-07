@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation' // Để highlight menu đang chọn
+import { usePathname, useRouter } from 'next/navigation' // Để highlight menu đang chọn
 import {
     FaCogs,
     FaListUl,
@@ -85,6 +85,7 @@ const menuItems = [
 ]
 
 export default function Sidebar() {
+    const router = useRouter()
     const pathname = usePathname() // Lấy URL hiện tại để bôi đậm menu đang xem
     const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({
         '1. Quản lý hệ thống': true, // Mặc định mở tab đầu tiên
@@ -95,6 +96,13 @@ export default function Sidebar() {
             ...prev,
             [title]: !prev[title],
         }))
+    }
+
+    const handleLogout = () => {
+        // 1. Xóa dữ liệu đăng nhập (Tùy theo cách bạn đang lưu)
+        // Nếu bạn lưu token ở localStorage:
+        localStorage.removeItem('token')
+        router.push('/login') // Thay '/login' bằng đúng đường dẫn trang đăng nhập của bạn
     }
 
     return (
@@ -155,7 +163,9 @@ export default function Sidebar() {
 
             {/* Footer Sidebar: Chức năng Đăng xuất */}
             <div className="p-4 border-t border-blue-800/50">
-                <button className="flex items-center gap-3 w-full p-3 bg-red-600/90 rounded hover:bg-red-700 transition text-sm font-medium justify-center">
+                <button
+                    className="flex items-center gap-3 w-full p-3 bg-red-600/90 rounded hover:bg-red-700 transition text-sm font-medium justify-center"
+                    onClick={handleLogout}>
                     <FaSignOutAlt />
                     Đăng xuất (1.5)
                 </button>
