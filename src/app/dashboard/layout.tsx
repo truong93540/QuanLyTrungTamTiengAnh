@@ -1,4 +1,4 @@
-import Sidebar from '@/components/Sidebar' // Import cái Sidebar vừa tạo
+import Sidebar from '@/components/Sidebar'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     return (
