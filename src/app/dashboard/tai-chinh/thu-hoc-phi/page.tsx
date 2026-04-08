@@ -380,7 +380,6 @@ export default function PhieuThuHocPhiPage() {
                 )}
             </div>
 
-            {/* PHẦN PHÂN TRANG GIỮ NGUYÊN */}
             {!isLoading && data.length > 0 && (
                 <div className="flex justify-between items-center mt-6 font-medium text-gray-600">
                     <div className="text-sm">

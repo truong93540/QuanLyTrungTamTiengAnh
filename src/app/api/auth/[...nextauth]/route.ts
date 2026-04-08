@@ -69,7 +69,7 @@ const handler = NextAuth({
         },
     },
     pages: {
-        signIn: '/login', // Báo cho NextAuth biết trang UI tự thiết kế nằm ở đâu
+        signIn: '/login',
     },
     secret: process.env.NEXTAUTH_SECRET,
 })

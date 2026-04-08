@@ -16,7 +16,6 @@ import {
     FaSignOutAlt,
 } from 'react-icons/fa'
 
-// Cấu trúc dữ liệu Menu theo chuẩn sơ đồ HP English Campus
 const menuItems = [
     {
         title: '1. Quản lý hệ thống',
@@ -99,21 +98,18 @@ export default function Sidebar() {
     }
 
     const handleLogout = () => {
-        // 1. Xóa dữ liệu đăng nhập (Tùy theo cách bạn đang lưu)
-        // Nếu bạn lưu token ở localStorage:
         localStorage.removeItem('token')
-        router.push('/login') // Thay '/login' bằng đúng đường dẫn trang đăng nhập của bạn
+        router.push('/login')
     }
 
     return (
         <aside className="w-72 bg-[#0d47a1] text-white flex flex-col h-screen">
-            {/* Tiêu đề trung tâm */}
             <div className="p-6 text-center border-b border-blue-800/50">
                 <h2 className="text-xl font-bold uppercase tracking-wider">HP English</h2>
                 <p className="text-xs text-blue-300 mt-1">Campus Management</p>
             </div>
 
-            {/* Danh sách Menu (có thanh cuộn nếu quá dài) */}
+            {/* Danh sách Menu*/}
             <nav className="flex-1 overflow-y-auto py-4 custom-scrollbar">
                 {menuItems.map((item) => (
                     <div key={item.title} className="border-b border-blue-800/30">
@@ -145,7 +141,7 @@ export default function Sidebar() {
                                             href={child.href}
                                             className={`flex items-center gap-3 px-11 py-2.5 transition-colors text-[13px] ${
                                                 isActive
-                                                    ? 'text-white font-bold bg-blue-600/50 border-l-4 border-yellow-400' // Bôi đậm nếu đang chọn
+                                                    ? 'text-white font-bold bg-blue-600/50 border-l-4 border-yellow-400'
                                                     : 'text-blue-100 hover:text-white hover:bg-blue-800/50'
                                             }`}>
                                             <FaAngleRight
@@ -161,7 +157,6 @@ export default function Sidebar() {
                 ))}
             </nav>
 
-            {/* Footer Sidebar: Chức năng Đăng xuất */}
             <div className="p-4 border-t border-blue-800/50">
                 <button
                     className="flex items-center gap-3 w-full p-3 bg-red-600/90 rounded hover:bg-red-700 transition text-sm font-medium justify-center"
