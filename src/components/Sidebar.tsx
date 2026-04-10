@@ -15,6 +15,7 @@ import {
     FaAngleRight,
     FaSignOutAlt,
 } from 'react-icons/fa'
+import { signOut } from 'next-auth/react'
 
 const menuItems = [
     {
@@ -98,8 +99,7 @@ export default function Sidebar() {
     }
 
     const handleLogout = () => {
-        localStorage.removeItem('token')
-        router.push('/login')
+        signOut({ callbackUrl: '/login' })
     }
 
     return (

@@ -1,13 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn } from 'next-auth/react' // Thêm dòng này
-import { useRouter } from 'next/navigation' // Thêm dòng này
+import { signIn } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
-    const [error, setError] = useState('') // Thêm state để hiện lỗi
+    const [error, setError] = useState('')
     const router = useRouter()
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -18,7 +18,7 @@ export default function LoginPage() {
         const res = await signIn('credentials', {
             username: username,
             password: password,
-            redirect: false, // Ngăn trình duyệt tự load lại trang
+            redirect: false,
         })
 
         if (res?.error) {

@@ -1,4 +1,3 @@
-// File: src/services/phieuThuService.ts
 import { prisma } from '@/lib/prisma'
 
 interface PhieuThuFilter {
