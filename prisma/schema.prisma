@@ -64,7 +64,7 @@ model NhanSu {
   chuc_vu       String?
   ma_phong_ban  Int
 
-  phong_ban            PhongBan           @relation(fields: [ma_phong_ban], references: [ma_phong_ban])
+  phong_ban            PhongBan            @relation(fields: [ma_phong_ban], references: [ma_phong_ban])
   tai_khoan            TaiKhoan?
   hop_dong             HopDongLaoDong[]
   phieu_luong          PhieuLuong[]
@@ -75,6 +75,7 @@ model NhanSu {
   ke_hoach_day         KeHoachGiangDay[]
   lop_hoc              LopHoc[]
   phan_cong_ngoai_khoa PhanCongHoatDong[]
+  phan_cong_marketing  PhanCongMarketing[]
 }
 
 model BangCap {
@@ -296,15 +297,29 @@ model KeHoachGiangDay {
 // ==========================================
 
 model ChuongTrinhMarketing {
-  ma_marketing     Int       @id @default(autoincrement())
-  ten_chuong_trinh String
-  noi_dung         String?
-  ngay_bat_dau     DateTime
-  ngay_ket_thuc    DateTime?
-  ngan_sach        Decimal?
-  ma_khoa_hoc      Int?
+  ma_chuong_trinh_marketing  Int       @id @default(autoincrement())
+  ten_chuong_trinh_marketing String
+  ma_khoa_hoc                Int?
+  noi_dung                   String?   @db.Text
+  ngay_bat_dau               DateTime? @db.Date
+  ngay_ket_thuc              DateTime? @db.Date
+  ngan_sach                  Decimal?  @db.Decimal(15, 2)
 
+  // Khôi phục liên kết với Khoa Học
   khoa_hoc KhoaHoc? @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
+
+  // Liên kết với bảng trung gian
+  phan_cong_marketing PhanCongMarketing[]
+}
+
+model PhanCongMarketing {
+  ma_phan_cong_marketing    Int     @id @default(autoincrement())
+  ma_chuong_trinh_marketing Int
+  ma_nhan_su                Int
+  vai_tro                   String?
+
+  chuong_trinh ChuongTrinhMarketing @relation(fields: [ma_chuong_trinh_marketing], references: [ma_chuong_trinh_marketing])
+  nhan_su      NhanSu               @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
 }
 
 model ChuongTrinhKhuyenMai {
