@@ -208,6 +208,7 @@ model KhoaHoc {
   thoi_luong      String?
   hoc_phi         Decimal
   trinh_do        String?
+  trang_thai   String?  @default("Hoạt động")
   ma_chuong_trinh Int
 
   chuong_trinh ChuongTrinhHoc         @relation(fields: [ma_chuong_trinh], references: [ma_chuong_trinh])
