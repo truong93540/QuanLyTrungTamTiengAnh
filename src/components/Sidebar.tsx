@@ -74,21 +74,14 @@ const menuItems = [
     {
         title: '6. Báo cáo thống kê',
         icon: FaChartPie,
-        children: [
-            { title: '6.1 SL Học sinh theo tháng', href: '/dashboard/bao-cao/hoc-sinh' },
-            { title: '6.2 Tổng lương chi trả', href: '/dashboard/bao-cao/tong-luong' },
-            { title: '6.3 Hoạt động Marketing', href: '/dashboard/bao-cao/marketing' },
-            { title: '6.4 Hoạt động Ngoại khóa', href: '/dashboard/bao-cao/ngoai-khoa' },
-            { title: '6.5 Học phí theo khóa học', href: '/dashboard/bao-cao/hoc-phi' },
-        ],
     },
 ]
 
 export default function Sidebar() {
     const router = useRouter()
-    const pathname = usePathname() // Lấy URL hiện tại để bôi đậm menu đang xem
+    const pathname = usePathname()
     const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({
-        '1. Quản lý hệ thống': true, // Mặc định mở tab đầu tiên
+        '1. Quản lý hệ thống': true,
     })
 
     const toggleMenu = (title: string) => {
@@ -112,10 +105,10 @@ export default function Sidebar() {
             {/* Danh sách Menu*/}
             <nav className="flex-1 overflow-y-auto py-4 custom-scrollbar">
                 {menuItems.map((item) => (
-                    <div key={item.title} className="border-b border-blue-800/30">
+                    <div key={item.title} className="border-b border-blue-800/30 ">
                         <button
                             onClick={() => toggleMenu(item.title)}
-                            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-blue-800 transition-all">
+                            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-blue-800 transition-all cursor-pointer">
                             <div className="flex items-center gap-3">
                                 <item.icon className="text-lg text-blue-300" />
                                 <span className="text-[14px] font-semibold tracking-wide">
@@ -131,7 +124,7 @@ export default function Sidebar() {
 
                         {/* Render Menu Con */}
                         {openMenus[item.title] && item.children && (
-                            <div className="bg-[#0a3578] py-2">
+                            <div className="bg-[#0a3578] py-2 ">
                                 {item.children.map((child) => {
                                     const isActive = pathname === child.href // Kiểm tra xem có đang ở trang này không
 
@@ -139,7 +132,7 @@ export default function Sidebar() {
                                         <Link
                                             key={child.title}
                                             href={child.href}
-                                            className={`flex items-center gap-3 px-11 py-2.5 transition-colors text-[13px] ${
+                                            className={`flex items-center gap-3 px-11 py-2.5 transition-colors text-[13px] cursor-pointer ${
                                                 isActive
                                                     ? 'text-white font-bold bg-blue-600/50 border-l-4 border-yellow-400'
                                                     : 'text-blue-100 hover:text-white hover:bg-blue-800/50'
