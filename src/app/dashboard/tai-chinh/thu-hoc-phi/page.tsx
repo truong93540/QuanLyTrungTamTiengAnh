@@ -100,7 +100,6 @@ export default function PhieuThuHocPhiPage() {
 
         if (isConfirm) {
             try {
-                // Gọi API DELETE kèm theo ID trên URL
                 const response = await fetch(`/api/phieu-thu?id=${id}`, {
                     method: 'DELETE',
                 })
@@ -132,7 +131,6 @@ export default function PhieuThuHocPhiPage() {
         }
 
         try {
-            // Xác định đang là Sửa (PUT) hay Thêm (POST)
             const method = editingId ? 'PUT' : 'POST'
 
             const response = await fetch('/api/phieu-thu', {
@@ -380,7 +378,6 @@ export default function PhieuThuHocPhiPage() {
                 )}
             </div>
 
-            {/* PHẦN PHÂN TRANG GIỮ NGUYÊN */}
             {!isLoading && data.length > 0 && (
                 <div className="flex justify-between items-center mt-6 font-medium text-gray-600">
                     <div className="text-sm">

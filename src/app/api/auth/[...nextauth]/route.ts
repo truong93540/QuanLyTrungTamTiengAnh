@@ -1,7 +1,15 @@
-import NextAuth from 'next-auth'
+import NextAuth, { User } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcrypt'
 import { prisma } from '@/lib/prisma'
+import { JWT } from 'next-auth/jwt'
+
+// 1. Định nghĩa Interface cho User trả về từ authorize
+interface ExtendedUser extends User {
+    role: string
+    ma_nhan_su: number
+    allRoles: string[]
+}
 
 const handler = NextAuth({
     providers: [
@@ -54,32 +62,33 @@ const handler = NextAuth({
                     id: user.ma_tai_khoan.toString(),
                     name: user.nhan_su.ho_ten,
                     email: user.email,
-                    role: user.quyen.ten_quyen,
+                    role: primaryRole,
+                    allRoles: userRoles,
                     ma_nhan_su: user.ma_nhan_su,
                 }
             },
         }),
     ],
     callbacks: {
-        // Đẩy role (quyền) vào token để dùng trên giao diện
         async jwt({ token, user }) {
             if (user) {
-                // Thay chữ 'any' bằng '{ role: string }'
-                token.role = (user as unknown as { role: string }).role
+                const u = user as ExtendedUser
+                token.role = u.role
+                token.ma_nhan_su = u.ma_nhan_su
+                token.allRoles = u.allRoles
             }
             return token
         },
         async session({ session, token }) {
             if (token && session.user) {
-                // Thay chữ 'any' bằng '{ role: string }'
-                ;(session.user as { role: string }).role = token.role as string
+                session.user.role = token.role as string
+                session.user.ma_nhan_su = token.ma_nhan_su as number
+                session.user.allRoles = token.allRoles as string[]
             }
             return session
         },
     },
-    pages: {
-        signIn: '/login', // Báo cho NextAuth biết trang UI tự thiết kế nằm ở đâu
-    },
+    pages: { signIn: '/login' },
     secret: process.env.NEXTAUTH_SECRET,
 })
 

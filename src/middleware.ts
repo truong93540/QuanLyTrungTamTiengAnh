@@ -6,8 +6,6 @@ export default withAuth({
         signIn: '/login', // Nếu chưa đăng nhập, tự động đá về trang này
     },
 })
-
-// CẤU HÌNH BẢO VỆ (Quan trọng)
 export const config = {
     // matcher là danh sách các đường dẫn bị ông bảo vệ chặn lại
     matcher: [

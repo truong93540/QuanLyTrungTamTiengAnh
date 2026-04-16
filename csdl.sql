@@ -2,8 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict bfYriwht6DCCUm3Vz2aIdrPxUgtR0xV51ieXIi2PYaCIfpdg8YBqVO3d6NRjWl8
-
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -1038,10 +1036,6 @@ COPY public."CamKet" (ma_cam_ket, ngay_ky, ngay_het_han, noi_dung_cam_ket, trang
 -- Data for Name: ChuongTrinhHoc; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public."ChuongTrinhHoc" VALUES (1, 'Luyện thi IELTS Cao độ', 'Chương trình đào tạo chuẩn quốc tế với lộ trình cá nhân hóa, giúp học viên phát triển toàn diện 4 kỹ năng Nghe - Nói - Đọc - Viết.', 'Đạt chứng chỉ IELTS tối thiểu 6.5+');
-INSERT INTO public."ChuongTrinhHoc" VALUES (2, 'Luyện thi TOEIC Thực chiến', 'Khóa học tập trung giải quyết các bẫy đề thi TOEIC, phù hợp cho sinh viên cần chuẩn đầu ra và người đi làm cần nâng cao nghiệp vụ.', 'Đạt chứng chỉ TOEIC 650 - 800+');
-INSERT INTO public."ChuongTrinhHoc" VALUES (3, 'Tiếng Anh Giao tiếp (ESL)', 'Tập trung rèn luyện phản xạ nghe nói, chỉnh sửa phát âm chuẩn bản xứ và xây dựng sự tự tin khi giao tiếp trong môi trường quốc tế.', 'Giao tiếp trôi chảy, tự tin thuyết trình bằng tiếng Anh');
-INSERT INTO public."ChuongTrinhHoc" VALUES (4, 'Tiếng Anh Trẻ em (Cambridge)', 'Xây dựng nền tảng tiếng Anh vững chắc cho trẻ từ 6-12 tuổi thông qua các phương pháp trực quan, trò chơi và các hoạt động tương tác.', 'Đạt các chứng chỉ Cambridge (Starters, Movers, Flyers)');
 COPY public."ChuongTrinhHoc" (ma_chuong_trinh, ten_chuong_trinh, mo_ta, muc_tieu) FROM stdin;
 
 
@@ -1088,11 +1082,6 @@ COPY public."CongNo" (ma_cong_no, so_tien_no, ngay_phat_sinh, han_thanh_toan, tr
 -- Data for Name: HocVien; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public."HocVien" VALUES (1, 'Lê Hoàng Anh', '2005-08-15 00:00:00', 'Nam', '0901111222', 'hoanganh.le@email.com', 'Lê Lợi, Hải Phòng', '2026-03-25 00:00:00', 1);
-INSERT INTO public."HocVien" VALUES (2, 'Trần Thị Bích', '1998-05-20 00:00:00', 'Nữ', '0912333444', 'bich.tran@email.com', 'Ngô Quyền, Hải Phòng', '2026-03-26 00:00:00', 4);
-INSERT INTO public."HocVien" VALUES (3, 'Vũ Hải Đăng', '2003-11-10 00:00:00', 'Nam', '0988555666', 'haidang.vu@email.com', 'Lê Chân, Hải Phòng', '2026-03-27 00:00:00', 3);
-INSERT INTO public."HocVien" VALUES (4, 'Đặng Thu Thảo', '2004-02-28 00:00:00', 'Nữ', '0933777888', 'thuthao.dang@email.com', 'Hồng Bàng, Hải Phòng', '2026-03-28 00:00:00', 2);
-INSERT INTO public."HocVien" VALUES (5, 'Nguyễn Văn Nam', '2015-09-05 00:00:00', 'Nam', '0909999000', 'phuhuynh.nam@email.com', 'Kiến An, Hải Phòng', '2026-03-29 00:00:00', 5);
 COPY public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi, ngay_dang_ky, ma_khoa_hoc) FROM stdin;
 
 
