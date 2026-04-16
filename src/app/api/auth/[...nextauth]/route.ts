@@ -16,12 +16,21 @@ const handler = NextAuth({
                 if (!credentials?.username || !credentials?.password) return null
 
                 // 1. Tìm tài khoản trong Database
-                const user = await prisma.taiKhoan.findUnique({
-                    where: { ten_dang_nhap: credentials.username },
-                    include: { quyen: true, nhan_su: true },
-                })
+                console.log('📍 BƯỚC 1: Tìm tài khoản với tên đăng nhập ->', credentials.username)
+                
+                    const user = await prisma.taiKhoan.findUnique({
+                        where: { ten_dang_nhap: credentials.username },
+                        include: { quyen: true, nhan_su: true },
+                    })
+
+                console.log('📍 BƯỚC 2: Tài khoản tìm được ->', user)
+
+                if(user) {
+                    console.log('📍 BƯỚC 3: Tài khoản có trạng thái hoạt động không? ->', user.trang_thai ? 'HOẠT ĐỘNG' : 'KHÔNG HOẠT ĐỘNG')
+                }
 
                 if (!user || user.trang_thai === false) {
+                    console.log('❌ BƯỚC 2: Tài khoản không tồn tại hoặc đã bị khóa!')
                     return null
                 }
 

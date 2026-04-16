@@ -4,6 +4,7 @@
 
 \restrict bfYriwht6DCCUm3Vz2aIdrPxUgtR0xV51ieXIi2PYaCIfpdg8YBqVO3d6NRjWl8
 
+
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
 
@@ -997,6 +998,8 @@ ALTER TABLE ONLY public."TaiKhoan" ALTER COLUMN ma_tai_khoan SET DEFAULT nextval
 -- Data for Name: BangCap; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
+COPY public."BangCap" (ma_bang_cap, ten_bang_cap, noi_cap, ngay_cap) FROM stdin;
+
 
 
 --
@@ -1004,6 +1007,8 @@ ALTER TABLE ONLY public."TaiKhoan" ALTER COLUMN ma_tai_khoan SET DEFAULT nextval
 -- Dependencies: 232
 -- Data for Name: BangLuong; Type: TABLE DATA; Schema: public; Owner: postgres
 --
+
+COPY public."BangLuong" (ma_bang_luong, thang, nam, luong_co_ban, so_cong_thuc_te, hinh_thuc_tinh, tang_ca, phu_cap, tong_thuong, thu_nhap_khac, ung_luong, khau_tru_khac, thuc_linh, ghi_chu, trang_thai, ma_nhan_su) FROM stdin;
 
 
 
@@ -1013,6 +1018,8 @@ ALTER TABLE ONLY public."TaiKhoan" ALTER COLUMN ma_tai_khoan SET DEFAULT nextval
 -- Data for Name: BangThuong; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
+COPY public."BangThuong" (ma_thuong, ten_khoan_thuong, so_tien, ngay_quyet_dinh, ly_do, trang_thai, ma_nhan_su, ma_bang_luong) FROM stdin;
+
 
 
 --
@@ -1020,6 +1027,8 @@ ALTER TABLE ONLY public."TaiKhoan" ALTER COLUMN ma_tai_khoan SET DEFAULT nextval
 -- Dependencies: 256
 -- Data for Name: CamKet; Type: TABLE DATA; Schema: public; Owner: postgres
 --
+
+COPY public."CamKet" (ma_cam_ket, ngay_ky, ngay_het_han, noi_dung_cam_ket, trang_thai, ma_hoc_vien) FROM stdin;
 
 
 
@@ -1033,6 +1042,8 @@ INSERT INTO public."ChuongTrinhHoc" VALUES (1, 'Luyện thi IELTS Cao độ', 'C
 INSERT INTO public."ChuongTrinhHoc" VALUES (2, 'Luyện thi TOEIC Thực chiến', 'Khóa học tập trung giải quyết các bẫy đề thi TOEIC, phù hợp cho sinh viên cần chuẩn đầu ra và người đi làm cần nâng cao nghiệp vụ.', 'Đạt chứng chỉ TOEIC 650 - 800+');
 INSERT INTO public."ChuongTrinhHoc" VALUES (3, 'Tiếng Anh Giao tiếp (ESL)', 'Tập trung rèn luyện phản xạ nghe nói, chỉnh sửa phát âm chuẩn bản xứ và xây dựng sự tự tin khi giao tiếp trong môi trường quốc tế.', 'Giao tiếp trôi chảy, tự tin thuyết trình bằng tiếng Anh');
 INSERT INTO public."ChuongTrinhHoc" VALUES (4, 'Tiếng Anh Trẻ em (Cambridge)', 'Xây dựng nền tảng tiếng Anh vững chắc cho trẻ từ 6-12 tuổi thông qua các phương pháp trực quan, trò chơi và các hoạt động tương tác.', 'Đạt các chứng chỉ Cambridge (Starters, Movers, Flyers)');
+COPY public."ChuongTrinhHoc" (ma_chuong_trinh, ten_chuong_trinh, mo_ta, muc_tieu) FROM stdin;
+
 
 
 --
@@ -1040,6 +1051,8 @@ INSERT INTO public."ChuongTrinhHoc" VALUES (4, 'Tiếng Anh Trẻ em (Cambridge)
 -- Dependencies: 252
 -- Data for Name: ChuongTrinhKhuyenMai; Type: TABLE DATA; Schema: public; Owner: postgres
 --
+
+COPY public."ChuongTrinhKhuyenMai" (ma_khuyen_mai, ten_chuong_trinh, mo_ta, phan_tram_giam, ngay_bat_dau, ngay_ket_thuc, ma_khoa_hoc) FROM stdin;
 
 
 
@@ -1056,6 +1069,8 @@ INSERT INTO public."ChuongTrinhHoc" VALUES (4, 'Tiếng Anh Trẻ em (Cambridge)
 -- Dependencies: 254
 -- Data for Name: CongNo; Type: TABLE DATA; Schema: public; Owner: postgres
 --
+
+COPY public."CongNo" (ma_cong_no, so_tien_no, ngay_phat_sinh, han_thanh_toan, trang_thai, ma_hoc_vien) FROM stdin;
 
 
 
@@ -1078,6 +1093,8 @@ INSERT INTO public."HocVien" VALUES (2, 'Trần Thị Bích', '1998-05-20 00:00:
 INSERT INTO public."HocVien" VALUES (3, 'Vũ Hải Đăng', '2003-11-10 00:00:00', 'Nam', '0988555666', 'haidang.vu@email.com', 'Lê Chân, Hải Phòng', '2026-03-27 00:00:00', 3);
 INSERT INTO public."HocVien" VALUES (4, 'Đặng Thu Thảo', '2004-02-28 00:00:00', 'Nữ', '0933777888', 'thuthao.dang@email.com', 'Hồng Bàng, Hải Phòng', '2026-03-28 00:00:00', 2);
 INSERT INTO public."HocVien" VALUES (5, 'Nguyễn Văn Nam', '2015-09-05 00:00:00', 'Nam', '0909999000', 'phuhuynh.nam@email.com', 'Kiến An, Hải Phòng', '2026-03-29 00:00:00', 5);
+COPY public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi, ngay_dang_ky, ma_khoa_hoc) FROM stdin;
+
 
 
 --
@@ -1093,6 +1110,8 @@ INSERT INTO public."HocVien" VALUES (5, 'Nguyễn Văn Nam', '2015-09-05 00:00:0
 -- Dependencies: 250
 -- Data for Name: KeHoachGiangDay; Type: TABLE DATA; Schema: public; Owner: postgres
 --
+
+COPY public."KeHoachGiangDay" (ma_ke_hoach, noi_dung, lich_day, thoi_gian, giao_vien, ma_khoa_hoc) FROM stdin;
 
 
 
