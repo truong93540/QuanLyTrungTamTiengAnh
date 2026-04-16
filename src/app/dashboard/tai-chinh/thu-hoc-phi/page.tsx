@@ -43,7 +43,7 @@ export default function PhieuThuHocPhiPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch('/api/phieu-thu')
+                const response = await fetch('/api/tai-chinh/phieu-thu')
                 if (response.ok) {
                     const result = await response.json()
                     setData(result)
@@ -100,7 +100,7 @@ export default function PhieuThuHocPhiPage() {
 
         if (isConfirm) {
             try {
-                const response = await fetch(`/api/phieu-thu?id=${id}`, {
+                const response = await fetch(`/api/tai-chinh/phieu-thu?id=${id}`, {
                     method: 'DELETE',
                 })
 
@@ -133,7 +133,7 @@ export default function PhieuThuHocPhiPage() {
         try {
             const method = editingId ? 'PUT' : 'POST'
 
-            const response = await fetch('/api/phieu-thu', {
+            const response = await fetch('/api/tai-chinh/phieu-thu', {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),

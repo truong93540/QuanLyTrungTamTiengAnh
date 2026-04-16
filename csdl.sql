@@ -2,34 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict ZcatKnaAKGfWu9h7m8xmYkPs9YPnBnQys7X0YXZDIkfl6uab0ZAwIcXavpTIvRv
+\restrict KR1hgfK7mNRlkUb8L2JyoxEJbkbatlAtDk9MCrx7l0aNg9mJwN5Gew4ecRm16Xf
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
 
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
-DROP DATABASE hp_english_homestay;
---
--- Name: hp_english_homestay; Type: DATABASE; Schema: -; Owner: -
---
-
-CREATE DATABASE hp_english_homestay WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'English_United States.1252';
-
-
-\unrestrict ZcatKnaAKGfWu9h7m8xmYkPs9YPnBnQys7X0YXZDIkfl6uab0ZAwIcXavpTIvRv
-\connect hp_english_homestay
-\restrict ZcatKnaAKGfWu9h7m8xmYkPs9YPnBnQys7X0YXZDIkfl6uab0ZAwIcXavpTIvRv
+-- Started on 2026-04-16 16:44:26
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -44,6 +22,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- TOC entry 5 (class 2615 OID 16809)
 -- Name: public; Type: SCHEMA; Schema: -; Owner: -
 --
 
@@ -51,6 +30,8 @@ SET row_security = off;
 
 
 --
+-- TOC entry 5359 (class 0 OID 0)
+-- Dependencies: 5
 -- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
 --
 
@@ -62,6 +43,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- TOC entry 231 (class 1259 OID 16884)
 -- Name: BangCap; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -72,6 +54,7 @@ CREATE TABLE public."BangCap" (
 
 
 --
+-- TOC entry 230 (class 1259 OID 16883)
 -- Name: BangCap_ma_bang_cap_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -85,6 +68,8 @@ CREATE SEQUENCE public."BangCap_ma_bang_cap_seq"
 
 
 --
+-- TOC entry 5360 (class 0 OID 0)
+-- Dependencies: 230
 -- Name: BangCap_ma_bang_cap_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -92,6 +77,7 @@ ALTER SEQUENCE public."BangCap_ma_bang_cap_seq" OWNED BY public."BangCap".ma_ban
 
 
 --
+-- TOC entry 239 (class 1259 OID 16941)
 -- Name: BangLuong; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -103,6 +89,7 @@ CREATE TABLE public."BangLuong" (
 
 
 --
+-- TOC entry 238 (class 1259 OID 16940)
 -- Name: BangLuong_ma_bang_luong_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -116,6 +103,8 @@ CREATE SEQUENCE public."BangLuong_ma_bang_luong_seq"
 
 
 --
+-- TOC entry 5361 (class 0 OID 0)
+-- Dependencies: 238
 -- Name: BangLuong_ma_bang_luong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -123,6 +112,7 @@ ALTER SEQUENCE public."BangLuong_ma_bang_luong_seq" OWNED BY public."BangLuong".
 
 
 --
+-- TOC entry 261 (class 1259 OID 17082)
 -- Name: CamKet; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -137,6 +127,7 @@ CREATE TABLE public."CamKet" (
 
 
 --
+-- TOC entry 260 (class 1259 OID 17081)
 -- Name: CamKet_ma_cam_ket_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -150,6 +141,8 @@ CREATE SEQUENCE public."CamKet_ma_cam_ket_seq"
 
 
 --
+-- TOC entry 5362 (class 0 OID 0)
+-- Dependencies: 260
 -- Name: CamKet_ma_cam_ket_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -157,6 +150,42 @@ ALTER SEQUENCE public."CamKet_ma_cam_ket_seq" OWNED BY public."CamKet".ma_cam_ke
 
 
 --
+-- TOC entry 277 (class 1259 OID 17469)
+-- Name: ChucVu; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public."ChucVu" (
+    ma_chuc_vu integer NOT NULL,
+    ten_chuc_vu character varying(255) NOT NULL,
+    ghi_chu text
+);
+
+
+--
+-- TOC entry 276 (class 1259 OID 17468)
+-- Name: ChucVu_ma_chuc_vu_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public."ChucVu_ma_chuc_vu_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- TOC entry 5363 (class 0 OID 0)
+-- Dependencies: 276
+-- Name: ChucVu_ma_chuc_vu_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public."ChucVu_ma_chuc_vu_seq" OWNED BY public."ChucVu".ma_chuc_vu;
+
+
+--
+-- TOC entry 249 (class 1259 OID 17008)
 -- Name: ChuongTrinhHoc; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -169,6 +198,7 @@ CREATE TABLE public."ChuongTrinhHoc" (
 
 
 --
+-- TOC entry 248 (class 1259 OID 17007)
 -- Name: ChuongTrinhHoc_ma_chuong_trinh_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -182,6 +212,8 @@ CREATE SEQUENCE public."ChuongTrinhHoc_ma_chuong_trinh_seq"
 
 
 --
+-- TOC entry 5364 (class 0 OID 0)
+-- Dependencies: 248
 -- Name: ChuongTrinhHoc_ma_chuong_trinh_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -189,6 +221,7 @@ ALTER SEQUENCE public."ChuongTrinhHoc_ma_chuong_trinh_seq" OWNED BY public."Chuo
 
 
 --
+-- TOC entry 265 (class 1259 OID 17118)
 -- Name: ChuongTrinhKhuyenMai; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -203,6 +236,7 @@ CREATE TABLE public."ChuongTrinhKhuyenMai" (
 
 
 --
+-- TOC entry 264 (class 1259 OID 17117)
 -- Name: ChuongTrinhKhuyenMai_ma_khuyen_mai_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -216,6 +250,8 @@ CREATE SEQUENCE public."ChuongTrinhKhuyenMai_ma_khuyen_mai_seq"
 
 
 --
+-- TOC entry 5365 (class 0 OID 0)
+-- Dependencies: 264
 -- Name: ChuongTrinhKhuyenMai_ma_khuyen_mai_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -223,6 +259,7 @@ ALTER SEQUENCE public."ChuongTrinhKhuyenMai_ma_khuyen_mai_seq" OWNED BY public."
 
 
 --
+-- TOC entry 273 (class 1259 OID 17419)
 -- Name: ChuongTrinhMarketing; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -238,6 +275,7 @@ CREATE TABLE public."ChuongTrinhMarketing" (
 
 
 --
+-- TOC entry 272 (class 1259 OID 17418)
 -- Name: ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -251,6 +289,8 @@ CREATE SEQUENCE public."ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq"
 
 
 --
+-- TOC entry 5366 (class 0 OID 0)
+-- Dependencies: 272
 -- Name: ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -258,6 +298,7 @@ ALTER SEQUENCE public."ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq" OWNED
 
 
 --
+-- TOC entry 247 (class 1259 OID 16995)
 -- Name: CongNo; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -272,6 +313,7 @@ CREATE TABLE public."CongNo" (
 
 
 --
+-- TOC entry 246 (class 1259 OID 16994)
 -- Name: CongNo_ma_cong_no_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -285,6 +327,8 @@ CREATE SEQUENCE public."CongNo_ma_cong_no_seq"
 
 
 --
+-- TOC entry 5367 (class 0 OID 0)
+-- Dependencies: 246
 -- Name: CongNo_ma_cong_no_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -292,6 +336,7 @@ ALTER SEQUENCE public."CongNo_ma_cong_no_seq" OWNED BY public."CongNo".ma_cong_n
 
 
 --
+-- TOC entry 233 (class 1259 OID 16895)
 -- Name: HoSoBangCap; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -305,6 +350,7 @@ CREATE TABLE public."HoSoBangCap" (
 
 
 --
+-- TOC entry 232 (class 1259 OID 16894)
 -- Name: HoSoBangCap_ma_ho_so_bang_cap_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -318,6 +364,8 @@ CREATE SEQUENCE public."HoSoBangCap_ma_ho_so_bang_cap_seq"
 
 
 --
+-- TOC entry 5368 (class 0 OID 0)
+-- Dependencies: 232
 -- Name: HoSoBangCap_ma_ho_so_bang_cap_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -325,6 +373,7 @@ ALTER SEQUENCE public."HoSoBangCap_ma_ho_so_bang_cap_seq" OWNED BY public."HoSoB
 
 
 --
+-- TOC entry 267 (class 1259 OID 17130)
 -- Name: HoatDongNgoaiKhoa; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -339,6 +388,7 @@ CREATE TABLE public."HoatDongNgoaiKhoa" (
 
 
 --
+-- TOC entry 266 (class 1259 OID 17129)
 -- Name: HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -352,6 +402,8 @@ CREATE SEQUENCE public."HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq"
 
 
 --
+-- TOC entry 5369 (class 0 OID 0)
+-- Dependencies: 266
 -- Name: HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -359,6 +411,7 @@ ALTER SEQUENCE public."HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq" OWNED BY p
 
 
 --
+-- TOC entry 257 (class 1259 OID 17057)
 -- Name: HocVien; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -374,6 +427,7 @@ CREATE TABLE public."HocVien" (
 
 
 --
+-- TOC entry 256 (class 1259 OID 17056)
 -- Name: HocVien_ma_hoc_vien_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -387,6 +441,8 @@ CREATE SEQUENCE public."HocVien_ma_hoc_vien_seq"
 
 
 --
+-- TOC entry 5370 (class 0 OID 0)
+-- Dependencies: 256
 -- Name: HocVien_ma_hoc_vien_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -394,6 +450,7 @@ ALTER SEQUENCE public."HocVien_ma_hoc_vien_seq" OWNED BY public."HocVien".ma_hoc
 
 
 --
+-- TOC entry 235 (class 1259 OID 16907)
 -- Name: HopDongLaoDong; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -410,6 +467,7 @@ CREATE TABLE public."HopDongLaoDong" (
 
 
 --
+-- TOC entry 234 (class 1259 OID 16906)
 -- Name: HopDongLaoDong_ma_hop_dong_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -423,6 +481,8 @@ CREATE SEQUENCE public."HopDongLaoDong_ma_hop_dong_seq"
 
 
 --
+-- TOC entry 5371 (class 0 OID 0)
+-- Dependencies: 234
 -- Name: HopDongLaoDong_ma_hop_dong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -430,6 +490,7 @@ ALTER SEQUENCE public."HopDongLaoDong_ma_hop_dong_seq" OWNED BY public."HopDongL
 
 
 --
+-- TOC entry 263 (class 1259 OID 17094)
 -- Name: KeHoachGiangDay; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -444,6 +505,7 @@ CREATE TABLE public."KeHoachGiangDay" (
 
 
 --
+-- TOC entry 262 (class 1259 OID 17093)
 -- Name: KeHoachGiangDay_ma_ke_hoach_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -457,6 +519,8 @@ CREATE SEQUENCE public."KeHoachGiangDay_ma_ke_hoach_seq"
 
 
 --
+-- TOC entry 5372 (class 0 OID 0)
+-- Dependencies: 262
 -- Name: KeHoachGiangDay_ma_ke_hoach_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -464,6 +528,7 @@ ALTER SEQUENCE public."KeHoachGiangDay_ma_ke_hoach_seq" OWNED BY public."KeHoach
 
 
 --
+-- TOC entry 251 (class 1259 OID 17019)
 -- Name: KhoaHoc; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -480,6 +545,7 @@ CREATE TABLE public."KhoaHoc" (
 
 
 --
+-- TOC entry 250 (class 1259 OID 17018)
 -- Name: KhoaHoc_ma_khoa_hoc_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -493,6 +559,8 @@ CREATE SEQUENCE public."KhoaHoc_ma_khoa_hoc_seq"
 
 
 --
+-- TOC entry 5373 (class 0 OID 0)
+-- Dependencies: 250
 -- Name: KhoaHoc_ma_khoa_hoc_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -500,6 +568,7 @@ ALTER SEQUENCE public."KhoaHoc_ma_khoa_hoc_seq" OWNED BY public."KhoaHoc".ma_kho
 
 
 --
+-- TOC entry 255 (class 1259 OID 17043)
 -- Name: LopHoc; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -516,6 +585,7 @@ CREATE TABLE public."LopHoc" (
 
 
 --
+-- TOC entry 254 (class 1259 OID 17042)
 -- Name: LopHoc_ma_lop_hoc_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -529,6 +599,8 @@ CREATE SEQUENCE public."LopHoc_ma_lop_hoc_seq"
 
 
 --
+-- TOC entry 5374 (class 0 OID 0)
+-- Dependencies: 254
 -- Name: LopHoc_ma_lop_hoc_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -536,6 +608,7 @@ ALTER SEQUENCE public."LopHoc_ma_lop_hoc_seq" OWNED BY public."LopHoc".ma_lop_ho
 
 
 --
+-- TOC entry 229 (class 1259 OID 16872)
 -- Name: NhanSu; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -546,12 +619,13 @@ CREATE TABLE public."NhanSu" (
     gioi_tinh text,
     so_dien_thoai text,
     dia_chi text,
-    chuc_vu text,
-    ma_phong_ban integer NOT NULL
+    ma_phong_ban integer NOT NULL,
+    ma_chuc_vu integer
 );
 
 
 --
+-- TOC entry 228 (class 1259 OID 16871)
 -- Name: NhanSu_ma_nhan_su_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -565,6 +639,8 @@ CREATE SEQUENCE public."NhanSu_ma_nhan_su_seq"
 
 
 --
+-- TOC entry 5375 (class 0 OID 0)
+-- Dependencies: 228
 -- Name: NhanSu_ma_nhan_su_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -572,6 +648,7 @@ ALTER SEQUENCE public."NhanSu_ma_nhan_su_seq" OWNED BY public."NhanSu".ma_nhan_s
 
 
 --
+-- TOC entry 271 (class 1259 OID 17152)
 -- Name: PhanCongHoatDong; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -583,6 +660,7 @@ CREATE TABLE public."PhanCongHoatDong" (
 
 
 --
+-- TOC entry 270 (class 1259 OID 17151)
 -- Name: PhanCongHoatDong_ma_phan_cong_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -596,6 +674,8 @@ CREATE SEQUENCE public."PhanCongHoatDong_ma_phan_cong_seq"
 
 
 --
+-- TOC entry 5376 (class 0 OID 0)
+-- Dependencies: 270
 -- Name: PhanCongHoatDong_ma_phan_cong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -603,6 +683,7 @@ ALTER SEQUENCE public."PhanCongHoatDong_ma_phan_cong_seq" OWNED BY public."PhanC
 
 
 --
+-- TOC entry 275 (class 1259 OID 17435)
 -- Name: PhanCongMarketing; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -615,6 +696,7 @@ CREATE TABLE public."PhanCongMarketing" (
 
 
 --
+-- TOC entry 274 (class 1259 OID 17434)
 -- Name: PhanCongMarketing_ma_phan_cong_marketing_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -628,6 +710,8 @@ CREATE SEQUENCE public."PhanCongMarketing_ma_phan_cong_marketing_seq"
 
 
 --
+-- TOC entry 5377 (class 0 OID 0)
+-- Dependencies: 274
 -- Name: PhanCongMarketing_ma_phan_cong_marketing_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -635,6 +719,7 @@ ALTER SEQUENCE public."PhanCongMarketing_ma_phan_cong_marketing_seq" OWNED BY pu
 
 
 --
+-- TOC entry 225 (class 1259 OID 16851)
 -- Name: PhanQuyen; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -646,6 +731,7 @@ CREATE TABLE public."PhanQuyen" (
 
 
 --
+-- TOC entry 224 (class 1259 OID 16850)
 -- Name: PhanQuyen_ma_phan_quyen_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -659,6 +745,8 @@ CREATE SEQUENCE public."PhanQuyen_ma_phan_quyen_seq"
 
 
 --
+-- TOC entry 5378 (class 0 OID 0)
+-- Dependencies: 224
 -- Name: PhanQuyen_ma_phan_quyen_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -666,6 +754,7 @@ ALTER SEQUENCE public."PhanQuyen_ma_phan_quyen_seq" OWNED BY public."PhanQuyen".
 
 
 --
+-- TOC entry 245 (class 1259 OID 16981)
 -- Name: PhieuChi; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -679,6 +768,7 @@ CREATE TABLE public."PhieuChi" (
 
 
 --
+-- TOC entry 244 (class 1259 OID 16980)
 -- Name: PhieuChi_ma_phieu_chi_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -692,6 +782,8 @@ CREATE SEQUENCE public."PhieuChi_ma_phieu_chi_seq"
 
 
 --
+-- TOC entry 5379 (class 0 OID 0)
+-- Dependencies: 244
 -- Name: PhieuChi_ma_phieu_chi_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -699,6 +791,7 @@ ALTER SEQUENCE public."PhieuChi_ma_phieu_chi_seq" OWNED BY public."PhieuChi".ma_
 
 
 --
+-- TOC entry 237 (class 1259 OID 16920)
 -- Name: PhieuLuong; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -722,6 +815,7 @@ CREATE TABLE public."PhieuLuong" (
 
 
 --
+-- TOC entry 236 (class 1259 OID 16919)
 -- Name: PhieuLuong_ma_phieu_luong_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -735,6 +829,8 @@ CREATE SEQUENCE public."PhieuLuong_ma_phieu_luong_seq"
 
 
 --
+-- TOC entry 5380 (class 0 OID 0)
+-- Dependencies: 236
 -- Name: PhieuLuong_ma_phieu_luong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -742,6 +838,7 @@ ALTER SEQUENCE public."PhieuLuong_ma_phieu_luong_seq" OWNED BY public."PhieuLuon
 
 
 --
+-- TOC entry 243 (class 1259 OID 16966)
 -- Name: PhieuThu; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -758,6 +855,7 @@ CREATE TABLE public."PhieuThu" (
 
 
 --
+-- TOC entry 242 (class 1259 OID 16965)
 -- Name: PhieuThu_ma_phieu_thu_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -771,6 +869,8 @@ CREATE SEQUENCE public."PhieuThu_ma_phieu_thu_seq"
 
 
 --
+-- TOC entry 5381 (class 0 OID 0)
+-- Dependencies: 242
 -- Name: PhieuThu_ma_phieu_thu_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -778,6 +878,7 @@ ALTER SEQUENCE public."PhieuThu_ma_phieu_thu_seq" OWNED BY public."PhieuThu".ma_
 
 
 --
+-- TOC entry 241 (class 1259 OID 16952)
 -- Name: PhieuThuong; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -793,6 +894,7 @@ CREATE TABLE public."PhieuThuong" (
 
 
 --
+-- TOC entry 240 (class 1259 OID 16951)
 -- Name: PhieuThuong_ma_phieu_thuong_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -806,6 +908,8 @@ CREATE SEQUENCE public."PhieuThuong_ma_phieu_thuong_seq"
 
 
 --
+-- TOC entry 5382 (class 0 OID 0)
+-- Dependencies: 240
 -- Name: PhieuThuong_ma_phieu_thuong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -813,6 +917,7 @@ ALTER SEQUENCE public."PhieuThuong_ma_phieu_thuong_seq" OWNED BY public."PhieuTh
 
 
 --
+-- TOC entry 227 (class 1259 OID 16861)
 -- Name: PhongBan; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -825,6 +930,7 @@ CREATE TABLE public."PhongBan" (
 
 
 --
+-- TOC entry 226 (class 1259 OID 16860)
 -- Name: PhongBan_ma_phong_ban_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -838,6 +944,8 @@ CREATE SEQUENCE public."PhongBan_ma_phong_ban_seq"
 
 
 --
+-- TOC entry 5383 (class 0 OID 0)
+-- Dependencies: 226
 -- Name: PhongBan_ma_phong_ban_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -845,6 +953,7 @@ ALTER SEQUENCE public."PhongBan_ma_phong_ban_seq" OWNED BY public."PhongBan".ma_
 
 
 --
+-- TOC entry 253 (class 1259 OID 17032)
 -- Name: PhongHoc; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -856,6 +965,7 @@ CREATE TABLE public."PhongHoc" (
 
 
 --
+-- TOC entry 252 (class 1259 OID 17031)
 -- Name: PhongHoc_ma_phong_hoc_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -869,6 +979,8 @@ CREATE SEQUENCE public."PhongHoc_ma_phong_hoc_seq"
 
 
 --
+-- TOC entry 5384 (class 0 OID 0)
+-- Dependencies: 252
 -- Name: PhongHoc_ma_phong_hoc_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -876,6 +988,7 @@ ALTER SEQUENCE public."PhongHoc_ma_phong_hoc_seq" OWNED BY public."PhongHoc".ma_
 
 
 --
+-- TOC entry 221 (class 1259 OID 16826)
 -- Name: Quyen; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -887,6 +1000,7 @@ CREATE TABLE public."Quyen" (
 
 
 --
+-- TOC entry 220 (class 1259 OID 16825)
 -- Name: Quyen_ma_quyen_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -900,6 +1014,8 @@ CREATE SEQUENCE public."Quyen_ma_quyen_seq"
 
 
 --
+-- TOC entry 5385 (class 0 OID 0)
+-- Dependencies: 220
 -- Name: Quyen_ma_quyen_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -907,6 +1023,7 @@ ALTER SEQUENCE public."Quyen_ma_quyen_seq" OWNED BY public."Quyen".ma_quyen;
 
 
 --
+-- TOC entry 223 (class 1259 OID 16837)
 -- Name: TaiKhoan; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -921,6 +1038,7 @@ CREATE TABLE public."TaiKhoan" (
 
 
 --
+-- TOC entry 222 (class 1259 OID 16836)
 -- Name: TaiKhoan_ma_tai_khoan_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -934,6 +1052,8 @@ CREATE SEQUENCE public."TaiKhoan_ma_tai_khoan_seq"
 
 
 --
+-- TOC entry 5386 (class 0 OID 0)
+-- Dependencies: 222
 -- Name: TaiKhoan_ma_tai_khoan_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -941,6 +1061,7 @@ ALTER SEQUENCE public."TaiKhoan_ma_tai_khoan_seq" OWNED BY public."TaiKhoan".ma_
 
 
 --
+-- TOC entry 259 (class 1259 OID 17068)
 -- Name: ThamGiaLop; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -954,6 +1075,7 @@ CREATE TABLE public."ThamGiaLop" (
 
 
 --
+-- TOC entry 258 (class 1259 OID 17067)
 -- Name: ThamGiaLop_ma_tham_gia_lop_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -967,6 +1089,8 @@ CREATE SEQUENCE public."ThamGiaLop_ma_tham_gia_lop_seq"
 
 
 --
+-- TOC entry 5387 (class 0 OID 0)
+-- Dependencies: 258
 -- Name: ThamGiaLop_ma_tham_gia_lop_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -974,6 +1098,7 @@ ALTER SEQUENCE public."ThamGiaLop_ma_tham_gia_lop_seq" OWNED BY public."ThamGiaL
 
 
 --
+-- TOC entry 269 (class 1259 OID 17142)
 -- Name: ThamGiaNgoaiKhoa; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -985,6 +1110,7 @@ CREATE TABLE public."ThamGiaNgoaiKhoa" (
 
 
 --
+-- TOC entry 268 (class 1259 OID 17141)
 -- Name: ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -998,6 +1124,8 @@ CREATE SEQUENCE public."ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq"
 
 
 --
+-- TOC entry 5388 (class 0 OID 0)
+-- Dependencies: 268
 -- Name: ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -1005,6 +1133,7 @@ ALTER SEQUENCE public."ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq" OWNED BY pub
 
 
 --
+-- TOC entry 219 (class 1259 OID 16810)
 -- Name: _prisma_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1021,6 +1150,7 @@ CREATE TABLE public._prisma_migrations (
 
 
 --
+-- TOC entry 5007 (class 2604 OID 16887)
 -- Name: BangCap ma_bang_cap; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1028,6 +1158,7 @@ ALTER TABLE ONLY public."BangCap" ALTER COLUMN ma_bang_cap SET DEFAULT nextval('
 
 
 --
+-- TOC entry 5017 (class 2604 OID 16944)
 -- Name: BangLuong ma_bang_luong; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1035,6 +1166,7 @@ ALTER TABLE ONLY public."BangLuong" ALTER COLUMN ma_bang_luong SET DEFAULT nextv
 
 
 --
+-- TOC entry 5032 (class 2604 OID 17085)
 -- Name: CamKet ma_cam_ket; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1042,6 +1174,15 @@ ALTER TABLE ONLY public."CamKet" ALTER COLUMN ma_cam_ket SET DEFAULT nextval('pu
 
 
 --
+-- TOC entry 5040 (class 2604 OID 17472)
+-- Name: ChucVu ma_chuc_vu; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."ChucVu" ALTER COLUMN ma_chuc_vu SET DEFAULT nextval('public."ChucVu_ma_chuc_vu_seq"'::regclass);
+
+
+--
+-- TOC entry 5024 (class 2604 OID 17011)
 -- Name: ChuongTrinhHoc ma_chuong_trinh; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1049,6 +1190,7 @@ ALTER TABLE ONLY public."ChuongTrinhHoc" ALTER COLUMN ma_chuong_trinh SET DEFAUL
 
 
 --
+-- TOC entry 5034 (class 2604 OID 17121)
 -- Name: ChuongTrinhKhuyenMai ma_khuyen_mai; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1056,6 +1198,7 @@ ALTER TABLE ONLY public."ChuongTrinhKhuyenMai" ALTER COLUMN ma_khuyen_mai SET DE
 
 
 --
+-- TOC entry 5038 (class 2604 OID 17422)
 -- Name: ChuongTrinhMarketing ma_chuong_trinh_marketing; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1063,6 +1206,7 @@ ALTER TABLE ONLY public."ChuongTrinhMarketing" ALTER COLUMN ma_chuong_trinh_mark
 
 
 --
+-- TOC entry 5023 (class 2604 OID 16998)
 -- Name: CongNo ma_cong_no; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1070,6 +1214,7 @@ ALTER TABLE ONLY public."CongNo" ALTER COLUMN ma_cong_no SET DEFAULT nextval('pu
 
 
 --
+-- TOC entry 5008 (class 2604 OID 16898)
 -- Name: HoSoBangCap ma_ho_so_bang_cap; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1077,6 +1222,7 @@ ALTER TABLE ONLY public."HoSoBangCap" ALTER COLUMN ma_ho_so_bang_cap SET DEFAULT
 
 
 --
+-- TOC entry 5035 (class 2604 OID 17133)
 -- Name: HoatDongNgoaiKhoa ma_hoat_dong_ngoai_khoa; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1084,6 +1230,7 @@ ALTER TABLE ONLY public."HoatDongNgoaiKhoa" ALTER COLUMN ma_hoat_dong_ngoai_khoa
 
 
 --
+-- TOC entry 5029 (class 2604 OID 17060)
 -- Name: HocVien ma_hoc_vien; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1091,6 +1238,7 @@ ALTER TABLE ONLY public."HocVien" ALTER COLUMN ma_hoc_vien SET DEFAULT nextval('
 
 
 --
+-- TOC entry 5009 (class 2604 OID 16910)
 -- Name: HopDongLaoDong ma_hop_dong; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1098,6 +1246,7 @@ ALTER TABLE ONLY public."HopDongLaoDong" ALTER COLUMN ma_hop_dong SET DEFAULT ne
 
 
 --
+-- TOC entry 5033 (class 2604 OID 17097)
 -- Name: KeHoachGiangDay ma_ke_hoach; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1105,6 +1254,7 @@ ALTER TABLE ONLY public."KeHoachGiangDay" ALTER COLUMN ma_ke_hoach SET DEFAULT n
 
 
 --
+-- TOC entry 5025 (class 2604 OID 17022)
 -- Name: KhoaHoc ma_khoa_hoc; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1112,6 +1262,7 @@ ALTER TABLE ONLY public."KhoaHoc" ALTER COLUMN ma_khoa_hoc SET DEFAULT nextval('
 
 
 --
+-- TOC entry 5028 (class 2604 OID 17046)
 -- Name: LopHoc ma_lop_hoc; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1119,6 +1270,7 @@ ALTER TABLE ONLY public."LopHoc" ALTER COLUMN ma_lop_hoc SET DEFAULT nextval('pu
 
 
 --
+-- TOC entry 5006 (class 2604 OID 16875)
 -- Name: NhanSu ma_nhan_su; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1126,6 +1278,7 @@ ALTER TABLE ONLY public."NhanSu" ALTER COLUMN ma_nhan_su SET DEFAULT nextval('pu
 
 
 --
+-- TOC entry 5037 (class 2604 OID 17155)
 -- Name: PhanCongHoatDong ma_phan_cong; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1133,6 +1286,7 @@ ALTER TABLE ONLY public."PhanCongHoatDong" ALTER COLUMN ma_phan_cong SET DEFAULT
 
 
 --
+-- TOC entry 5039 (class 2604 OID 17438)
 -- Name: PhanCongMarketing ma_phan_cong_marketing; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1140,6 +1294,7 @@ ALTER TABLE ONLY public."PhanCongMarketing" ALTER COLUMN ma_phan_cong_marketing 
 
 
 --
+-- TOC entry 5004 (class 2604 OID 16854)
 -- Name: PhanQuyen ma_phan_quyen; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1147,6 +1302,7 @@ ALTER TABLE ONLY public."PhanQuyen" ALTER COLUMN ma_phan_quyen SET DEFAULT nextv
 
 
 --
+-- TOC entry 5021 (class 2604 OID 16984)
 -- Name: PhieuChi ma_phieu_chi; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1154,6 +1310,7 @@ ALTER TABLE ONLY public."PhieuChi" ALTER COLUMN ma_phieu_chi SET DEFAULT nextval
 
 
 --
+-- TOC entry 5010 (class 2604 OID 16923)
 -- Name: PhieuLuong ma_phieu_luong; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1161,6 +1318,7 @@ ALTER TABLE ONLY public."PhieuLuong" ALTER COLUMN ma_phieu_luong SET DEFAULT nex
 
 
 --
+-- TOC entry 5019 (class 2604 OID 16969)
 -- Name: PhieuThu ma_phieu_thu; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1168,6 +1326,7 @@ ALTER TABLE ONLY public."PhieuThu" ALTER COLUMN ma_phieu_thu SET DEFAULT nextval
 
 
 --
+-- TOC entry 5018 (class 2604 OID 16955)
 -- Name: PhieuThuong ma_phieu_thuong; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1175,6 +1334,7 @@ ALTER TABLE ONLY public."PhieuThuong" ALTER COLUMN ma_phieu_thuong SET DEFAULT n
 
 
 --
+-- TOC entry 5005 (class 2604 OID 16864)
 -- Name: PhongBan ma_phong_ban; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1182,6 +1342,7 @@ ALTER TABLE ONLY public."PhongBan" ALTER COLUMN ma_phong_ban SET DEFAULT nextval
 
 
 --
+-- TOC entry 5027 (class 2604 OID 17035)
 -- Name: PhongHoc ma_phong_hoc; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1189,6 +1350,7 @@ ALTER TABLE ONLY public."PhongHoc" ALTER COLUMN ma_phong_hoc SET DEFAULT nextval
 
 
 --
+-- TOC entry 5002 (class 2604 OID 16829)
 -- Name: Quyen ma_quyen; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1196,6 +1358,7 @@ ALTER TABLE ONLY public."Quyen" ALTER COLUMN ma_quyen SET DEFAULT nextval('publi
 
 
 --
+-- TOC entry 5003 (class 2604 OID 16840)
 -- Name: TaiKhoan ma_tai_khoan; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1203,6 +1366,7 @@ ALTER TABLE ONLY public."TaiKhoan" ALTER COLUMN ma_tai_khoan SET DEFAULT nextval
 
 
 --
+-- TOC entry 5030 (class 2604 OID 17071)
 -- Name: ThamGiaLop ma_tham_gia_lop; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1210,6 +1374,7 @@ ALTER TABLE ONLY public."ThamGiaLop" ALTER COLUMN ma_tham_gia_lop SET DEFAULT ne
 
 
 --
+-- TOC entry 5036 (class 2604 OID 17145)
 -- Name: ThamGiaNgoaiKhoa ma_tham_gia_ngoai_khoa; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1217,111 +1382,173 @@ ALTER TABLE ONLY public."ThamGiaNgoaiKhoa" ALTER COLUMN ma_tham_gia_ngoai_khoa S
 
 
 --
+-- TOC entry 5307 (class 0 OID 16884)
+-- Dependencies: 231
 -- Data for Name: BangCap; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5315 (class 0 OID 16941)
+-- Dependencies: 239
 -- Data for Name: BangLuong; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5337 (class 0 OID 17082)
+-- Dependencies: 261
 -- Data for Name: CamKet; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5353 (class 0 OID 17469)
+-- Dependencies: 277
+-- Data for Name: ChucVu; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (3, 'Quản lý đào tạo', 'Lập kế hoạch giảng dạy, kiểm soát chất lượng giáo viên và chương trình học.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (5, 'Giáo viên Việt Nam', 'Giảng dạy ngữ pháp, luyện thi IELTS/TOEIC và hỗ trợ học viên.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (6, 'Trợ giảng (Tutor)', 'Hỗ trợ giáo viên trong lớp, kèm cặp học viên yếu và chấm bài tập.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (7, 'Nhân viên Tư vấn (Sales)', 'Tìm kiếm học viên mới, tư vấn khóa học và ký kết hợp đồng.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (8, 'Nhân viên Marketing', 'Chạy quảng cáo, quản lý Fanpage và tổ chức sự kiện ngoại khóa.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (9, 'Kế toán', 'Quản lý thu chi, lập phiếu thu học phí và tính lương nhân sự.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (10, 'Lễ tân', 'Đón tiếp khách, hướng dẫn học viên và trực điện thoại hotline.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (1, 'Quản trị viên', 'Quản lý toàn bộ hệ thống');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (4, 'Giáo viên nước ngoài', 'Giảng dạy trực tiếp, tập trung vào kỹ năng nghe - nói.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (2, 'Giáo viên bản ngữ', 'Chịu trách nhiệm về giáo trình và chất lượng giảng dạy.');
+
+
+--
+-- TOC entry 5325 (class 0 OID 17008)
+-- Dependencies: 249
 -- Data for Name: ChuongTrinhHoc; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5341 (class 0 OID 17118)
+-- Dependencies: 265
 -- Data for Name: ChuongTrinhKhuyenMai; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5349 (class 0 OID 17419)
+-- Dependencies: 273
 -- Data for Name: ChuongTrinhMarketing; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5323 (class 0 OID 16995)
+-- Dependencies: 247
 -- Data for Name: CongNo; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5309 (class 0 OID 16895)
+-- Dependencies: 233
 -- Data for Name: HoSoBangCap; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5343 (class 0 OID 17130)
+-- Dependencies: 267
 -- Data for Name: HoatDongNgoaiKhoa; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5333 (class 0 OID 17057)
+-- Dependencies: 257
 -- Data for Name: HocVien; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (1, 'Trần Thị Thu Hà', '2005-05-20 00:00:00', NULL, '0912345678', 'thuha@gmail.com', NULL);
 INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (2, 'Lê Văn Nam', '2004-10-15 00:00:00', NULL, '0988776655', 'vannam.le@gmail.com', NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (3, 'Nguyễn Minh Anh', '2005-08-12 00:00:00', 'Nữ', NULL, NULL, NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (4, 'Phạm Hoàng Long', '2006-03-22 00:00:00', 'Nam', NULL, NULL, NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (5, 'Đỗ Thùy Chi', '2004-12-05 00:00:00', 'Nữ', NULL, NULL, NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (6, 'Bùi Văn Mạnh', '2005-01-30 00:00:00', 'Nam', NULL, NULL, NULL);
 
 
 --
+-- TOC entry 5311 (class 0 OID 16907)
+-- Dependencies: 235
 -- Data for Name: HopDongLaoDong; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5339 (class 0 OID 17094)
+-- Dependencies: 263
 -- Data for Name: KeHoachGiangDay; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5327 (class 0 OID 17019)
+-- Dependencies: 251
 -- Data for Name: KhoaHoc; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5331 (class 0 OID 17043)
+-- Dependencies: 255
 -- Data for Name: LopHoc; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5305 (class 0 OID 16872)
+-- Dependencies: 229
 -- Data for Name: NhanSu; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, dia_chi, chuc_vu, ma_phong_ban) VALUES (1, 'Nguyễn Văn Trường', NULL, NULL, '0987654321', NULL, 'Quản trị viên', 1);
+INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, dia_chi, ma_phong_ban, ma_chuc_vu) VALUES (1, 'Nguyễn Văn Trường', NULL, NULL, '0987654321', NULL, 1, 1);
+INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, dia_chi, ma_phong_ban, ma_chuc_vu) VALUES (2, 'Lê Văn Nam', '1995-05-10 00:00:00', 'Nam', '0912334455', 'Ngô Quyền, Hải Phòng', 2, 3);
+INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, dia_chi, ma_phong_ban, ma_chuc_vu) VALUES (3, 'Trần Thị Thu Hà', '1998-11-20 00:00:00', 'Nữ', '0988776655', 'Lê Chân, Hải Phòng', 3, 6);
+INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, dia_chi, ma_phong_ban, ma_chuc_vu) VALUES (4, 'Phạm Minh Đức', '1990-03-15 00:00:00', 'Nam', '0904556677', 'Hồng Bàng, Hải Phòng', 1, 2);
+INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, dia_chi, ma_phong_ban, ma_chuc_vu) VALUES (5, 'Đỗ Thùy Linh', '2000-07-25 00:00:00', 'Nữ', '0936112233', 'Thủy Nguyên, Hải Phòng', 4, 8);
 
 
 --
+-- TOC entry 5347 (class 0 OID 17152)
+-- Dependencies: 271
 -- Data for Name: PhanCongHoatDong; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5351 (class 0 OID 17435)
+-- Dependencies: 275
 -- Data for Name: PhanCongMarketing; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5301 (class 0 OID 16851)
+-- Dependencies: 225
 -- Data for Name: PhanQuyen; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -1329,54 +1556,74 @@ INSERT INTO public."PhanQuyen" (ma_phan_quyen, ma_tai_khoan, ma_quyen) VALUES (1
 
 
 --
+-- TOC entry 5321 (class 0 OID 16981)
+-- Dependencies: 245
 -- Data for Name: PhieuChi; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5313 (class 0 OID 16920)
+-- Dependencies: 237
 -- Data for Name: PhieuLuong; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5319 (class 0 OID 16966)
+-- Dependencies: 243
 -- Data for Name: PhieuThu; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 INSERT INTO public."PhieuThu" (ma_phieu_thu, so_tien, ngay_thu, noi_dung, ma_hoc_vien, ma_nhan_su, ma_khuyen_mai, ma_cam_ket) VALUES (2, 2000000.000000000000000000000000000000, '2026-04-10 23:32:08.962', 'Học phí khóa Giao tiếp cấp tốc', 2, 1, NULL, NULL);
 INSERT INTO public."PhieuThu" (ma_phieu_thu, so_tien, ngay_thu, noi_dung, ma_hoc_vien, ma_nhan_su, ma_khuyen_mai, ma_cam_ket) VALUES (1, 1500000.000000000000000000000000000000, '2026-04-10 00:00:00', 'Thu học phí khóa IELTS cơ bản - Tháng 04/2026', 1, 1, NULL, NULL);
+INSERT INTO public."PhieuThu" (ma_phieu_thu, so_tien, ngay_thu, noi_dung, ma_hoc_vien, ma_nhan_su, ma_khuyen_mai, ma_cam_ket) VALUES (3, 2000000.000000000000000000000000000000, '2026-04-15 00:00:00', 'Thu học phí khóa TOEIC cơ bản', 1, 1, NULL, NULL);
 
 
 --
+-- TOC entry 5317 (class 0 OID 16952)
+-- Dependencies: 241
 -- Data for Name: PhieuThuong; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5303 (class 0 OID 16861)
+-- Dependencies: 227
 -- Data for Name: PhongBan; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 INSERT INTO public."PhongBan" (ma_phong_ban, ten_phong_ban, mo_ta, ngay_thanh_lap) VALUES (1, 'Ban Quản Trị', 'Điều hành toàn bộ hệ thống HP English Homestay', '2026-04-10 22:47:10.979');
+INSERT INTO public."PhongBan" (ma_phong_ban, ten_phong_ban, mo_ta, ngay_thanh_lap) VALUES (2, 'Phòng Đào tạo', 'Quản lý giáo viên, chương trình giảng dạy và chất lượng học viên.', '2026-04-10 22:47:10');
+INSERT INTO public."PhongBan" (ma_phong_ban, ten_phong_ban, mo_ta, ngay_thanh_lap) VALUES (3, 'Phòng Tuyển sinh', 'Tư vấn khóa học, tìm kiếm học viên và chăm sóc khách hàng.', '2026-04-10 22:47:10');
+INSERT INTO public."PhongBan" (ma_phong_ban, ten_phong_ban, mo_ta, ngay_thanh_lap) VALUES (4, 'Phòng Kế toán', 'Quản lý thu chi học phí, quỹ homestay và bảng lương nhân sự.', '2026-04-10 22:47:10');
+INSERT INTO public."PhongBan" (ma_phong_ban, ten_phong_ban, mo_ta, ngay_thanh_lap) VALUES (5, 'Phòng Marketing', 'Truyền thông, quảng bá hình ảnh và tổ chức sự kiện ngoại khóa.', '2026-04-10 22:47:10');
 
 
 --
+-- TOC entry 5329 (class 0 OID 17032)
+-- Dependencies: 253
 -- Data for Name: PhongHoc; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5297 (class 0 OID 16826)
+-- Dependencies: 221
 -- Data for Name: Quyen; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 INSERT INTO public."Quyen" (ma_quyen, ten_quyen, trang_thai) VALUES (1, 'ADMIN', 'Hoạt động');
 INSERT INTO public."Quyen" (ma_quyen, ten_quyen, trang_thai) VALUES (2, 'GIAO_VIEN', 'Hoạt động');
-INSERT INTO public."Quyen" (ma_quyen, ten_quyen, trang_thai) VALUES (3, 'NHAN_VIEN', 'Hoạt động');
 
 
 --
+-- TOC entry 5299 (class 0 OID 16837)
+-- Dependencies: 223
 -- Data for Name: TaiKhoan; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -1384,24 +1631,32 @@ INSERT INTO public."TaiKhoan" (ma_tai_khoan, ten_dang_nhap, mat_khau, email, tra
 
 
 --
+-- TOC entry 5335 (class 0 OID 17068)
+-- Dependencies: 259
 -- Data for Name: ThamGiaLop; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5345 (class 0 OID 17142)
+-- Dependencies: 269
 -- Data for Name: ThamGiaNgoaiKhoa; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5295 (class 0 OID 16810)
+-- Dependencies: 219
 -- Data for Name: _prisma_migrations; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 
 
 --
+-- TOC entry 5389 (class 0 OID 0)
+-- Dependencies: 230
 -- Name: BangCap_ma_bang_cap_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1409,6 +1664,8 @@ SELECT pg_catalog.setval('public."BangCap_ma_bang_cap_seq"', 1, false);
 
 
 --
+-- TOC entry 5390 (class 0 OID 0)
+-- Dependencies: 238
 -- Name: BangLuong_ma_bang_luong_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1416,6 +1673,8 @@ SELECT pg_catalog.setval('public."BangLuong_ma_bang_luong_seq"', 1, false);
 
 
 --
+-- TOC entry 5391 (class 0 OID 0)
+-- Dependencies: 260
 -- Name: CamKet_ma_cam_ket_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1423,6 +1682,17 @@ SELECT pg_catalog.setval('public."CamKet_ma_cam_ket_seq"', 1, false);
 
 
 --
+-- TOC entry 5392 (class 0 OID 0)
+-- Dependencies: 276
+-- Name: ChucVu_ma_chuc_vu_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public."ChucVu_ma_chuc_vu_seq"', 11, true);
+
+
+--
+-- TOC entry 5393 (class 0 OID 0)
+-- Dependencies: 248
 -- Name: ChuongTrinhHoc_ma_chuong_trinh_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1430,6 +1700,8 @@ SELECT pg_catalog.setval('public."ChuongTrinhHoc_ma_chuong_trinh_seq"', 1, false
 
 
 --
+-- TOC entry 5394 (class 0 OID 0)
+-- Dependencies: 264
 -- Name: ChuongTrinhKhuyenMai_ma_khuyen_mai_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1437,6 +1709,8 @@ SELECT pg_catalog.setval('public."ChuongTrinhKhuyenMai_ma_khuyen_mai_seq"', 1, f
 
 
 --
+-- TOC entry 5395 (class 0 OID 0)
+-- Dependencies: 272
 -- Name: ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1444,6 +1718,8 @@ SELECT pg_catalog.setval('public."ChuongTrinhMarketing_ma_chuong_trinh_marketing
 
 
 --
+-- TOC entry 5396 (class 0 OID 0)
+-- Dependencies: 246
 -- Name: CongNo_ma_cong_no_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1451,6 +1727,8 @@ SELECT pg_catalog.setval('public."CongNo_ma_cong_no_seq"', 1, false);
 
 
 --
+-- TOC entry 5397 (class 0 OID 0)
+-- Dependencies: 232
 -- Name: HoSoBangCap_ma_ho_so_bang_cap_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1458,6 +1736,8 @@ SELECT pg_catalog.setval('public."HoSoBangCap_ma_ho_so_bang_cap_seq"', 1, false)
 
 
 --
+-- TOC entry 5398 (class 0 OID 0)
+-- Dependencies: 266
 -- Name: HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1465,13 +1745,17 @@ SELECT pg_catalog.setval('public."HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq"
 
 
 --
+-- TOC entry 5399 (class 0 OID 0)
+-- Dependencies: 256
 -- Name: HocVien_ma_hoc_vien_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."HocVien_ma_hoc_vien_seq"', 2, true);
+SELECT pg_catalog.setval('public."HocVien_ma_hoc_vien_seq"', 6, true);
 
 
 --
+-- TOC entry 5400 (class 0 OID 0)
+-- Dependencies: 234
 -- Name: HopDongLaoDong_ma_hop_dong_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1479,6 +1763,8 @@ SELECT pg_catalog.setval('public."HopDongLaoDong_ma_hop_dong_seq"', 1, false);
 
 
 --
+-- TOC entry 5401 (class 0 OID 0)
+-- Dependencies: 262
 -- Name: KeHoachGiangDay_ma_ke_hoach_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1486,6 +1772,8 @@ SELECT pg_catalog.setval('public."KeHoachGiangDay_ma_ke_hoach_seq"', 1, false);
 
 
 --
+-- TOC entry 5402 (class 0 OID 0)
+-- Dependencies: 250
 -- Name: KhoaHoc_ma_khoa_hoc_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1493,6 +1781,8 @@ SELECT pg_catalog.setval('public."KhoaHoc_ma_khoa_hoc_seq"', 1, false);
 
 
 --
+-- TOC entry 5403 (class 0 OID 0)
+-- Dependencies: 254
 -- Name: LopHoc_ma_lop_hoc_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1500,6 +1790,8 @@ SELECT pg_catalog.setval('public."LopHoc_ma_lop_hoc_seq"', 1, false);
 
 
 --
+-- TOC entry 5404 (class 0 OID 0)
+-- Dependencies: 228
 -- Name: NhanSu_ma_nhan_su_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1507,6 +1799,8 @@ SELECT pg_catalog.setval('public."NhanSu_ma_nhan_su_seq"', 1, true);
 
 
 --
+-- TOC entry 5405 (class 0 OID 0)
+-- Dependencies: 270
 -- Name: PhanCongHoatDong_ma_phan_cong_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1514,6 +1808,8 @@ SELECT pg_catalog.setval('public."PhanCongHoatDong_ma_phan_cong_seq"', 1, false)
 
 
 --
+-- TOC entry 5406 (class 0 OID 0)
+-- Dependencies: 274
 -- Name: PhanCongMarketing_ma_phan_cong_marketing_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1521,6 +1817,8 @@ SELECT pg_catalog.setval('public."PhanCongMarketing_ma_phan_cong_marketing_seq"'
 
 
 --
+-- TOC entry 5407 (class 0 OID 0)
+-- Dependencies: 224
 -- Name: PhanQuyen_ma_phan_quyen_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1528,6 +1826,8 @@ SELECT pg_catalog.setval('public."PhanQuyen_ma_phan_quyen_seq"', 1, true);
 
 
 --
+-- TOC entry 5408 (class 0 OID 0)
+-- Dependencies: 244
 -- Name: PhieuChi_ma_phieu_chi_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1535,6 +1835,8 @@ SELECT pg_catalog.setval('public."PhieuChi_ma_phieu_chi_seq"', 1, false);
 
 
 --
+-- TOC entry 5409 (class 0 OID 0)
+-- Dependencies: 236
 -- Name: PhieuLuong_ma_phieu_luong_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1542,13 +1844,17 @@ SELECT pg_catalog.setval('public."PhieuLuong_ma_phieu_luong_seq"', 1, false);
 
 
 --
+-- TOC entry 5410 (class 0 OID 0)
+-- Dependencies: 242
 -- Name: PhieuThu_ma_phieu_thu_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."PhieuThu_ma_phieu_thu_seq"', 2, true);
+SELECT pg_catalog.setval('public."PhieuThu_ma_phieu_thu_seq"', 5, true);
 
 
 --
+-- TOC entry 5411 (class 0 OID 0)
+-- Dependencies: 240
 -- Name: PhieuThuong_ma_phieu_thuong_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1556,6 +1862,8 @@ SELECT pg_catalog.setval('public."PhieuThuong_ma_phieu_thuong_seq"', 1, false);
 
 
 --
+-- TOC entry 5412 (class 0 OID 0)
+-- Dependencies: 226
 -- Name: PhongBan_ma_phong_ban_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1563,6 +1871,8 @@ SELECT pg_catalog.setval('public."PhongBan_ma_phong_ban_seq"', 1, true);
 
 
 --
+-- TOC entry 5413 (class 0 OID 0)
+-- Dependencies: 252
 -- Name: PhongHoc_ma_phong_hoc_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1570,6 +1880,8 @@ SELECT pg_catalog.setval('public."PhongHoc_ma_phong_hoc_seq"', 1, false);
 
 
 --
+-- TOC entry 5414 (class 0 OID 0)
+-- Dependencies: 220
 -- Name: Quyen_ma_quyen_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1577,6 +1889,8 @@ SELECT pg_catalog.setval('public."Quyen_ma_quyen_seq"', 3, true);
 
 
 --
+-- TOC entry 5415 (class 0 OID 0)
+-- Dependencies: 222
 -- Name: TaiKhoan_ma_tai_khoan_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1584,6 +1898,8 @@ SELECT pg_catalog.setval('public."TaiKhoan_ma_tai_khoan_seq"', 1, true);
 
 
 --
+-- TOC entry 5416 (class 0 OID 0)
+-- Dependencies: 258
 -- Name: ThamGiaLop_ma_tham_gia_lop_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1591,6 +1907,8 @@ SELECT pg_catalog.setval('public."ThamGiaLop_ma_tham_gia_lop_seq"', 1, false);
 
 
 --
+-- TOC entry 5417 (class 0 OID 0)
+-- Dependencies: 268
 -- Name: ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1598,6 +1916,7 @@ SELECT pg_catalog.setval('public."ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq"',
 
 
 --
+-- TOC entry 5059 (class 2606 OID 16893)
 -- Name: BangCap BangCap_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1606,6 +1925,7 @@ ALTER TABLE ONLY public."BangCap"
 
 
 --
+-- TOC entry 5069 (class 2606 OID 16950)
 -- Name: BangLuong BangLuong_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1614,6 +1934,7 @@ ALTER TABLE ONLY public."BangLuong"
 
 
 --
+-- TOC entry 5094 (class 2606 OID 17092)
 -- Name: CamKet CamKet_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1622,6 +1943,25 @@ ALTER TABLE ONLY public."CamKet"
 
 
 --
+-- TOC entry 5112 (class 2606 OID 17478)
+-- Name: ChucVu ChucVu_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."ChucVu"
+    ADD CONSTRAINT "ChucVu_pkey" PRIMARY KEY (ma_chuc_vu);
+
+
+--
+-- TOC entry 5114 (class 2606 OID 17480)
+-- Name: ChucVu ChucVu_ten_chuc_vu_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."ChucVu"
+    ADD CONSTRAINT "ChucVu_ten_chuc_vu_key" UNIQUE (ten_chuc_vu);
+
+
+--
+-- TOC entry 5079 (class 2606 OID 17017)
 -- Name: ChuongTrinhHoc ChuongTrinhHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1630,6 +1970,7 @@ ALTER TABLE ONLY public."ChuongTrinhHoc"
 
 
 --
+-- TOC entry 5098 (class 2606 OID 17128)
 -- Name: ChuongTrinhKhuyenMai ChuongTrinhKhuyenMai_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1638,6 +1979,7 @@ ALTER TABLE ONLY public."ChuongTrinhKhuyenMai"
 
 
 --
+-- TOC entry 5108 (class 2606 OID 17428)
 -- Name: ChuongTrinhMarketing ChuongTrinhMarketing_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1646,6 +1988,7 @@ ALTER TABLE ONLY public."ChuongTrinhMarketing"
 
 
 --
+-- TOC entry 5077 (class 2606 OID 17006)
 -- Name: CongNo CongNo_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1654,6 +1997,7 @@ ALTER TABLE ONLY public."CongNo"
 
 
 --
+-- TOC entry 5062 (class 2606 OID 16905)
 -- Name: HoSoBangCap HoSoBangCap_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1662,6 +2006,7 @@ ALTER TABLE ONLY public."HoSoBangCap"
 
 
 --
+-- TOC entry 5100 (class 2606 OID 17140)
 -- Name: HoatDongNgoaiKhoa HoatDongNgoaiKhoa_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1670,6 +2015,7 @@ ALTER TABLE ONLY public."HoatDongNgoaiKhoa"
 
 
 --
+-- TOC entry 5089 (class 2606 OID 17066)
 -- Name: HocVien HocVien_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1678,6 +2024,7 @@ ALTER TABLE ONLY public."HocVien"
 
 
 --
+-- TOC entry 5064 (class 2606 OID 16918)
 -- Name: HopDongLaoDong HopDongLaoDong_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1686,6 +2033,7 @@ ALTER TABLE ONLY public."HopDongLaoDong"
 
 
 --
+-- TOC entry 5096 (class 2606 OID 17104)
 -- Name: KeHoachGiangDay KeHoachGiangDay_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1694,6 +2042,7 @@ ALTER TABLE ONLY public."KeHoachGiangDay"
 
 
 --
+-- TOC entry 5081 (class 2606 OID 17030)
 -- Name: KhoaHoc KhoaHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1702,6 +2051,7 @@ ALTER TABLE ONLY public."KhoaHoc"
 
 
 --
+-- TOC entry 5086 (class 2606 OID 17055)
 -- Name: LopHoc LopHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1710,6 +2060,7 @@ ALTER TABLE ONLY public."LopHoc"
 
 
 --
+-- TOC entry 5057 (class 2606 OID 16882)
 -- Name: NhanSu NhanSu_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1718,6 +2069,7 @@ ALTER TABLE ONLY public."NhanSu"
 
 
 --
+-- TOC entry 5106 (class 2606 OID 17160)
 -- Name: PhanCongHoatDong PhanCongHoatDong_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1726,6 +2078,7 @@ ALTER TABLE ONLY public."PhanCongHoatDong"
 
 
 --
+-- TOC entry 5110 (class 2606 OID 17443)
 -- Name: PhanCongMarketing PhanCongMarketing_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1734,6 +2087,7 @@ ALTER TABLE ONLY public."PhanCongMarketing"
 
 
 --
+-- TOC entry 5053 (class 2606 OID 16859)
 -- Name: PhanQuyen PhanQuyen_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1742,6 +2096,7 @@ ALTER TABLE ONLY public."PhanQuyen"
 
 
 --
+-- TOC entry 5075 (class 2606 OID 16993)
 -- Name: PhieuChi PhieuChi_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1750,6 +2105,7 @@ ALTER TABLE ONLY public."PhieuChi"
 
 
 --
+-- TOC entry 5067 (class 2606 OID 16939)
 -- Name: PhieuLuong PhieuLuong_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1758,6 +2114,7 @@ ALTER TABLE ONLY public."PhieuLuong"
 
 
 --
+-- TOC entry 5073 (class 2606 OID 16979)
 -- Name: PhieuThu PhieuThu_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1766,6 +2123,7 @@ ALTER TABLE ONLY public."PhieuThu"
 
 
 --
+-- TOC entry 5071 (class 2606 OID 16964)
 -- Name: PhieuThuong PhieuThuong_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1774,6 +2132,7 @@ ALTER TABLE ONLY public."PhieuThuong"
 
 
 --
+-- TOC entry 5055 (class 2606 OID 16870)
 -- Name: PhongBan PhongBan_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1782,6 +2141,7 @@ ALTER TABLE ONLY public."PhongBan"
 
 
 --
+-- TOC entry 5083 (class 2606 OID 17041)
 -- Name: PhongHoc PhongHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1790,6 +2150,7 @@ ALTER TABLE ONLY public."PhongHoc"
 
 
 --
+-- TOC entry 5044 (class 2606 OID 16835)
 -- Name: Quyen Quyen_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1798,6 +2159,7 @@ ALTER TABLE ONLY public."Quyen"
 
 
 --
+-- TOC entry 5049 (class 2606 OID 16849)
 -- Name: TaiKhoan TaiKhoan_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1806,6 +2168,7 @@ ALTER TABLE ONLY public."TaiKhoan"
 
 
 --
+-- TOC entry 5092 (class 2606 OID 17080)
 -- Name: ThamGiaLop ThamGiaLop_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1814,6 +2177,7 @@ ALTER TABLE ONLY public."ThamGiaLop"
 
 
 --
+-- TOC entry 5103 (class 2606 OID 17150)
 -- Name: ThamGiaNgoaiKhoa ThamGiaNgoaiKhoa_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1822,6 +2186,7 @@ ALTER TABLE ONLY public."ThamGiaNgoaiKhoa"
 
 
 --
+-- TOC entry 5042 (class 2606 OID 16823)
 -- Name: _prisma_migrations _prisma_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1830,6 +2195,7 @@ ALTER TABLE ONLY public._prisma_migrations
 
 
 --
+-- TOC entry 5060 (class 1259 OID 17166)
 -- Name: BangCap_ten_bang_cap_key; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1837,6 +2203,7 @@ CREATE UNIQUE INDEX "BangCap_ten_bang_cap_key" ON public."BangCap" USING btree (
 
 
 --
+-- TOC entry 5087 (class 1259 OID 17169)
 -- Name: HocVien_email_key; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1844,6 +2211,7 @@ CREATE UNIQUE INDEX "HocVien_email_key" ON public."HocVien" USING btree (email);
 
 
 --
+-- TOC entry 5065 (class 1259 OID 17167)
 -- Name: HopDongLaoDong_so_hop_dong_key; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1851,6 +2219,7 @@ CREATE UNIQUE INDEX "HopDongLaoDong_so_hop_dong_key" ON public."HopDongLaoDong" 
 
 
 --
+-- TOC entry 5104 (class 1259 OID 17172)
 -- Name: PhanCongHoatDong_ma_nhan_su_ma_hoat_dong_ngoai_khoa_key; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1858,6 +2227,7 @@ CREATE UNIQUE INDEX "PhanCongHoatDong_ma_nhan_su_ma_hoat_dong_ngoai_khoa_key" ON
 
 
 --
+-- TOC entry 5051 (class 1259 OID 17165)
 -- Name: PhanQuyen_ma_tai_khoan_ma_quyen_key; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1865,6 +2235,7 @@ CREATE UNIQUE INDEX "PhanQuyen_ma_tai_khoan_ma_quyen_key" ON public."PhanQuyen" 
 
 
 --
+-- TOC entry 5084 (class 1259 OID 17168)
 -- Name: PhongHoc_ten_phong_hoc_key; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1872,6 +2243,7 @@ CREATE UNIQUE INDEX "PhongHoc_ten_phong_hoc_key" ON public."PhongHoc" USING btre
 
 
 --
+-- TOC entry 5045 (class 1259 OID 17161)
 -- Name: Quyen_ten_quyen_key; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1879,6 +2251,7 @@ CREATE UNIQUE INDEX "Quyen_ten_quyen_key" ON public."Quyen" USING btree (ten_quy
 
 
 --
+-- TOC entry 5046 (class 1259 OID 17163)
 -- Name: TaiKhoan_email_key; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1886,6 +2259,7 @@ CREATE UNIQUE INDEX "TaiKhoan_email_key" ON public."TaiKhoan" USING btree (email
 
 
 --
+-- TOC entry 5047 (class 1259 OID 17164)
 -- Name: TaiKhoan_ma_nhan_su_key; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1893,6 +2267,7 @@ CREATE UNIQUE INDEX "TaiKhoan_ma_nhan_su_key" ON public."TaiKhoan" USING btree (
 
 
 --
+-- TOC entry 5050 (class 1259 OID 17162)
 -- Name: TaiKhoan_ten_dang_nhap_key; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1900,6 +2275,7 @@ CREATE UNIQUE INDEX "TaiKhoan_ten_dang_nhap_key" ON public."TaiKhoan" USING btre
 
 
 --
+-- TOC entry 5090 (class 1259 OID 17170)
 -- Name: ThamGiaLop_ma_hoc_vien_ma_lop_hoc_key; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1907,6 +2283,7 @@ CREATE UNIQUE INDEX "ThamGiaLop_ma_hoc_vien_ma_lop_hoc_key" ON public."ThamGiaLo
 
 
 --
+-- TOC entry 5101 (class 1259 OID 17171)
 -- Name: ThamGiaNgoaiKhoa_ma_hoc_vien_ma_hoat_dong_ngoai_khoa_key; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1914,6 +2291,7 @@ CREATE UNIQUE INDEX "ThamGiaNgoaiKhoa_ma_hoc_vien_ma_hoat_dong_ngoai_khoa_key" O
 
 
 --
+-- TOC entry 5138 (class 2606 OID 17283)
 -- Name: CamKet CamKet_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1922,6 +2300,7 @@ ALTER TABLE ONLY public."CamKet"
 
 
 --
+-- TOC entry 5131 (class 2606 OID 17248)
 -- Name: CongNo CongNo_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1930,6 +2309,7 @@ ALTER TABLE ONLY public."CongNo"
 
 
 --
+-- TOC entry 5120 (class 2606 OID 17198)
 -- Name: HoSoBangCap HoSoBangCap_ma_bang_cap_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1938,6 +2318,7 @@ ALTER TABLE ONLY public."HoSoBangCap"
 
 
 --
+-- TOC entry 5121 (class 2606 OID 17193)
 -- Name: HoSoBangCap HoSoBangCap_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1946,6 +2327,7 @@ ALTER TABLE ONLY public."HoSoBangCap"
 
 
 --
+-- TOC entry 5122 (class 2606 OID 17203)
 -- Name: HopDongLaoDong HopDongLaoDong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1954,6 +2336,7 @@ ALTER TABLE ONLY public."HopDongLaoDong"
 
 
 --
+-- TOC entry 5139 (class 2606 OID 17288)
 -- Name: KeHoachGiangDay KeHoachGiangDay_ma_khoa_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1962,6 +2345,7 @@ ALTER TABLE ONLY public."KeHoachGiangDay"
 
 
 --
+-- TOC entry 5140 (class 2606 OID 17293)
 -- Name: KeHoachGiangDay KeHoachGiangDay_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1970,6 +2354,7 @@ ALTER TABLE ONLY public."KeHoachGiangDay"
 
 
 --
+-- TOC entry 5132 (class 2606 OID 17253)
 -- Name: KhoaHoc KhoaHoc_ma_chuong_trinh_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1978,6 +2363,7 @@ ALTER TABLE ONLY public."KhoaHoc"
 
 
 --
+-- TOC entry 5133 (class 2606 OID 17268)
 -- Name: LopHoc LopHoc_ma_khoa_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1986,6 +2372,7 @@ ALTER TABLE ONLY public."LopHoc"
 
 
 --
+-- TOC entry 5134 (class 2606 OID 17258)
 -- Name: LopHoc LopHoc_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1994,6 +2381,7 @@ ALTER TABLE ONLY public."LopHoc"
 
 
 --
+-- TOC entry 5135 (class 2606 OID 17263)
 -- Name: LopHoc LopHoc_ma_phong_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2002,6 +2390,7 @@ ALTER TABLE ONLY public."LopHoc"
 
 
 --
+-- TOC entry 5118 (class 2606 OID 17188)
 -- Name: NhanSu NhanSu_ma_phong_ban_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2010,6 +2399,7 @@ ALTER TABLE ONLY public."NhanSu"
 
 
 --
+-- TOC entry 5143 (class 2606 OID 17318)
 -- Name: PhanCongHoatDong PhanCongHoatDong_ma_hoat_dong_ngoai_khoa_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2018,6 +2408,7 @@ ALTER TABLE ONLY public."PhanCongHoatDong"
 
 
 --
+-- TOC entry 5144 (class 2606 OID 17313)
 -- Name: PhanCongHoatDong PhanCongHoatDong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2026,6 +2417,7 @@ ALTER TABLE ONLY public."PhanCongHoatDong"
 
 
 --
+-- TOC entry 5116 (class 2606 OID 17183)
 -- Name: PhanQuyen PhanQuyen_ma_quyen_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2034,6 +2426,7 @@ ALTER TABLE ONLY public."PhanQuyen"
 
 
 --
+-- TOC entry 5117 (class 2606 OID 17178)
 -- Name: PhanQuyen PhanQuyen_ma_tai_khoan_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2042,6 +2435,7 @@ ALTER TABLE ONLY public."PhanQuyen"
 
 
 --
+-- TOC entry 5130 (class 2606 OID 17243)
 -- Name: PhieuChi PhieuChi_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2050,6 +2444,7 @@ ALTER TABLE ONLY public."PhieuChi"
 
 
 --
+-- TOC entry 5123 (class 2606 OID 17213)
 -- Name: PhieuLuong PhieuLuong_ma_bang_luong_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2058,6 +2453,7 @@ ALTER TABLE ONLY public."PhieuLuong"
 
 
 --
+-- TOC entry 5124 (class 2606 OID 17208)
 -- Name: PhieuLuong PhieuLuong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2066,6 +2462,7 @@ ALTER TABLE ONLY public."PhieuLuong"
 
 
 --
+-- TOC entry 5126 (class 2606 OID 17238)
 -- Name: PhieuThu PhieuThu_ma_cam_ket_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2074,6 +2471,7 @@ ALTER TABLE ONLY public."PhieuThu"
 
 
 --
+-- TOC entry 5127 (class 2606 OID 17223)
 -- Name: PhieuThu PhieuThu_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2082,6 +2480,7 @@ ALTER TABLE ONLY public."PhieuThu"
 
 
 --
+-- TOC entry 5128 (class 2606 OID 17233)
 -- Name: PhieuThu PhieuThu_ma_khuyen_mai_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2090,6 +2489,7 @@ ALTER TABLE ONLY public."PhieuThu"
 
 
 --
+-- TOC entry 5129 (class 2606 OID 17228)
 -- Name: PhieuThu PhieuThu_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2098,6 +2498,7 @@ ALTER TABLE ONLY public."PhieuThu"
 
 
 --
+-- TOC entry 5125 (class 2606 OID 17218)
 -- Name: PhieuThuong PhieuThuong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2106,6 +2507,7 @@ ALTER TABLE ONLY public."PhieuThuong"
 
 
 --
+-- TOC entry 5115 (class 2606 OID 17173)
 -- Name: TaiKhoan TaiKhoan_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2114,6 +2516,7 @@ ALTER TABLE ONLY public."TaiKhoan"
 
 
 --
+-- TOC entry 5136 (class 2606 OID 17273)
 -- Name: ThamGiaLop ThamGiaLop_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2122,6 +2525,7 @@ ALTER TABLE ONLY public."ThamGiaLop"
 
 
 --
+-- TOC entry 5137 (class 2606 OID 17278)
 -- Name: ThamGiaLop ThamGiaLop_ma_lop_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2130,6 +2534,7 @@ ALTER TABLE ONLY public."ThamGiaLop"
 
 
 --
+-- TOC entry 5141 (class 2606 OID 17308)
 -- Name: ThamGiaNgoaiKhoa ThamGiaNgoaiKhoa_ma_hoat_dong_ngoai_khoa_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2138,6 +2543,7 @@ ALTER TABLE ONLY public."ThamGiaNgoaiKhoa"
 
 
 --
+-- TOC entry 5142 (class 2606 OID 17303)
 -- Name: ThamGiaNgoaiKhoa ThamGiaNgoaiKhoa_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2146,6 +2552,7 @@ ALTER TABLE ONLY public."ThamGiaNgoaiKhoa"
 
 
 --
+-- TOC entry 5146 (class 2606 OID 17444)
 -- Name: PhanCongMarketing fk_ct_marketing; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2154,6 +2561,7 @@ ALTER TABLE ONLY public."PhanCongMarketing"
 
 
 --
+-- TOC entry 5145 (class 2606 OID 17429)
 -- Name: ChuongTrinhMarketing fk_khoa_hoc; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2162,6 +2570,7 @@ ALTER TABLE ONLY public."ChuongTrinhMarketing"
 
 
 --
+-- TOC entry 5147 (class 2606 OID 17449)
 -- Name: PhanCongMarketing fk_nhan_su_marketing; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2170,8 +2579,19 @@ ALTER TABLE ONLY public."PhanCongMarketing"
 
 
 --
+-- TOC entry 5119 (class 2606 OID 17481)
+-- Name: NhanSu fk_nhansu_chucvu; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."NhanSu"
+    ADD CONSTRAINT fk_nhansu_chucvu FOREIGN KEY (ma_chuc_vu) REFERENCES public."ChucVu"(ma_chuc_vu);
+
+
+-- Completed on 2026-04-16 16:44:27
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict ZcatKnaAKGfWu9h7m8xmYkPs9YPnBnQys7X0YXZDIkfl6uab0ZAwIcXavpTIvRv
+\unrestrict KR1hgfK7mNRlkUb8L2JyoxEJbkbatlAtDk9MCrx7l0aNg9mJwN5Gew4ecRm16Xf
 

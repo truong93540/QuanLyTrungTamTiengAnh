@@ -18,6 +18,6 @@ export const config = {
          * - /_next/... (Các file hệ thống của Next.js)
          * - /favicon.ico (Icon của web)
          */
-        '/((?!login|api|_next/static|_next/image|favicon.ico).*)',
+        '/((?!login|api/auth|_next/static|_next/image|favicon.ico).*)',
     ],
 }
