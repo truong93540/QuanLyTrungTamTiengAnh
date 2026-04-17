@@ -56,7 +56,7 @@ const menuItems = [
             { title: '4.1 Kế hoạch giảng dạy', href: '/dashboard/dao-tao/ke-hoach' },
             { title: '4.2 Chương trình học', href: '/dashboard/dao-tao/chuong-trinh' },
             { title: '4.3 Thời khóa biểu', href: '/dashboard/dao-tao/thoi-khoa-bieu' },
-            { title: '4.4 Quản lý nhân sự', href: '/dashboard/dao-tao/nhan-su' }, // Gộp 4.4.1 và 4.4.2 vào trang này
+            { title: '4.4 Quản lý nhân sự', href: '/dashboard/dao-tao/nhan-su' },
             { title: '4.5 Hồ sơ học viên', href: '/dashboard/dao-tao/hoc-vien' },
         ],
     },
@@ -78,11 +78,8 @@ const menuItems = [
 ]
 
 export default function Sidebar() {
-    const router = useRouter()
     const pathname = usePathname()
-    const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({
-        '1. Quản lý hệ thống': true,
-    })
+    const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({})
 
     const toggleMenu = (title: string) => {
         setOpenMenus((prev) => ({
@@ -115,18 +112,21 @@ export default function Sidebar() {
                                     {item.title}
                                 </span>
                             </div>
-                            {openMenus[item.title] ? (
-                                <FaChevronUp className="text-[10px] text-blue-300" />
-                            ) : (
-                                <FaChevronDown className="text-[10px] opacity-40" />
-                            )}
+
+                            {openMenus[item.title]
+                                ? item.children && (
+                                      <FaChevronUp className="text-[10px] text-blue-300" />
+                                  )
+                                : item.children && (
+                                      <FaChevronDown className="text-[10px] opacity-40" />
+                                  )}
                         </button>
 
                         {/* Render Menu Con */}
                         {openMenus[item.title] && item.children && (
                             <div className="bg-[#0a3578] py-2 ">
                                 {item.children.map((child) => {
-                                    const isActive = pathname === child.href // Kiểm tra xem có đang ở trang này không
+                                    const isActive = pathname === child.href
 
                                     return (
                                         <Link

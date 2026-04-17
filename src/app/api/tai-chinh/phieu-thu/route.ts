@@ -1,15 +1,13 @@
-// File: src/app/api/phieu-thu/route.ts
 import { NextResponse } from 'next/server'
 import {
     layDanhSachPhieuThu,
     taoPhieuThuMoi,
     capNhatPhieuThu,
     xoaPhieuThu,
-} from '@/services/phieuThuService'
+} from '@/services/TaiChinh/phieuThuService'
 
 export async function GET(request: Request) {
     try {
-        // Nhận order từ URL
         const { searchParams } = new URL(request.url)
         const filters = {
             ma_phieu_thu: searchParams.get('ma_phieu_thu'),
