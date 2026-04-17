@@ -19,17 +19,7 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-DROP DATABASE hp_english_homestay;
---
--- Name: hp_english_homestay; Type: DATABASE; Schema: -; Owner: -
---
-
-CREATE DATABASE hp_english_homestay WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'English_United States.1252';
-
-
-\unrestrict ZcatKnaAKGfWu9h7m8xmYkPs9YPnBnQys7X0YXZDIkfl6uab0ZAwIcXavpTIvRv
 \connect hp_english_homestay
-\restrict ZcatKnaAKGfWu9h7m8xmYkPs9YPnBnQys7X0YXZDIkfl6uab0ZAwIcXavpTIvRv
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
