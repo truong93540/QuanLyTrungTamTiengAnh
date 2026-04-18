@@ -44,7 +44,7 @@ export const layDanhSachCamKet = async (filters: CamKetFilter) => {
         include: {
             hoc_vien: { select: { ho_ten: true } }, // Lấy thêm tên học viên để hiển thị lên bảng
         },
-        orderBy: { ngay_ky: 'asc' }, // Mặc định sắp xếp bản cam kết mới nhất lên đầu
+        orderBy: { ma_cam_ket: 'asc' }, // Mặc định sắp xếp bản cam kết mới nhất lên đầu
     })
 }
 

@@ -43,7 +43,7 @@ export default function QuanLyCamKetPage() {
         const fetchData = async () => {
             try {
                 // Sửa API endpoint thành cam-ket
-                const response = await fetch('/api/cam-ket')
+                const response = await fetch('/api/tuyen-sinh/cam-ket')
                 if (response.ok) {
                     const result = await response.json()
                     setData(result)
@@ -95,7 +95,7 @@ export default function QuanLyCamKetPage() {
 
         if (isConfirm) {
             try {
-                const response = await fetch(`/api/cam-ket?id=${id}`, {
+                const response = await fetch(`/api/tuyen-sinh/cam-ket?id=${id}`, {
                     method: 'DELETE',
                 })
 
@@ -132,7 +132,7 @@ export default function QuanLyCamKetPage() {
                 ngay_het_han: formData.ngay_het_han || null 
             }
 
-            const response = await fetch('/api/cam-ket', {
+            const response = await fetch('/api/tuyen-sinh/cam-ket', {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -168,7 +168,7 @@ export default function QuanLyCamKetPage() {
             if (formData.ma_hoc_vien) params.append('ma_hoc_vien', formData.ma_hoc_vien)
             if (formData.trang_thai) params.append('trang_thai', formData.trang_thai)
 
-            const response = await fetch(`/api/cam-ket?${params.toString()}`)
+            const response = await fetch(`/api/tuyen-sinh/cam-ket?${params.toString()}`)
             if (response.ok) {
                 const result = await response.json()
                 setData(result)
