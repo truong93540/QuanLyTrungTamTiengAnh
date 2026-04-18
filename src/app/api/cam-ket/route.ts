@@ -5,7 +5,7 @@ import {
     taoCamKetMoi,
     capNhatCamKet,
     xoaCamKet,
-} from '@/services/camKetService'
+} from '@/services/CamKet/camKetService'
 
 export async function GET(request: Request) {
     try {

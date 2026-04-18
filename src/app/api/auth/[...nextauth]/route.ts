@@ -19,45 +19,42 @@ const handler = NextAuth({
                 username: { label: 'Tên đăng nhập', type: 'text' },
                 password: { label: 'Mật khẩu', type: 'password' },
             },
-            // Hàm authorize này sẽ chạy khi người dùng bấm nút Đăng nhập
-            async authorize(credentials) {
-                if (!credentials?.username || !credentials?.password) return null
 
-                // 1. Tìm tài khoản trong Database
-                console.log('📍 BƯỚC 1: Tìm tài khoản với tên đăng nhập ->', credentials.username)
-                
-                    const user = await prisma.taiKhoan.findUnique({
-                        where: { ten_dang_nhap: credentials.username },
-                        include: { quyen: true, nhan_su: true },
-                    })
-
-                console.log('📍 BƯỚC 2: Tài khoản tìm được ->', user)
-
-                if(user) {
-                    console.log('📍 BƯỚC 3: Tài khoản có trạng thái hoạt động không? ->', user.trang_thai ? 'HOẠT ĐỘNG' : 'KHÔNG HOẠT ĐỘNG')
-                }
-
-                if (!user || user.trang_thai === false) {
-                    console.log('❌ BƯỚC 2: Tài khoản không tồn tại hoặc đã bị khóa!')
+            async authorize(credentials): Promise<ExtendedUser | null> {
+                if (!credentials || !credentials.username || !credentials.password) {
+                    console.log('❌ Thiếu thông tin đăng nhập')
                     return null
                 }
 
-                // 2. So sánh mật khẩu
+                const { username, password } = credentials
+
+                console.log('📍 Đang check login cho:', username)
+
+                const user = await prisma.taiKhoan.findUnique({
+                    where: { ten_dang_nhap: username },
+                    include: {
+                        nhan_su: true,
+                        phan_quyen: {
+                            include: { quyen: true },
+                        },
+                    },
+                })
+
+                if (!user) {
+                    console.log('❌ Không tìm thấy User trong DB!')
+                    return null
+                }
+
+                if (!user || user.trang_thai === 'Bị khóa') return null
+
                 const isPasswordValid =
-                    (await bcrypt.compare(credentials.password, user.mat_khau)) ||
-                    credentials.password === user.mat_khau
+                    (await bcrypt.compare(password, user.mat_khau)) || password === user.mat_khau
 
-                console.log(
-                    '📍 BƯỚC 3: Mật khẩu hợp lệ không? ->',
-                    isPasswordValid ? 'ĐÚNG' : 'SAI',
-                )
+                if (!isPasswordValid) return null
 
-                if (!isPasswordValid) {
-                    return null
-                }
+                const userRoles = user.phan_quyen.map((pq) => pq.quyen.ten_quyen)
+                const primaryRole = userRoles.length > 0 ? userRoles[0] : 'USER'
 
-                console.log('✅ BƯỚC 4: ĐĂNG NHẬP THÀNH CÔNG!')
-                // 3. Trả về dữ liệu
                 return {
                     id: user.ma_tai_khoan.toString(),
                     name: user.nhan_su.ho_ten,
