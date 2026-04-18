@@ -5,7 +5,7 @@ import {
     taoHocVienMoi,
     capNhatHocVien,
     xoaHocVien,
-} from '@/services/hocVienService'
+} from '@/services/DaoTao/hocVienService'
 
 export async function GET() {
     try {
