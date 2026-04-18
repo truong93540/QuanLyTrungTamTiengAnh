@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict KR1hgfK7mNRlkUb8L2JyoxEJbkbatlAtDk9MCrx7l0aNg9mJwN5Gew4ecRm16Xf
+\restrict AB0odzibiphoG8FYSDYfjgCnLgaJAHBtsepYdPlIBNNUpdOkWA7KLGnYZbMiWFF
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
 
--- Started on 2026-04-16 16:44:26
+-- Started on 2026-04-18 21:52:36
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -23,16 +23,18 @@ SET row_security = off;
 
 --
 -- TOC entry 5 (class 2615 OID 16809)
--- Name: public; Type: SCHEMA; Schema: -; Owner: -
+-- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
 --
 
 -- *not* creating schema, since initdb creates it
 
 
+ALTER SCHEMA public OWNER TO postgres;
+
 --
 -- TOC entry 5359 (class 0 OID 0)
 -- Dependencies: 5
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
 --
 
 COMMENT ON SCHEMA public IS '';
@@ -44,7 +46,7 @@ SET default_table_access_method = heap;
 
 --
 -- TOC entry 231 (class 1259 OID 16884)
--- Name: BangCap; Type: TABLE; Schema: public; Owner: -
+-- Name: BangCap; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."BangCap" (
@@ -53,9 +55,11 @@ CREATE TABLE public."BangCap" (
 );
 
 
+ALTER TABLE public."BangCap" OWNER TO postgres;
+
 --
 -- TOC entry 230 (class 1259 OID 16883)
--- Name: BangCap_ma_bang_cap_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: BangCap_ma_bang_cap_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."BangCap_ma_bang_cap_seq"
@@ -67,10 +71,12 @@ CREATE SEQUENCE public."BangCap_ma_bang_cap_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."BangCap_ma_bang_cap_seq" OWNER TO postgres;
+
 --
--- TOC entry 5360 (class 0 OID 0)
+-- TOC entry 5361 (class 0 OID 0)
 -- Dependencies: 230
--- Name: BangCap_ma_bang_cap_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: BangCap_ma_bang_cap_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."BangCap_ma_bang_cap_seq" OWNED BY public."BangCap".ma_bang_cap;
@@ -78,7 +84,7 @@ ALTER SEQUENCE public."BangCap_ma_bang_cap_seq" OWNED BY public."BangCap".ma_ban
 
 --
 -- TOC entry 239 (class 1259 OID 16941)
--- Name: BangLuong; Type: TABLE; Schema: public; Owner: -
+-- Name: BangLuong; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."BangLuong" (
@@ -88,9 +94,11 @@ CREATE TABLE public."BangLuong" (
 );
 
 
+ALTER TABLE public."BangLuong" OWNER TO postgres;
+
 --
 -- TOC entry 238 (class 1259 OID 16940)
--- Name: BangLuong_ma_bang_luong_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: BangLuong_ma_bang_luong_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."BangLuong_ma_bang_luong_seq"
@@ -102,10 +110,12 @@ CREATE SEQUENCE public."BangLuong_ma_bang_luong_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."BangLuong_ma_bang_luong_seq" OWNER TO postgres;
+
 --
--- TOC entry 5361 (class 0 OID 0)
+-- TOC entry 5362 (class 0 OID 0)
 -- Dependencies: 238
--- Name: BangLuong_ma_bang_luong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: BangLuong_ma_bang_luong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."BangLuong_ma_bang_luong_seq" OWNED BY public."BangLuong".ma_bang_luong;
@@ -113,7 +123,7 @@ ALTER SEQUENCE public."BangLuong_ma_bang_luong_seq" OWNED BY public."BangLuong".
 
 --
 -- TOC entry 261 (class 1259 OID 17082)
--- Name: CamKet; Type: TABLE; Schema: public; Owner: -
+-- Name: CamKet; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."CamKet" (
@@ -126,9 +136,11 @@ CREATE TABLE public."CamKet" (
 );
 
 
+ALTER TABLE public."CamKet" OWNER TO postgres;
+
 --
 -- TOC entry 260 (class 1259 OID 17081)
--- Name: CamKet_ma_cam_ket_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: CamKet_ma_cam_ket_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."CamKet_ma_cam_ket_seq"
@@ -140,10 +152,12 @@ CREATE SEQUENCE public."CamKet_ma_cam_ket_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."CamKet_ma_cam_ket_seq" OWNER TO postgres;
+
 --
--- TOC entry 5362 (class 0 OID 0)
+-- TOC entry 5363 (class 0 OID 0)
 -- Dependencies: 260
--- Name: CamKet_ma_cam_ket_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: CamKet_ma_cam_ket_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."CamKet_ma_cam_ket_seq" OWNED BY public."CamKet".ma_cam_ket;
@@ -151,19 +165,21 @@ ALTER SEQUENCE public."CamKet_ma_cam_ket_seq" OWNED BY public."CamKet".ma_cam_ke
 
 --
 -- TOC entry 277 (class 1259 OID 17469)
--- Name: ChucVu; Type: TABLE; Schema: public; Owner: -
+-- Name: ChucVu; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."ChucVu" (
     ma_chuc_vu integer NOT NULL,
-    ten_chuc_vu character varying(255) NOT NULL,
+    ten_chuc_vu text NOT NULL,
     ghi_chu text
 );
 
 
+ALTER TABLE public."ChucVu" OWNER TO postgres;
+
 --
 -- TOC entry 276 (class 1259 OID 17468)
--- Name: ChucVu_ma_chuc_vu_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: ChucVu_ma_chuc_vu_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."ChucVu_ma_chuc_vu_seq"
@@ -175,10 +191,12 @@ CREATE SEQUENCE public."ChucVu_ma_chuc_vu_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."ChucVu_ma_chuc_vu_seq" OWNER TO postgres;
+
 --
--- TOC entry 5363 (class 0 OID 0)
+-- TOC entry 5364 (class 0 OID 0)
 -- Dependencies: 276
--- Name: ChucVu_ma_chuc_vu_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: ChucVu_ma_chuc_vu_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."ChucVu_ma_chuc_vu_seq" OWNED BY public."ChucVu".ma_chuc_vu;
@@ -186,7 +204,7 @@ ALTER SEQUENCE public."ChucVu_ma_chuc_vu_seq" OWNED BY public."ChucVu".ma_chuc_v
 
 --
 -- TOC entry 249 (class 1259 OID 17008)
--- Name: ChuongTrinhHoc; Type: TABLE; Schema: public; Owner: -
+-- Name: ChuongTrinhHoc; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."ChuongTrinhHoc" (
@@ -197,9 +215,11 @@ CREATE TABLE public."ChuongTrinhHoc" (
 );
 
 
+ALTER TABLE public."ChuongTrinhHoc" OWNER TO postgres;
+
 --
 -- TOC entry 248 (class 1259 OID 17007)
--- Name: ChuongTrinhHoc_ma_chuong_trinh_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: ChuongTrinhHoc_ma_chuong_trinh_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."ChuongTrinhHoc_ma_chuong_trinh_seq"
@@ -211,10 +231,12 @@ CREATE SEQUENCE public."ChuongTrinhHoc_ma_chuong_trinh_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."ChuongTrinhHoc_ma_chuong_trinh_seq" OWNER TO postgres;
+
 --
--- TOC entry 5364 (class 0 OID 0)
+-- TOC entry 5365 (class 0 OID 0)
 -- Dependencies: 248
--- Name: ChuongTrinhHoc_ma_chuong_trinh_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: ChuongTrinhHoc_ma_chuong_trinh_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."ChuongTrinhHoc_ma_chuong_trinh_seq" OWNED BY public."ChuongTrinhHoc".ma_chuong_trinh;
@@ -222,7 +244,7 @@ ALTER SEQUENCE public."ChuongTrinhHoc_ma_chuong_trinh_seq" OWNED BY public."Chuo
 
 --
 -- TOC entry 265 (class 1259 OID 17118)
--- Name: ChuongTrinhKhuyenMai; Type: TABLE; Schema: public; Owner: -
+-- Name: ChuongTrinhKhuyenMai; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."ChuongTrinhKhuyenMai" (
@@ -235,9 +257,11 @@ CREATE TABLE public."ChuongTrinhKhuyenMai" (
 );
 
 
+ALTER TABLE public."ChuongTrinhKhuyenMai" OWNER TO postgres;
+
 --
 -- TOC entry 264 (class 1259 OID 17117)
--- Name: ChuongTrinhKhuyenMai_ma_khuyen_mai_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: ChuongTrinhKhuyenMai_ma_khuyen_mai_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."ChuongTrinhKhuyenMai_ma_khuyen_mai_seq"
@@ -249,10 +273,12 @@ CREATE SEQUENCE public."ChuongTrinhKhuyenMai_ma_khuyen_mai_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."ChuongTrinhKhuyenMai_ma_khuyen_mai_seq" OWNER TO postgres;
+
 --
--- TOC entry 5365 (class 0 OID 0)
+-- TOC entry 5366 (class 0 OID 0)
 -- Dependencies: 264
--- Name: ChuongTrinhKhuyenMai_ma_khuyen_mai_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: ChuongTrinhKhuyenMai_ma_khuyen_mai_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."ChuongTrinhKhuyenMai_ma_khuyen_mai_seq" OWNED BY public."ChuongTrinhKhuyenMai".ma_khuyen_mai;
@@ -260,12 +286,12 @@ ALTER SEQUENCE public."ChuongTrinhKhuyenMai_ma_khuyen_mai_seq" OWNED BY public."
 
 --
 -- TOC entry 273 (class 1259 OID 17419)
--- Name: ChuongTrinhMarketing; Type: TABLE; Schema: public; Owner: -
+-- Name: ChuongTrinhMarketing; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."ChuongTrinhMarketing" (
     ma_chuong_trinh_marketing integer NOT NULL,
-    ten_chuong_trinh_marketing character varying(255) NOT NULL,
+    ten_chuong_trinh_marketing text NOT NULL,
     ma_khoa_hoc integer,
     noi_dung text,
     ngay_bat_dau date,
@@ -274,9 +300,11 @@ CREATE TABLE public."ChuongTrinhMarketing" (
 );
 
 
+ALTER TABLE public."ChuongTrinhMarketing" OWNER TO postgres;
+
 --
 -- TOC entry 272 (class 1259 OID 17418)
--- Name: ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq"
@@ -288,10 +316,12 @@ CREATE SEQUENCE public."ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq" OWNER TO postgres;
+
 --
--- TOC entry 5366 (class 0 OID 0)
+-- TOC entry 5367 (class 0 OID 0)
 -- Dependencies: 272
--- Name: ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq" OWNED BY public."ChuongTrinhMarketing".ma_chuong_trinh_marketing;
@@ -299,7 +329,7 @@ ALTER SEQUENCE public."ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq" OWNED
 
 --
 -- TOC entry 247 (class 1259 OID 16995)
--- Name: CongNo; Type: TABLE; Schema: public; Owner: -
+-- Name: CongNo; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."CongNo" (
@@ -312,9 +342,11 @@ CREATE TABLE public."CongNo" (
 );
 
 
+ALTER TABLE public."CongNo" OWNER TO postgres;
+
 --
 -- TOC entry 246 (class 1259 OID 16994)
--- Name: CongNo_ma_cong_no_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: CongNo_ma_cong_no_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."CongNo_ma_cong_no_seq"
@@ -326,10 +358,12 @@ CREATE SEQUENCE public."CongNo_ma_cong_no_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."CongNo_ma_cong_no_seq" OWNER TO postgres;
+
 --
--- TOC entry 5367 (class 0 OID 0)
+-- TOC entry 5368 (class 0 OID 0)
 -- Dependencies: 246
--- Name: CongNo_ma_cong_no_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: CongNo_ma_cong_no_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."CongNo_ma_cong_no_seq" OWNED BY public."CongNo".ma_cong_no;
@@ -337,7 +371,7 @@ ALTER SEQUENCE public."CongNo_ma_cong_no_seq" OWNED BY public."CongNo".ma_cong_n
 
 --
 -- TOC entry 233 (class 1259 OID 16895)
--- Name: HoSoBangCap; Type: TABLE; Schema: public; Owner: -
+-- Name: HoSoBangCap; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."HoSoBangCap" (
@@ -349,9 +383,11 @@ CREATE TABLE public."HoSoBangCap" (
 );
 
 
+ALTER TABLE public."HoSoBangCap" OWNER TO postgres;
+
 --
 -- TOC entry 232 (class 1259 OID 16894)
--- Name: HoSoBangCap_ma_ho_so_bang_cap_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: HoSoBangCap_ma_ho_so_bang_cap_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."HoSoBangCap_ma_ho_so_bang_cap_seq"
@@ -363,10 +399,12 @@ CREATE SEQUENCE public."HoSoBangCap_ma_ho_so_bang_cap_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."HoSoBangCap_ma_ho_so_bang_cap_seq" OWNER TO postgres;
+
 --
--- TOC entry 5368 (class 0 OID 0)
+-- TOC entry 5369 (class 0 OID 0)
 -- Dependencies: 232
--- Name: HoSoBangCap_ma_ho_so_bang_cap_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: HoSoBangCap_ma_ho_so_bang_cap_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."HoSoBangCap_ma_ho_so_bang_cap_seq" OWNED BY public."HoSoBangCap".ma_ho_so_bang_cap;
@@ -374,7 +412,7 @@ ALTER SEQUENCE public."HoSoBangCap_ma_ho_so_bang_cap_seq" OWNED BY public."HoSoB
 
 --
 -- TOC entry 267 (class 1259 OID 17130)
--- Name: HoatDongNgoaiKhoa; Type: TABLE; Schema: public; Owner: -
+-- Name: HoatDongNgoaiKhoa; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."HoatDongNgoaiKhoa" (
@@ -387,9 +425,11 @@ CREATE TABLE public."HoatDongNgoaiKhoa" (
 );
 
 
+ALTER TABLE public."HoatDongNgoaiKhoa" OWNER TO postgres;
+
 --
 -- TOC entry 266 (class 1259 OID 17129)
--- Name: HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq"
@@ -401,10 +441,12 @@ CREATE SEQUENCE public."HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq" OWNER TO postgres;
+
 --
--- TOC entry 5369 (class 0 OID 0)
+-- TOC entry 5370 (class 0 OID 0)
 -- Dependencies: 266
--- Name: HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq" OWNED BY public."HoatDongNgoaiKhoa".ma_hoat_dong_ngoai_khoa;
@@ -412,7 +454,7 @@ ALTER SEQUENCE public."HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq" OWNED BY p
 
 --
 -- TOC entry 257 (class 1259 OID 17057)
--- Name: HocVien; Type: TABLE; Schema: public; Owner: -
+-- Name: HocVien; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."HocVien" (
@@ -422,13 +464,16 @@ CREATE TABLE public."HocVien" (
     gioi_tinh text,
     so_dien_thoai text,
     email text,
-    dia_chi text
+    dia_chi text,
+    trang_thai text
 );
 
 
+ALTER TABLE public."HocVien" OWNER TO postgres;
+
 --
 -- TOC entry 256 (class 1259 OID 17056)
--- Name: HocVien_ma_hoc_vien_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: HocVien_ma_hoc_vien_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."HocVien_ma_hoc_vien_seq"
@@ -440,10 +485,12 @@ CREATE SEQUENCE public."HocVien_ma_hoc_vien_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."HocVien_ma_hoc_vien_seq" OWNER TO postgres;
+
 --
--- TOC entry 5370 (class 0 OID 0)
+-- TOC entry 5371 (class 0 OID 0)
 -- Dependencies: 256
--- Name: HocVien_ma_hoc_vien_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: HocVien_ma_hoc_vien_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."HocVien_ma_hoc_vien_seq" OWNED BY public."HocVien".ma_hoc_vien;
@@ -451,7 +498,7 @@ ALTER SEQUENCE public."HocVien_ma_hoc_vien_seq" OWNED BY public."HocVien".ma_hoc
 
 --
 -- TOC entry 235 (class 1259 OID 16907)
--- Name: HopDongLaoDong; Type: TABLE; Schema: public; Owner: -
+-- Name: HopDongLaoDong; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."HopDongLaoDong" (
@@ -466,9 +513,11 @@ CREATE TABLE public."HopDongLaoDong" (
 );
 
 
+ALTER TABLE public."HopDongLaoDong" OWNER TO postgres;
+
 --
 -- TOC entry 234 (class 1259 OID 16906)
--- Name: HopDongLaoDong_ma_hop_dong_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: HopDongLaoDong_ma_hop_dong_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."HopDongLaoDong_ma_hop_dong_seq"
@@ -480,10 +529,12 @@ CREATE SEQUENCE public."HopDongLaoDong_ma_hop_dong_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."HopDongLaoDong_ma_hop_dong_seq" OWNER TO postgres;
+
 --
--- TOC entry 5371 (class 0 OID 0)
+-- TOC entry 5372 (class 0 OID 0)
 -- Dependencies: 234
--- Name: HopDongLaoDong_ma_hop_dong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: HopDongLaoDong_ma_hop_dong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."HopDongLaoDong_ma_hop_dong_seq" OWNED BY public."HopDongLaoDong".ma_hop_dong;
@@ -491,7 +542,7 @@ ALTER SEQUENCE public."HopDongLaoDong_ma_hop_dong_seq" OWNED BY public."HopDongL
 
 --
 -- TOC entry 263 (class 1259 OID 17094)
--- Name: KeHoachGiangDay; Type: TABLE; Schema: public; Owner: -
+-- Name: KeHoachGiangDay; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."KeHoachGiangDay" (
@@ -504,9 +555,11 @@ CREATE TABLE public."KeHoachGiangDay" (
 );
 
 
+ALTER TABLE public."KeHoachGiangDay" OWNER TO postgres;
+
 --
 -- TOC entry 262 (class 1259 OID 17093)
--- Name: KeHoachGiangDay_ma_ke_hoach_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: KeHoachGiangDay_ma_ke_hoach_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."KeHoachGiangDay_ma_ke_hoach_seq"
@@ -518,10 +571,12 @@ CREATE SEQUENCE public."KeHoachGiangDay_ma_ke_hoach_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."KeHoachGiangDay_ma_ke_hoach_seq" OWNER TO postgres;
+
 --
--- TOC entry 5372 (class 0 OID 0)
+-- TOC entry 5373 (class 0 OID 0)
 -- Dependencies: 262
--- Name: KeHoachGiangDay_ma_ke_hoach_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: KeHoachGiangDay_ma_ke_hoach_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."KeHoachGiangDay_ma_ke_hoach_seq" OWNED BY public."KeHoachGiangDay".ma_ke_hoach;
@@ -529,7 +584,7 @@ ALTER SEQUENCE public."KeHoachGiangDay_ma_ke_hoach_seq" OWNED BY public."KeHoach
 
 --
 -- TOC entry 251 (class 1259 OID 17019)
--- Name: KhoaHoc; Type: TABLE; Schema: public; Owner: -
+-- Name: KhoaHoc; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."KhoaHoc" (
@@ -540,13 +595,15 @@ CREATE TABLE public."KhoaHoc" (
     hoc_phi numeric(65,30) NOT NULL,
     trinh_do text,
     ma_chuong_trinh integer NOT NULL,
-    trang_thai character varying(50) DEFAULT 'Hoạt động'::character varying
+    trang_thai text DEFAULT 'Hoạt động'::character varying
 );
 
 
+ALTER TABLE public."KhoaHoc" OWNER TO postgres;
+
 --
 -- TOC entry 250 (class 1259 OID 17018)
--- Name: KhoaHoc_ma_khoa_hoc_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: KhoaHoc_ma_khoa_hoc_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."KhoaHoc_ma_khoa_hoc_seq"
@@ -558,10 +615,12 @@ CREATE SEQUENCE public."KhoaHoc_ma_khoa_hoc_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."KhoaHoc_ma_khoa_hoc_seq" OWNER TO postgres;
+
 --
--- TOC entry 5373 (class 0 OID 0)
+-- TOC entry 5374 (class 0 OID 0)
 -- Dependencies: 250
--- Name: KhoaHoc_ma_khoa_hoc_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: KhoaHoc_ma_khoa_hoc_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."KhoaHoc_ma_khoa_hoc_seq" OWNED BY public."KhoaHoc".ma_khoa_hoc;
@@ -569,7 +628,7 @@ ALTER SEQUENCE public."KhoaHoc_ma_khoa_hoc_seq" OWNED BY public."KhoaHoc".ma_kho
 
 --
 -- TOC entry 255 (class 1259 OID 17043)
--- Name: LopHoc; Type: TABLE; Schema: public; Owner: -
+-- Name: LopHoc; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."LopHoc" (
@@ -584,9 +643,11 @@ CREATE TABLE public."LopHoc" (
 );
 
 
+ALTER TABLE public."LopHoc" OWNER TO postgres;
+
 --
 -- TOC entry 254 (class 1259 OID 17042)
--- Name: LopHoc_ma_lop_hoc_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: LopHoc_ma_lop_hoc_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."LopHoc_ma_lop_hoc_seq"
@@ -598,10 +659,12 @@ CREATE SEQUENCE public."LopHoc_ma_lop_hoc_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."LopHoc_ma_lop_hoc_seq" OWNER TO postgres;
+
 --
--- TOC entry 5374 (class 0 OID 0)
+-- TOC entry 5375 (class 0 OID 0)
 -- Dependencies: 254
--- Name: LopHoc_ma_lop_hoc_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: LopHoc_ma_lop_hoc_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."LopHoc_ma_lop_hoc_seq" OWNED BY public."LopHoc".ma_lop_hoc;
@@ -609,7 +672,7 @@ ALTER SEQUENCE public."LopHoc_ma_lop_hoc_seq" OWNED BY public."LopHoc".ma_lop_ho
 
 --
 -- TOC entry 229 (class 1259 OID 16872)
--- Name: NhanSu; Type: TABLE; Schema: public; Owner: -
+-- Name: NhanSu; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."NhanSu" (
@@ -620,13 +683,15 @@ CREATE TABLE public."NhanSu" (
     so_dien_thoai text,
     dia_chi text,
     ma_phong_ban integer NOT NULL,
-    ma_chuc_vu integer
+    ma_chuc_vu integer NOT NULL
 );
 
 
+ALTER TABLE public."NhanSu" OWNER TO postgres;
+
 --
 -- TOC entry 228 (class 1259 OID 16871)
--- Name: NhanSu_ma_nhan_su_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: NhanSu_ma_nhan_su_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."NhanSu_ma_nhan_su_seq"
@@ -638,10 +703,12 @@ CREATE SEQUENCE public."NhanSu_ma_nhan_su_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."NhanSu_ma_nhan_su_seq" OWNER TO postgres;
+
 --
--- TOC entry 5375 (class 0 OID 0)
+-- TOC entry 5376 (class 0 OID 0)
 -- Dependencies: 228
--- Name: NhanSu_ma_nhan_su_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: NhanSu_ma_nhan_su_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."NhanSu_ma_nhan_su_seq" OWNED BY public."NhanSu".ma_nhan_su;
@@ -649,7 +716,7 @@ ALTER SEQUENCE public."NhanSu_ma_nhan_su_seq" OWNED BY public."NhanSu".ma_nhan_s
 
 --
 -- TOC entry 271 (class 1259 OID 17152)
--- Name: PhanCongHoatDong; Type: TABLE; Schema: public; Owner: -
+-- Name: PhanCongHoatDong; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."PhanCongHoatDong" (
@@ -659,9 +726,11 @@ CREATE TABLE public."PhanCongHoatDong" (
 );
 
 
+ALTER TABLE public."PhanCongHoatDong" OWNER TO postgres;
+
 --
 -- TOC entry 270 (class 1259 OID 17151)
--- Name: PhanCongHoatDong_ma_phan_cong_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: PhanCongHoatDong_ma_phan_cong_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."PhanCongHoatDong_ma_phan_cong_seq"
@@ -673,10 +742,12 @@ CREATE SEQUENCE public."PhanCongHoatDong_ma_phan_cong_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."PhanCongHoatDong_ma_phan_cong_seq" OWNER TO postgres;
+
 --
--- TOC entry 5376 (class 0 OID 0)
+-- TOC entry 5377 (class 0 OID 0)
 -- Dependencies: 270
--- Name: PhanCongHoatDong_ma_phan_cong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: PhanCongHoatDong_ma_phan_cong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."PhanCongHoatDong_ma_phan_cong_seq" OWNED BY public."PhanCongHoatDong".ma_phan_cong;
@@ -684,20 +755,22 @@ ALTER SEQUENCE public."PhanCongHoatDong_ma_phan_cong_seq" OWNED BY public."PhanC
 
 --
 -- TOC entry 275 (class 1259 OID 17435)
--- Name: PhanCongMarketing; Type: TABLE; Schema: public; Owner: -
+-- Name: PhanCongMarketing; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."PhanCongMarketing" (
     ma_phan_cong_marketing integer NOT NULL,
     ma_chuong_trinh_marketing integer NOT NULL,
     ma_nhan_su integer NOT NULL,
-    vai_tro character varying(255)
+    vai_tro text
 );
 
 
+ALTER TABLE public."PhanCongMarketing" OWNER TO postgres;
+
 --
 -- TOC entry 274 (class 1259 OID 17434)
--- Name: PhanCongMarketing_ma_phan_cong_marketing_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: PhanCongMarketing_ma_phan_cong_marketing_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."PhanCongMarketing_ma_phan_cong_marketing_seq"
@@ -709,10 +782,12 @@ CREATE SEQUENCE public."PhanCongMarketing_ma_phan_cong_marketing_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."PhanCongMarketing_ma_phan_cong_marketing_seq" OWNER TO postgres;
+
 --
--- TOC entry 5377 (class 0 OID 0)
+-- TOC entry 5378 (class 0 OID 0)
 -- Dependencies: 274
--- Name: PhanCongMarketing_ma_phan_cong_marketing_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: PhanCongMarketing_ma_phan_cong_marketing_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."PhanCongMarketing_ma_phan_cong_marketing_seq" OWNED BY public."PhanCongMarketing".ma_phan_cong_marketing;
@@ -720,7 +795,7 @@ ALTER SEQUENCE public."PhanCongMarketing_ma_phan_cong_marketing_seq" OWNED BY pu
 
 --
 -- TOC entry 225 (class 1259 OID 16851)
--- Name: PhanQuyen; Type: TABLE; Schema: public; Owner: -
+-- Name: PhanQuyen; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."PhanQuyen" (
@@ -730,9 +805,11 @@ CREATE TABLE public."PhanQuyen" (
 );
 
 
+ALTER TABLE public."PhanQuyen" OWNER TO postgres;
+
 --
 -- TOC entry 224 (class 1259 OID 16850)
--- Name: PhanQuyen_ma_phan_quyen_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: PhanQuyen_ma_phan_quyen_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."PhanQuyen_ma_phan_quyen_seq"
@@ -744,10 +821,12 @@ CREATE SEQUENCE public."PhanQuyen_ma_phan_quyen_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."PhanQuyen_ma_phan_quyen_seq" OWNER TO postgres;
+
 --
--- TOC entry 5378 (class 0 OID 0)
+-- TOC entry 5379 (class 0 OID 0)
 -- Dependencies: 224
--- Name: PhanQuyen_ma_phan_quyen_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: PhanQuyen_ma_phan_quyen_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."PhanQuyen_ma_phan_quyen_seq" OWNED BY public."PhanQuyen".ma_phan_quyen;
@@ -755,7 +834,7 @@ ALTER SEQUENCE public."PhanQuyen_ma_phan_quyen_seq" OWNED BY public."PhanQuyen".
 
 --
 -- TOC entry 245 (class 1259 OID 16981)
--- Name: PhieuChi; Type: TABLE; Schema: public; Owner: -
+-- Name: PhieuChi; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."PhieuChi" (
@@ -767,9 +846,11 @@ CREATE TABLE public."PhieuChi" (
 );
 
 
+ALTER TABLE public."PhieuChi" OWNER TO postgres;
+
 --
 -- TOC entry 244 (class 1259 OID 16980)
--- Name: PhieuChi_ma_phieu_chi_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: PhieuChi_ma_phieu_chi_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."PhieuChi_ma_phieu_chi_seq"
@@ -781,10 +862,12 @@ CREATE SEQUENCE public."PhieuChi_ma_phieu_chi_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."PhieuChi_ma_phieu_chi_seq" OWNER TO postgres;
+
 --
--- TOC entry 5379 (class 0 OID 0)
+-- TOC entry 5380 (class 0 OID 0)
 -- Dependencies: 244
--- Name: PhieuChi_ma_phieu_chi_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: PhieuChi_ma_phieu_chi_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."PhieuChi_ma_phieu_chi_seq" OWNED BY public."PhieuChi".ma_phieu_chi;
@@ -792,7 +875,7 @@ ALTER SEQUENCE public."PhieuChi_ma_phieu_chi_seq" OWNED BY public."PhieuChi".ma_
 
 --
 -- TOC entry 237 (class 1259 OID 16920)
--- Name: PhieuLuong; Type: TABLE; Schema: public; Owner: -
+-- Name: PhieuLuong; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."PhieuLuong" (
@@ -814,9 +897,11 @@ CREATE TABLE public."PhieuLuong" (
 );
 
 
+ALTER TABLE public."PhieuLuong" OWNER TO postgres;
+
 --
 -- TOC entry 236 (class 1259 OID 16919)
--- Name: PhieuLuong_ma_phieu_luong_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: PhieuLuong_ma_phieu_luong_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."PhieuLuong_ma_phieu_luong_seq"
@@ -828,10 +913,12 @@ CREATE SEQUENCE public."PhieuLuong_ma_phieu_luong_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."PhieuLuong_ma_phieu_luong_seq" OWNER TO postgres;
+
 --
--- TOC entry 5380 (class 0 OID 0)
+-- TOC entry 5381 (class 0 OID 0)
 -- Dependencies: 236
--- Name: PhieuLuong_ma_phieu_luong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: PhieuLuong_ma_phieu_luong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."PhieuLuong_ma_phieu_luong_seq" OWNED BY public."PhieuLuong".ma_phieu_luong;
@@ -839,7 +926,7 @@ ALTER SEQUENCE public."PhieuLuong_ma_phieu_luong_seq" OWNED BY public."PhieuLuon
 
 --
 -- TOC entry 243 (class 1259 OID 16966)
--- Name: PhieuThu; Type: TABLE; Schema: public; Owner: -
+-- Name: PhieuThu; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."PhieuThu" (
@@ -854,9 +941,11 @@ CREATE TABLE public."PhieuThu" (
 );
 
 
+ALTER TABLE public."PhieuThu" OWNER TO postgres;
+
 --
 -- TOC entry 242 (class 1259 OID 16965)
--- Name: PhieuThu_ma_phieu_thu_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: PhieuThu_ma_phieu_thu_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."PhieuThu_ma_phieu_thu_seq"
@@ -868,10 +957,12 @@ CREATE SEQUENCE public."PhieuThu_ma_phieu_thu_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."PhieuThu_ma_phieu_thu_seq" OWNER TO postgres;
+
 --
--- TOC entry 5381 (class 0 OID 0)
+-- TOC entry 5382 (class 0 OID 0)
 -- Dependencies: 242
--- Name: PhieuThu_ma_phieu_thu_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: PhieuThu_ma_phieu_thu_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."PhieuThu_ma_phieu_thu_seq" OWNED BY public."PhieuThu".ma_phieu_thu;
@@ -879,7 +970,7 @@ ALTER SEQUENCE public."PhieuThu_ma_phieu_thu_seq" OWNED BY public."PhieuThu".ma_
 
 --
 -- TOC entry 241 (class 1259 OID 16952)
--- Name: PhieuThuong; Type: TABLE; Schema: public; Owner: -
+-- Name: PhieuThuong; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."PhieuThuong" (
@@ -893,9 +984,11 @@ CREATE TABLE public."PhieuThuong" (
 );
 
 
+ALTER TABLE public."PhieuThuong" OWNER TO postgres;
+
 --
 -- TOC entry 240 (class 1259 OID 16951)
--- Name: PhieuThuong_ma_phieu_thuong_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: PhieuThuong_ma_phieu_thuong_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."PhieuThuong_ma_phieu_thuong_seq"
@@ -907,10 +1000,12 @@ CREATE SEQUENCE public."PhieuThuong_ma_phieu_thuong_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."PhieuThuong_ma_phieu_thuong_seq" OWNER TO postgres;
+
 --
--- TOC entry 5382 (class 0 OID 0)
+-- TOC entry 5383 (class 0 OID 0)
 -- Dependencies: 240
--- Name: PhieuThuong_ma_phieu_thuong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: PhieuThuong_ma_phieu_thuong_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."PhieuThuong_ma_phieu_thuong_seq" OWNED BY public."PhieuThuong".ma_phieu_thuong;
@@ -918,7 +1013,7 @@ ALTER SEQUENCE public."PhieuThuong_ma_phieu_thuong_seq" OWNED BY public."PhieuTh
 
 --
 -- TOC entry 227 (class 1259 OID 16861)
--- Name: PhongBan; Type: TABLE; Schema: public; Owner: -
+-- Name: PhongBan; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."PhongBan" (
@@ -929,9 +1024,11 @@ CREATE TABLE public."PhongBan" (
 );
 
 
+ALTER TABLE public."PhongBan" OWNER TO postgres;
+
 --
 -- TOC entry 226 (class 1259 OID 16860)
--- Name: PhongBan_ma_phong_ban_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: PhongBan_ma_phong_ban_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."PhongBan_ma_phong_ban_seq"
@@ -943,10 +1040,12 @@ CREATE SEQUENCE public."PhongBan_ma_phong_ban_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."PhongBan_ma_phong_ban_seq" OWNER TO postgres;
+
 --
--- TOC entry 5383 (class 0 OID 0)
+-- TOC entry 5384 (class 0 OID 0)
 -- Dependencies: 226
--- Name: PhongBan_ma_phong_ban_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: PhongBan_ma_phong_ban_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."PhongBan_ma_phong_ban_seq" OWNED BY public."PhongBan".ma_phong_ban;
@@ -954,7 +1053,7 @@ ALTER SEQUENCE public."PhongBan_ma_phong_ban_seq" OWNED BY public."PhongBan".ma_
 
 --
 -- TOC entry 253 (class 1259 OID 17032)
--- Name: PhongHoc; Type: TABLE; Schema: public; Owner: -
+-- Name: PhongHoc; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."PhongHoc" (
@@ -964,9 +1063,11 @@ CREATE TABLE public."PhongHoc" (
 );
 
 
+ALTER TABLE public."PhongHoc" OWNER TO postgres;
+
 --
 -- TOC entry 252 (class 1259 OID 17031)
--- Name: PhongHoc_ma_phong_hoc_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: PhongHoc_ma_phong_hoc_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."PhongHoc_ma_phong_hoc_seq"
@@ -978,10 +1079,12 @@ CREATE SEQUENCE public."PhongHoc_ma_phong_hoc_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."PhongHoc_ma_phong_hoc_seq" OWNER TO postgres;
+
 --
--- TOC entry 5384 (class 0 OID 0)
+-- TOC entry 5385 (class 0 OID 0)
 -- Dependencies: 252
--- Name: PhongHoc_ma_phong_hoc_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: PhongHoc_ma_phong_hoc_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."PhongHoc_ma_phong_hoc_seq" OWNED BY public."PhongHoc".ma_phong_hoc;
@@ -989,7 +1092,7 @@ ALTER SEQUENCE public."PhongHoc_ma_phong_hoc_seq" OWNED BY public."PhongHoc".ma_
 
 --
 -- TOC entry 221 (class 1259 OID 16826)
--- Name: Quyen; Type: TABLE; Schema: public; Owner: -
+-- Name: Quyen; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."Quyen" (
@@ -999,9 +1102,11 @@ CREATE TABLE public."Quyen" (
 );
 
 
+ALTER TABLE public."Quyen" OWNER TO postgres;
+
 --
 -- TOC entry 220 (class 1259 OID 16825)
--- Name: Quyen_ma_quyen_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: Quyen_ma_quyen_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."Quyen_ma_quyen_seq"
@@ -1013,10 +1118,12 @@ CREATE SEQUENCE public."Quyen_ma_quyen_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."Quyen_ma_quyen_seq" OWNER TO postgres;
+
 --
--- TOC entry 5385 (class 0 OID 0)
+-- TOC entry 5386 (class 0 OID 0)
 -- Dependencies: 220
--- Name: Quyen_ma_quyen_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: Quyen_ma_quyen_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."Quyen_ma_quyen_seq" OWNED BY public."Quyen".ma_quyen;
@@ -1024,7 +1131,7 @@ ALTER SEQUENCE public."Quyen_ma_quyen_seq" OWNED BY public."Quyen".ma_quyen;
 
 --
 -- TOC entry 223 (class 1259 OID 16837)
--- Name: TaiKhoan; Type: TABLE; Schema: public; Owner: -
+-- Name: TaiKhoan; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."TaiKhoan" (
@@ -1037,9 +1144,11 @@ CREATE TABLE public."TaiKhoan" (
 );
 
 
+ALTER TABLE public."TaiKhoan" OWNER TO postgres;
+
 --
 -- TOC entry 222 (class 1259 OID 16836)
--- Name: TaiKhoan_ma_tai_khoan_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: TaiKhoan_ma_tai_khoan_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."TaiKhoan_ma_tai_khoan_seq"
@@ -1051,10 +1160,12 @@ CREATE SEQUENCE public."TaiKhoan_ma_tai_khoan_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."TaiKhoan_ma_tai_khoan_seq" OWNER TO postgres;
+
 --
--- TOC entry 5386 (class 0 OID 0)
+-- TOC entry 5387 (class 0 OID 0)
 -- Dependencies: 222
--- Name: TaiKhoan_ma_tai_khoan_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: TaiKhoan_ma_tai_khoan_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."TaiKhoan_ma_tai_khoan_seq" OWNED BY public."TaiKhoan".ma_tai_khoan;
@@ -1062,7 +1173,7 @@ ALTER SEQUENCE public."TaiKhoan_ma_tai_khoan_seq" OWNED BY public."TaiKhoan".ma_
 
 --
 -- TOC entry 259 (class 1259 OID 17068)
--- Name: ThamGiaLop; Type: TABLE; Schema: public; Owner: -
+-- Name: ThamGiaLop; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."ThamGiaLop" (
@@ -1074,9 +1185,11 @@ CREATE TABLE public."ThamGiaLop" (
 );
 
 
+ALTER TABLE public."ThamGiaLop" OWNER TO postgres;
+
 --
 -- TOC entry 258 (class 1259 OID 17067)
--- Name: ThamGiaLop_ma_tham_gia_lop_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: ThamGiaLop_ma_tham_gia_lop_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."ThamGiaLop_ma_tham_gia_lop_seq"
@@ -1088,10 +1201,12 @@ CREATE SEQUENCE public."ThamGiaLop_ma_tham_gia_lop_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."ThamGiaLop_ma_tham_gia_lop_seq" OWNER TO postgres;
+
 --
--- TOC entry 5387 (class 0 OID 0)
+-- TOC entry 5388 (class 0 OID 0)
 -- Dependencies: 258
--- Name: ThamGiaLop_ma_tham_gia_lop_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: ThamGiaLop_ma_tham_gia_lop_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."ThamGiaLop_ma_tham_gia_lop_seq" OWNED BY public."ThamGiaLop".ma_tham_gia_lop;
@@ -1099,7 +1214,7 @@ ALTER SEQUENCE public."ThamGiaLop_ma_tham_gia_lop_seq" OWNED BY public."ThamGiaL
 
 --
 -- TOC entry 269 (class 1259 OID 17142)
--- Name: ThamGiaNgoaiKhoa; Type: TABLE; Schema: public; Owner: -
+-- Name: ThamGiaNgoaiKhoa; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public."ThamGiaNgoaiKhoa" (
@@ -1109,9 +1224,11 @@ CREATE TABLE public."ThamGiaNgoaiKhoa" (
 );
 
 
+ALTER TABLE public."ThamGiaNgoaiKhoa" OWNER TO postgres;
+
 --
 -- TOC entry 268 (class 1259 OID 17141)
--- Name: ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
 CREATE SEQUENCE public."ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq"
@@ -1123,10 +1240,12 @@ CREATE SEQUENCE public."ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq"
     CACHE 1;
 
 
+ALTER SEQUENCE public."ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq" OWNER TO postgres;
+
 --
--- TOC entry 5388 (class 0 OID 0)
+-- TOC entry 5389 (class 0 OID 0)
 -- Dependencies: 268
--- Name: ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public."ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq" OWNED BY public."ThamGiaNgoaiKhoa".ma_tham_gia_ngoai_khoa;
@@ -1134,7 +1253,7 @@ ALTER SEQUENCE public."ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq" OWNED BY pub
 
 --
 -- TOC entry 219 (class 1259 OID 16810)
--- Name: _prisma_migrations; Type: TABLE; Schema: public; Owner: -
+-- Name: _prisma_migrations; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public._prisma_migrations (
@@ -1149,9 +1268,11 @@ CREATE TABLE public._prisma_migrations (
 );
 
 
+ALTER TABLE public._prisma_migrations OWNER TO postgres;
+
 --
 -- TOC entry 5007 (class 2604 OID 16887)
--- Name: BangCap ma_bang_cap; Type: DEFAULT; Schema: public; Owner: -
+-- Name: BangCap ma_bang_cap; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."BangCap" ALTER COLUMN ma_bang_cap SET DEFAULT nextval('public."BangCap_ma_bang_cap_seq"'::regclass);
@@ -1159,7 +1280,7 @@ ALTER TABLE ONLY public."BangCap" ALTER COLUMN ma_bang_cap SET DEFAULT nextval('
 
 --
 -- TOC entry 5017 (class 2604 OID 16944)
--- Name: BangLuong ma_bang_luong; Type: DEFAULT; Schema: public; Owner: -
+-- Name: BangLuong ma_bang_luong; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."BangLuong" ALTER COLUMN ma_bang_luong SET DEFAULT nextval('public."BangLuong_ma_bang_luong_seq"'::regclass);
@@ -1167,7 +1288,7 @@ ALTER TABLE ONLY public."BangLuong" ALTER COLUMN ma_bang_luong SET DEFAULT nextv
 
 --
 -- TOC entry 5032 (class 2604 OID 17085)
--- Name: CamKet ma_cam_ket; Type: DEFAULT; Schema: public; Owner: -
+-- Name: CamKet ma_cam_ket; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."CamKet" ALTER COLUMN ma_cam_ket SET DEFAULT nextval('public."CamKet_ma_cam_ket_seq"'::regclass);
@@ -1175,7 +1296,7 @@ ALTER TABLE ONLY public."CamKet" ALTER COLUMN ma_cam_ket SET DEFAULT nextval('pu
 
 --
 -- TOC entry 5040 (class 2604 OID 17472)
--- Name: ChucVu ma_chuc_vu; Type: DEFAULT; Schema: public; Owner: -
+-- Name: ChucVu ma_chuc_vu; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ChucVu" ALTER COLUMN ma_chuc_vu SET DEFAULT nextval('public."ChucVu_ma_chuc_vu_seq"'::regclass);
@@ -1183,7 +1304,7 @@ ALTER TABLE ONLY public."ChucVu" ALTER COLUMN ma_chuc_vu SET DEFAULT nextval('pu
 
 --
 -- TOC entry 5024 (class 2604 OID 17011)
--- Name: ChuongTrinhHoc ma_chuong_trinh; Type: DEFAULT; Schema: public; Owner: -
+-- Name: ChuongTrinhHoc ma_chuong_trinh; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ChuongTrinhHoc" ALTER COLUMN ma_chuong_trinh SET DEFAULT nextval('public."ChuongTrinhHoc_ma_chuong_trinh_seq"'::regclass);
@@ -1191,7 +1312,7 @@ ALTER TABLE ONLY public."ChuongTrinhHoc" ALTER COLUMN ma_chuong_trinh SET DEFAUL
 
 --
 -- TOC entry 5034 (class 2604 OID 17121)
--- Name: ChuongTrinhKhuyenMai ma_khuyen_mai; Type: DEFAULT; Schema: public; Owner: -
+-- Name: ChuongTrinhKhuyenMai ma_khuyen_mai; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ChuongTrinhKhuyenMai" ALTER COLUMN ma_khuyen_mai SET DEFAULT nextval('public."ChuongTrinhKhuyenMai_ma_khuyen_mai_seq"'::regclass);
@@ -1199,7 +1320,7 @@ ALTER TABLE ONLY public."ChuongTrinhKhuyenMai" ALTER COLUMN ma_khuyen_mai SET DE
 
 --
 -- TOC entry 5038 (class 2604 OID 17422)
--- Name: ChuongTrinhMarketing ma_chuong_trinh_marketing; Type: DEFAULT; Schema: public; Owner: -
+-- Name: ChuongTrinhMarketing ma_chuong_trinh_marketing; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ChuongTrinhMarketing" ALTER COLUMN ma_chuong_trinh_marketing SET DEFAULT nextval('public."ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq"'::regclass);
@@ -1207,7 +1328,7 @@ ALTER TABLE ONLY public."ChuongTrinhMarketing" ALTER COLUMN ma_chuong_trinh_mark
 
 --
 -- TOC entry 5023 (class 2604 OID 16998)
--- Name: CongNo ma_cong_no; Type: DEFAULT; Schema: public; Owner: -
+-- Name: CongNo ma_cong_no; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."CongNo" ALTER COLUMN ma_cong_no SET DEFAULT nextval('public."CongNo_ma_cong_no_seq"'::regclass);
@@ -1215,7 +1336,7 @@ ALTER TABLE ONLY public."CongNo" ALTER COLUMN ma_cong_no SET DEFAULT nextval('pu
 
 --
 -- TOC entry 5008 (class 2604 OID 16898)
--- Name: HoSoBangCap ma_ho_so_bang_cap; Type: DEFAULT; Schema: public; Owner: -
+-- Name: HoSoBangCap ma_ho_so_bang_cap; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."HoSoBangCap" ALTER COLUMN ma_ho_so_bang_cap SET DEFAULT nextval('public."HoSoBangCap_ma_ho_so_bang_cap_seq"'::regclass);
@@ -1223,7 +1344,7 @@ ALTER TABLE ONLY public."HoSoBangCap" ALTER COLUMN ma_ho_so_bang_cap SET DEFAULT
 
 --
 -- TOC entry 5035 (class 2604 OID 17133)
--- Name: HoatDongNgoaiKhoa ma_hoat_dong_ngoai_khoa; Type: DEFAULT; Schema: public; Owner: -
+-- Name: HoatDongNgoaiKhoa ma_hoat_dong_ngoai_khoa; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."HoatDongNgoaiKhoa" ALTER COLUMN ma_hoat_dong_ngoai_khoa SET DEFAULT nextval('public."HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq"'::regclass);
@@ -1231,7 +1352,7 @@ ALTER TABLE ONLY public."HoatDongNgoaiKhoa" ALTER COLUMN ma_hoat_dong_ngoai_khoa
 
 --
 -- TOC entry 5029 (class 2604 OID 17060)
--- Name: HocVien ma_hoc_vien; Type: DEFAULT; Schema: public; Owner: -
+-- Name: HocVien ma_hoc_vien; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."HocVien" ALTER COLUMN ma_hoc_vien SET DEFAULT nextval('public."HocVien_ma_hoc_vien_seq"'::regclass);
@@ -1239,7 +1360,7 @@ ALTER TABLE ONLY public."HocVien" ALTER COLUMN ma_hoc_vien SET DEFAULT nextval('
 
 --
 -- TOC entry 5009 (class 2604 OID 16910)
--- Name: HopDongLaoDong ma_hop_dong; Type: DEFAULT; Schema: public; Owner: -
+-- Name: HopDongLaoDong ma_hop_dong; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."HopDongLaoDong" ALTER COLUMN ma_hop_dong SET DEFAULT nextval('public."HopDongLaoDong_ma_hop_dong_seq"'::regclass);
@@ -1247,7 +1368,7 @@ ALTER TABLE ONLY public."HopDongLaoDong" ALTER COLUMN ma_hop_dong SET DEFAULT ne
 
 --
 -- TOC entry 5033 (class 2604 OID 17097)
--- Name: KeHoachGiangDay ma_ke_hoach; Type: DEFAULT; Schema: public; Owner: -
+-- Name: KeHoachGiangDay ma_ke_hoach; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."KeHoachGiangDay" ALTER COLUMN ma_ke_hoach SET DEFAULT nextval('public."KeHoachGiangDay_ma_ke_hoach_seq"'::regclass);
@@ -1255,7 +1376,7 @@ ALTER TABLE ONLY public."KeHoachGiangDay" ALTER COLUMN ma_ke_hoach SET DEFAULT n
 
 --
 -- TOC entry 5025 (class 2604 OID 17022)
--- Name: KhoaHoc ma_khoa_hoc; Type: DEFAULT; Schema: public; Owner: -
+-- Name: KhoaHoc ma_khoa_hoc; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."KhoaHoc" ALTER COLUMN ma_khoa_hoc SET DEFAULT nextval('public."KhoaHoc_ma_khoa_hoc_seq"'::regclass);
@@ -1263,7 +1384,7 @@ ALTER TABLE ONLY public."KhoaHoc" ALTER COLUMN ma_khoa_hoc SET DEFAULT nextval('
 
 --
 -- TOC entry 5028 (class 2604 OID 17046)
--- Name: LopHoc ma_lop_hoc; Type: DEFAULT; Schema: public; Owner: -
+-- Name: LopHoc ma_lop_hoc; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."LopHoc" ALTER COLUMN ma_lop_hoc SET DEFAULT nextval('public."LopHoc_ma_lop_hoc_seq"'::regclass);
@@ -1271,7 +1392,7 @@ ALTER TABLE ONLY public."LopHoc" ALTER COLUMN ma_lop_hoc SET DEFAULT nextval('pu
 
 --
 -- TOC entry 5006 (class 2604 OID 16875)
--- Name: NhanSu ma_nhan_su; Type: DEFAULT; Schema: public; Owner: -
+-- Name: NhanSu ma_nhan_su; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."NhanSu" ALTER COLUMN ma_nhan_su SET DEFAULT nextval('public."NhanSu_ma_nhan_su_seq"'::regclass);
@@ -1279,7 +1400,7 @@ ALTER TABLE ONLY public."NhanSu" ALTER COLUMN ma_nhan_su SET DEFAULT nextval('pu
 
 --
 -- TOC entry 5037 (class 2604 OID 17155)
--- Name: PhanCongHoatDong ma_phan_cong; Type: DEFAULT; Schema: public; Owner: -
+-- Name: PhanCongHoatDong ma_phan_cong; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhanCongHoatDong" ALTER COLUMN ma_phan_cong SET DEFAULT nextval('public."PhanCongHoatDong_ma_phan_cong_seq"'::regclass);
@@ -1287,7 +1408,7 @@ ALTER TABLE ONLY public."PhanCongHoatDong" ALTER COLUMN ma_phan_cong SET DEFAULT
 
 --
 -- TOC entry 5039 (class 2604 OID 17438)
--- Name: PhanCongMarketing ma_phan_cong_marketing; Type: DEFAULT; Schema: public; Owner: -
+-- Name: PhanCongMarketing ma_phan_cong_marketing; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhanCongMarketing" ALTER COLUMN ma_phan_cong_marketing SET DEFAULT nextval('public."PhanCongMarketing_ma_phan_cong_marketing_seq"'::regclass);
@@ -1295,7 +1416,7 @@ ALTER TABLE ONLY public."PhanCongMarketing" ALTER COLUMN ma_phan_cong_marketing 
 
 --
 -- TOC entry 5004 (class 2604 OID 16854)
--- Name: PhanQuyen ma_phan_quyen; Type: DEFAULT; Schema: public; Owner: -
+-- Name: PhanQuyen ma_phan_quyen; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhanQuyen" ALTER COLUMN ma_phan_quyen SET DEFAULT nextval('public."PhanQuyen_ma_phan_quyen_seq"'::regclass);
@@ -1303,7 +1424,7 @@ ALTER TABLE ONLY public."PhanQuyen" ALTER COLUMN ma_phan_quyen SET DEFAULT nextv
 
 --
 -- TOC entry 5021 (class 2604 OID 16984)
--- Name: PhieuChi ma_phieu_chi; Type: DEFAULT; Schema: public; Owner: -
+-- Name: PhieuChi ma_phieu_chi; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuChi" ALTER COLUMN ma_phieu_chi SET DEFAULT nextval('public."PhieuChi_ma_phieu_chi_seq"'::regclass);
@@ -1311,7 +1432,7 @@ ALTER TABLE ONLY public."PhieuChi" ALTER COLUMN ma_phieu_chi SET DEFAULT nextval
 
 --
 -- TOC entry 5010 (class 2604 OID 16923)
--- Name: PhieuLuong ma_phieu_luong; Type: DEFAULT; Schema: public; Owner: -
+-- Name: PhieuLuong ma_phieu_luong; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuLuong" ALTER COLUMN ma_phieu_luong SET DEFAULT nextval('public."PhieuLuong_ma_phieu_luong_seq"'::regclass);
@@ -1319,7 +1440,7 @@ ALTER TABLE ONLY public."PhieuLuong" ALTER COLUMN ma_phieu_luong SET DEFAULT nex
 
 --
 -- TOC entry 5019 (class 2604 OID 16969)
--- Name: PhieuThu ma_phieu_thu; Type: DEFAULT; Schema: public; Owner: -
+-- Name: PhieuThu ma_phieu_thu; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuThu" ALTER COLUMN ma_phieu_thu SET DEFAULT nextval('public."PhieuThu_ma_phieu_thu_seq"'::regclass);
@@ -1327,7 +1448,7 @@ ALTER TABLE ONLY public."PhieuThu" ALTER COLUMN ma_phieu_thu SET DEFAULT nextval
 
 --
 -- TOC entry 5018 (class 2604 OID 16955)
--- Name: PhieuThuong ma_phieu_thuong; Type: DEFAULT; Schema: public; Owner: -
+-- Name: PhieuThuong ma_phieu_thuong; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuThuong" ALTER COLUMN ma_phieu_thuong SET DEFAULT nextval('public."PhieuThuong_ma_phieu_thuong_seq"'::regclass);
@@ -1335,7 +1456,7 @@ ALTER TABLE ONLY public."PhieuThuong" ALTER COLUMN ma_phieu_thuong SET DEFAULT n
 
 --
 -- TOC entry 5005 (class 2604 OID 16864)
--- Name: PhongBan ma_phong_ban; Type: DEFAULT; Schema: public; Owner: -
+-- Name: PhongBan ma_phong_ban; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhongBan" ALTER COLUMN ma_phong_ban SET DEFAULT nextval('public."PhongBan_ma_phong_ban_seq"'::regclass);
@@ -1343,7 +1464,7 @@ ALTER TABLE ONLY public."PhongBan" ALTER COLUMN ma_phong_ban SET DEFAULT nextval
 
 --
 -- TOC entry 5027 (class 2604 OID 17035)
--- Name: PhongHoc ma_phong_hoc; Type: DEFAULT; Schema: public; Owner: -
+-- Name: PhongHoc ma_phong_hoc; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhongHoc" ALTER COLUMN ma_phong_hoc SET DEFAULT nextval('public."PhongHoc_ma_phong_hoc_seq"'::regclass);
@@ -1351,7 +1472,7 @@ ALTER TABLE ONLY public."PhongHoc" ALTER COLUMN ma_phong_hoc SET DEFAULT nextval
 
 --
 -- TOC entry 5002 (class 2604 OID 16829)
--- Name: Quyen ma_quyen; Type: DEFAULT; Schema: public; Owner: -
+-- Name: Quyen ma_quyen; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."Quyen" ALTER COLUMN ma_quyen SET DEFAULT nextval('public."Quyen_ma_quyen_seq"'::regclass);
@@ -1359,7 +1480,7 @@ ALTER TABLE ONLY public."Quyen" ALTER COLUMN ma_quyen SET DEFAULT nextval('publi
 
 --
 -- TOC entry 5003 (class 2604 OID 16840)
--- Name: TaiKhoan ma_tai_khoan; Type: DEFAULT; Schema: public; Owner: -
+-- Name: TaiKhoan ma_tai_khoan; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."TaiKhoan" ALTER COLUMN ma_tai_khoan SET DEFAULT nextval('public."TaiKhoan_ma_tai_khoan_seq"'::regclass);
@@ -1367,7 +1488,7 @@ ALTER TABLE ONLY public."TaiKhoan" ALTER COLUMN ma_tai_khoan SET DEFAULT nextval
 
 --
 -- TOC entry 5030 (class 2604 OID 17071)
--- Name: ThamGiaLop ma_tham_gia_lop; Type: DEFAULT; Schema: public; Owner: -
+-- Name: ThamGiaLop ma_tham_gia_lop; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ThamGiaLop" ALTER COLUMN ma_tham_gia_lop SET DEFAULT nextval('public."ThamGiaLop_ma_tham_gia_lop_seq"'::regclass);
@@ -1375,7 +1496,7 @@ ALTER TABLE ONLY public."ThamGiaLop" ALTER COLUMN ma_tham_gia_lop SET DEFAULT ne
 
 --
 -- TOC entry 5036 (class 2604 OID 17145)
--- Name: ThamGiaNgoaiKhoa ma_tham_gia_ngoai_khoa; Type: DEFAULT; Schema: public; Owner: -
+-- Name: ThamGiaNgoaiKhoa ma_tham_gia_ngoai_khoa; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ThamGiaNgoaiKhoa" ALTER COLUMN ma_tham_gia_ngoai_khoa SET DEFAULT nextval('public."ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq"'::regclass);
@@ -1384,7 +1505,7 @@ ALTER TABLE ONLY public."ThamGiaNgoaiKhoa" ALTER COLUMN ma_tham_gia_ngoai_khoa S
 --
 -- TOC entry 5307 (class 0 OID 16884)
 -- Dependencies: 231
--- Data for Name: BangCap; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: BangCap; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1392,7 +1513,7 @@ ALTER TABLE ONLY public."ThamGiaNgoaiKhoa" ALTER COLUMN ma_tham_gia_ngoai_khoa S
 --
 -- TOC entry 5315 (class 0 OID 16941)
 -- Dependencies: 239
--- Data for Name: BangLuong; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: BangLuong; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1400,15 +1521,18 @@ ALTER TABLE ONLY public."ThamGiaNgoaiKhoa" ALTER COLUMN ma_tham_gia_ngoai_khoa S
 --
 -- TOC entry 5337 (class 0 OID 17082)
 -- Dependencies: 261
--- Data for Name: CamKet; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: CamKet; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
+INSERT INTO public."CamKet" (ma_cam_ket, ngay_ky, ngay_het_han, noi_dung_cam_ket, trang_thai, ma_hoc_vien) VALUES (1, '2026-04-10 09:00:00', '2026-10-10 17:00:00', 'Cam kết đầu ra IELTS 6.5: Học viên đi học đầy đủ và làm bài tập sẽ đạt mục tiêu, nếu không sẽ được học lại miễn phí.', 'Đang hiệu lực', 1);
+INSERT INTO public."CamKet" (ma_cam_ket, ngay_ky, ngay_het_han, noi_dung_cam_ket, trang_thai, ma_hoc_vien) VALUES (2, '2026-04-15 14:30:00', '2026-07-15 14:30:00', 'Nội quy Homestay: Cam kết tuân thủ giờ giấc sinh hoạt, không gây ồn ào sau 23h và giữ gìn vệ sinh chung.', 'Đang hiệu lực', 2);
+INSERT INTO public."CamKet" (ma_cam_ket, ngay_ky, ngay_het_han, noi_dung_cam_ket, trang_thai, ma_hoc_vien) VALUES (3, '2025-10-01 08:00:00', '2026-04-01 08:00:00', 'Hợp đồng chuyên cần: Cam kết tham gia ít nhất 95% số buổi học bổ trợ buổi tối cùng giáo viên bản ngữ.', 'Đã hết hạn', 3);
 
 
 --
 -- TOC entry 5353 (class 0 OID 17469)
 -- Dependencies: 277
--- Data for Name: ChucVu; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: ChucVu; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (3, 'Quản lý đào tạo', 'Lập kế hoạch giảng dạy, kiểm soát chất lượng giáo viên và chương trình học.');
@@ -1426,7 +1550,7 @@ INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (2, 'Giáo
 --
 -- TOC entry 5325 (class 0 OID 17008)
 -- Dependencies: 249
--- Data for Name: ChuongTrinhHoc; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: ChuongTrinhHoc; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1434,7 +1558,7 @@ INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (2, 'Giáo
 --
 -- TOC entry 5341 (class 0 OID 17118)
 -- Dependencies: 265
--- Data for Name: ChuongTrinhKhuyenMai; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: ChuongTrinhKhuyenMai; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1442,7 +1566,7 @@ INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (2, 'Giáo
 --
 -- TOC entry 5349 (class 0 OID 17419)
 -- Dependencies: 273
--- Data for Name: ChuongTrinhMarketing; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: ChuongTrinhMarketing; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1450,7 +1574,7 @@ INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (2, 'Giáo
 --
 -- TOC entry 5323 (class 0 OID 16995)
 -- Dependencies: 247
--- Data for Name: CongNo; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: CongNo; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1458,7 +1582,7 @@ INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (2, 'Giáo
 --
 -- TOC entry 5309 (class 0 OID 16895)
 -- Dependencies: 233
--- Data for Name: HoSoBangCap; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: HoSoBangCap; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1466,7 +1590,7 @@ INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (2, 'Giáo
 --
 -- TOC entry 5343 (class 0 OID 17130)
 -- Dependencies: 267
--- Data for Name: HoatDongNgoaiKhoa; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: HoatDongNgoaiKhoa; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1474,21 +1598,21 @@ INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (2, 'Giáo
 --
 -- TOC entry 5333 (class 0 OID 17057)
 -- Dependencies: 257
--- Data for Name: HocVien; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: HocVien; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (1, 'Trần Thị Thu Hà', '2005-05-20 00:00:00', NULL, '0912345678', 'thuha@gmail.com', NULL);
-INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (2, 'Lê Văn Nam', '2004-10-15 00:00:00', NULL, '0988776655', 'vannam.le@gmail.com', NULL);
-INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (3, 'Nguyễn Minh Anh', '2005-08-12 00:00:00', 'Nữ', NULL, NULL, NULL);
-INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (4, 'Phạm Hoàng Long', '2006-03-22 00:00:00', 'Nam', NULL, NULL, NULL);
-INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (5, 'Đỗ Thùy Chi', '2004-12-05 00:00:00', 'Nữ', NULL, NULL, NULL);
-INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (6, 'Bùi Văn Mạnh', '2005-01-30 00:00:00', 'Nam', NULL, NULL, NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi, trang_thai) VALUES (1, 'Trần Thị Thu Hà', '2005-05-20 00:00:00', NULL, '0912345678', 'thuha@gmail.com', NULL, NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi, trang_thai) VALUES (2, 'Lê Văn Nam', '2004-10-15 00:00:00', NULL, '0988776655', 'vannam.le@gmail.com', NULL, NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi, trang_thai) VALUES (3, 'Nguyễn Minh Anh', '2005-08-12 00:00:00', 'Nữ', NULL, NULL, NULL, NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi, trang_thai) VALUES (4, 'Phạm Hoàng Long', '2006-03-22 00:00:00', 'Nam', NULL, NULL, NULL, NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi, trang_thai) VALUES (5, 'Đỗ Thùy Chi', '2004-12-05 00:00:00', 'Nữ', NULL, NULL, NULL, NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi, trang_thai) VALUES (6, 'Bùi Văn Mạnh', '2005-01-30 00:00:00', 'Nam', NULL, NULL, NULL, NULL);
 
 
 --
 -- TOC entry 5311 (class 0 OID 16907)
 -- Dependencies: 235
--- Data for Name: HopDongLaoDong; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: HopDongLaoDong; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1496,7 +1620,7 @@ INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien
 --
 -- TOC entry 5339 (class 0 OID 17094)
 -- Dependencies: 263
--- Data for Name: KeHoachGiangDay; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: KeHoachGiangDay; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1504,7 +1628,7 @@ INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien
 --
 -- TOC entry 5327 (class 0 OID 17019)
 -- Dependencies: 251
--- Data for Name: KhoaHoc; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: KhoaHoc; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1512,7 +1636,7 @@ INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien
 --
 -- TOC entry 5331 (class 0 OID 17043)
 -- Dependencies: 255
--- Data for Name: LopHoc; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: LopHoc; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1520,7 +1644,7 @@ INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien
 --
 -- TOC entry 5305 (class 0 OID 16872)
 -- Dependencies: 229
--- Data for Name: NhanSu; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: NhanSu; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, dia_chi, ma_phong_ban, ma_chuc_vu) VALUES (1, 'Nguyễn Văn Trường', NULL, NULL, '0987654321', NULL, 1, 1);
@@ -1533,7 +1657,7 @@ INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_t
 --
 -- TOC entry 5347 (class 0 OID 17152)
 -- Dependencies: 271
--- Data for Name: PhanCongHoatDong; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: PhanCongHoatDong; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1541,7 +1665,7 @@ INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_t
 --
 -- TOC entry 5351 (class 0 OID 17435)
 -- Dependencies: 275
--- Data for Name: PhanCongMarketing; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: PhanCongMarketing; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1549,7 +1673,7 @@ INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_t
 --
 -- TOC entry 5301 (class 0 OID 16851)
 -- Dependencies: 225
--- Data for Name: PhanQuyen; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: PhanQuyen; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 INSERT INTO public."PhanQuyen" (ma_phan_quyen, ma_tai_khoan, ma_quyen) VALUES (1, 1, 1);
@@ -1558,7 +1682,7 @@ INSERT INTO public."PhanQuyen" (ma_phan_quyen, ma_tai_khoan, ma_quyen) VALUES (1
 --
 -- TOC entry 5321 (class 0 OID 16981)
 -- Dependencies: 245
--- Data for Name: PhieuChi; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: PhieuChi; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1566,7 +1690,7 @@ INSERT INTO public."PhanQuyen" (ma_phan_quyen, ma_tai_khoan, ma_quyen) VALUES (1
 --
 -- TOC entry 5313 (class 0 OID 16920)
 -- Dependencies: 237
--- Data for Name: PhieuLuong; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: PhieuLuong; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1574,7 +1698,7 @@ INSERT INTO public."PhanQuyen" (ma_phan_quyen, ma_tai_khoan, ma_quyen) VALUES (1
 --
 -- TOC entry 5319 (class 0 OID 16966)
 -- Dependencies: 243
--- Data for Name: PhieuThu; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: PhieuThu; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 INSERT INTO public."PhieuThu" (ma_phieu_thu, so_tien, ngay_thu, noi_dung, ma_hoc_vien, ma_nhan_su, ma_khuyen_mai, ma_cam_ket) VALUES (2, 2000000.000000000000000000000000000000, '2026-04-10 23:32:08.962', 'Học phí khóa Giao tiếp cấp tốc', 2, 1, NULL, NULL);
@@ -1585,7 +1709,7 @@ INSERT INTO public."PhieuThu" (ma_phieu_thu, so_tien, ngay_thu, noi_dung, ma_hoc
 --
 -- TOC entry 5317 (class 0 OID 16952)
 -- Dependencies: 241
--- Data for Name: PhieuThuong; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: PhieuThuong; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1593,7 +1717,7 @@ INSERT INTO public."PhieuThu" (ma_phieu_thu, so_tien, ngay_thu, noi_dung, ma_hoc
 --
 -- TOC entry 5303 (class 0 OID 16861)
 -- Dependencies: 227
--- Data for Name: PhongBan; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: PhongBan; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 INSERT INTO public."PhongBan" (ma_phong_ban, ten_phong_ban, mo_ta, ngay_thanh_lap) VALUES (1, 'Ban Quản Trị', 'Điều hành toàn bộ hệ thống HP English Homestay', '2026-04-10 22:47:10.979');
@@ -1606,15 +1730,20 @@ INSERT INTO public."PhongBan" (ma_phong_ban, ten_phong_ban, mo_ta, ngay_thanh_la
 --
 -- TOC entry 5329 (class 0 OID 17032)
 -- Dependencies: 253
--- Data for Name: PhongHoc; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: PhongHoc; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
+INSERT INTO public."PhongHoc" (ma_phong_hoc, ten_phong_hoc, suc_chua) VALUES (1, 'Phòng Lý Thuyết A101', 45);
+INSERT INTO public."PhongHoc" (ma_phong_hoc, ten_phong_hoc, suc_chua) VALUES (2, 'Phòng Thực Hành IT 01', 30);
+INSERT INTO public."PhongHoc" (ma_phong_hoc, ten_phong_hoc, suc_chua) VALUES (3, 'Hội Trường Lớn B2', 150);
+INSERT INTO public."PhongHoc" (ma_phong_hoc, ten_phong_hoc, suc_chua) VALUES (4, 'Phòng Học Nhóm G3', 15);
+INSERT INTO public."PhongHoc" (ma_phong_hoc, ten_phong_hoc, suc_chua) VALUES (6, 'phòng đào tạo quốc tế', 50);
 
 
 --
 -- TOC entry 5297 (class 0 OID 16826)
 -- Dependencies: 221
--- Data for Name: Quyen; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: Quyen; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 INSERT INTO public."Quyen" (ma_quyen, ten_quyen, trang_thai) VALUES (1, 'ADMIN', 'Hoạt động');
@@ -1624,7 +1753,7 @@ INSERT INTO public."Quyen" (ma_quyen, ten_quyen, trang_thai) VALUES (2, 'GIAO_VI
 --
 -- TOC entry 5299 (class 0 OID 16837)
 -- Dependencies: 223
--- Data for Name: TaiKhoan; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: TaiKhoan; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 INSERT INTO public."TaiKhoan" (ma_tai_khoan, ten_dang_nhap, mat_khau, email, trang_thai, ma_nhan_su) VALUES (1, 'admin', '123456', 'admin@hp-homestay.edu.vn', 'Hoạt động', 1);
@@ -1633,7 +1762,7 @@ INSERT INTO public."TaiKhoan" (ma_tai_khoan, ten_dang_nhap, mat_khau, email, tra
 --
 -- TOC entry 5335 (class 0 OID 17068)
 -- Dependencies: 259
--- Data for Name: ThamGiaLop; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: ThamGiaLop; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1641,7 +1770,7 @@ INSERT INTO public."TaiKhoan" (ma_tai_khoan, ten_dang_nhap, mat_khau, email, tra
 --
 -- TOC entry 5345 (class 0 OID 17142)
 -- Dependencies: 269
--- Data for Name: ThamGiaNgoaiKhoa; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: ThamGiaNgoaiKhoa; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
@@ -1649,267 +1778,267 @@ INSERT INTO public."TaiKhoan" (ma_tai_khoan, ten_dang_nhap, mat_khau, email, tra
 --
 -- TOC entry 5295 (class 0 OID 16810)
 -- Dependencies: 219
--- Data for Name: _prisma_migrations; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: _prisma_migrations; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
 
 --
--- TOC entry 5389 (class 0 OID 0)
+-- TOC entry 5390 (class 0 OID 0)
 -- Dependencies: 230
--- Name: BangCap_ma_bang_cap_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: BangCap_ma_bang_cap_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."BangCap_ma_bang_cap_seq"', 1, false);
 
 
 --
--- TOC entry 5390 (class 0 OID 0)
+-- TOC entry 5391 (class 0 OID 0)
 -- Dependencies: 238
--- Name: BangLuong_ma_bang_luong_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: BangLuong_ma_bang_luong_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."BangLuong_ma_bang_luong_seq"', 1, false);
 
 
 --
--- TOC entry 5391 (class 0 OID 0)
+-- TOC entry 5392 (class 0 OID 0)
 -- Dependencies: 260
--- Name: CamKet_ma_cam_ket_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: CamKet_ma_cam_ket_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."CamKet_ma_cam_ket_seq"', 1, false);
 
 
 --
--- TOC entry 5392 (class 0 OID 0)
+-- TOC entry 5393 (class 0 OID 0)
 -- Dependencies: 276
--- Name: ChucVu_ma_chuc_vu_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: ChucVu_ma_chuc_vu_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."ChucVu_ma_chuc_vu_seq"', 11, true);
 
 
 --
--- TOC entry 5393 (class 0 OID 0)
+-- TOC entry 5394 (class 0 OID 0)
 -- Dependencies: 248
--- Name: ChuongTrinhHoc_ma_chuong_trinh_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: ChuongTrinhHoc_ma_chuong_trinh_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."ChuongTrinhHoc_ma_chuong_trinh_seq"', 1, false);
 
 
 --
--- TOC entry 5394 (class 0 OID 0)
+-- TOC entry 5395 (class 0 OID 0)
 -- Dependencies: 264
--- Name: ChuongTrinhKhuyenMai_ma_khuyen_mai_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: ChuongTrinhKhuyenMai_ma_khuyen_mai_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."ChuongTrinhKhuyenMai_ma_khuyen_mai_seq"', 1, false);
 
 
 --
--- TOC entry 5395 (class 0 OID 0)
+-- TOC entry 5396 (class 0 OID 0)
 -- Dependencies: 272
--- Name: ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq"', 1, false);
 
 
 --
--- TOC entry 5396 (class 0 OID 0)
+-- TOC entry 5397 (class 0 OID 0)
 -- Dependencies: 246
--- Name: CongNo_ma_cong_no_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: CongNo_ma_cong_no_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."CongNo_ma_cong_no_seq"', 1, false);
 
 
 --
--- TOC entry 5397 (class 0 OID 0)
+-- TOC entry 5398 (class 0 OID 0)
 -- Dependencies: 232
--- Name: HoSoBangCap_ma_ho_so_bang_cap_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: HoSoBangCap_ma_ho_so_bang_cap_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."HoSoBangCap_ma_ho_so_bang_cap_seq"', 1, false);
 
 
 --
--- TOC entry 5398 (class 0 OID 0)
+-- TOC entry 5399 (class 0 OID 0)
 -- Dependencies: 266
--- Name: HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq"', 1, false);
 
 
 --
--- TOC entry 5399 (class 0 OID 0)
--- Dependencies: 256
--- Name: HocVien_ma_hoc_vien_seq; Type: SEQUENCE SET; Schema: public; Owner: -
---
-
-SELECT pg_catalog.setval('public."HocVien_ma_hoc_vien_seq"', 6, true);
-
-
---
 -- TOC entry 5400 (class 0 OID 0)
+-- Dependencies: 256
+-- Name: HocVien_ma_hoc_vien_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."HocVien_ma_hoc_vien_seq"', 7, true);
+
+
+--
+-- TOC entry 5401 (class 0 OID 0)
 -- Dependencies: 234
--- Name: HopDongLaoDong_ma_hop_dong_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: HopDongLaoDong_ma_hop_dong_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."HopDongLaoDong_ma_hop_dong_seq"', 1, false);
 
 
 --
--- TOC entry 5401 (class 0 OID 0)
+-- TOC entry 5402 (class 0 OID 0)
 -- Dependencies: 262
--- Name: KeHoachGiangDay_ma_ke_hoach_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: KeHoachGiangDay_ma_ke_hoach_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."KeHoachGiangDay_ma_ke_hoach_seq"', 1, false);
 
 
 --
--- TOC entry 5402 (class 0 OID 0)
+-- TOC entry 5403 (class 0 OID 0)
 -- Dependencies: 250
--- Name: KhoaHoc_ma_khoa_hoc_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: KhoaHoc_ma_khoa_hoc_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."KhoaHoc_ma_khoa_hoc_seq"', 1, false);
 
 
 --
--- TOC entry 5403 (class 0 OID 0)
+-- TOC entry 5404 (class 0 OID 0)
 -- Dependencies: 254
--- Name: LopHoc_ma_lop_hoc_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: LopHoc_ma_lop_hoc_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."LopHoc_ma_lop_hoc_seq"', 1, false);
 
 
 --
--- TOC entry 5404 (class 0 OID 0)
+-- TOC entry 5405 (class 0 OID 0)
 -- Dependencies: 228
--- Name: NhanSu_ma_nhan_su_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: NhanSu_ma_nhan_su_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."NhanSu_ma_nhan_su_seq"', 1, true);
 
 
 --
--- TOC entry 5405 (class 0 OID 0)
+-- TOC entry 5406 (class 0 OID 0)
 -- Dependencies: 270
--- Name: PhanCongHoatDong_ma_phan_cong_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: PhanCongHoatDong_ma_phan_cong_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."PhanCongHoatDong_ma_phan_cong_seq"', 1, false);
 
 
 --
--- TOC entry 5406 (class 0 OID 0)
+-- TOC entry 5407 (class 0 OID 0)
 -- Dependencies: 274
--- Name: PhanCongMarketing_ma_phan_cong_marketing_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: PhanCongMarketing_ma_phan_cong_marketing_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."PhanCongMarketing_ma_phan_cong_marketing_seq"', 1, false);
 
 
 --
--- TOC entry 5407 (class 0 OID 0)
+-- TOC entry 5408 (class 0 OID 0)
 -- Dependencies: 224
--- Name: PhanQuyen_ma_phan_quyen_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: PhanQuyen_ma_phan_quyen_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."PhanQuyen_ma_phan_quyen_seq"', 1, true);
 
 
 --
--- TOC entry 5408 (class 0 OID 0)
+-- TOC entry 5409 (class 0 OID 0)
 -- Dependencies: 244
--- Name: PhieuChi_ma_phieu_chi_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: PhieuChi_ma_phieu_chi_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."PhieuChi_ma_phieu_chi_seq"', 1, false);
 
 
 --
--- TOC entry 5409 (class 0 OID 0)
+-- TOC entry 5410 (class 0 OID 0)
 -- Dependencies: 236
--- Name: PhieuLuong_ma_phieu_luong_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: PhieuLuong_ma_phieu_luong_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."PhieuLuong_ma_phieu_luong_seq"', 1, false);
 
 
 --
--- TOC entry 5410 (class 0 OID 0)
+-- TOC entry 5411 (class 0 OID 0)
 -- Dependencies: 242
--- Name: PhieuThu_ma_phieu_thu_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: PhieuThu_ma_phieu_thu_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."PhieuThu_ma_phieu_thu_seq"', 5, true);
 
 
 --
--- TOC entry 5411 (class 0 OID 0)
+-- TOC entry 5412 (class 0 OID 0)
 -- Dependencies: 240
--- Name: PhieuThuong_ma_phieu_thuong_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: PhieuThuong_ma_phieu_thuong_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."PhieuThuong_ma_phieu_thuong_seq"', 1, false);
 
 
 --
--- TOC entry 5412 (class 0 OID 0)
+-- TOC entry 5413 (class 0 OID 0)
 -- Dependencies: 226
--- Name: PhongBan_ma_phong_ban_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: PhongBan_ma_phong_ban_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."PhongBan_ma_phong_ban_seq"', 1, true);
 
 
 --
--- TOC entry 5413 (class 0 OID 0)
--- Dependencies: 252
--- Name: PhongHoc_ma_phong_hoc_seq; Type: SEQUENCE SET; Schema: public; Owner: -
---
-
-SELECT pg_catalog.setval('public."PhongHoc_ma_phong_hoc_seq"', 1, false);
-
-
---
 -- TOC entry 5414 (class 0 OID 0)
+-- Dependencies: 252
+-- Name: PhongHoc_ma_phong_hoc_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."PhongHoc_ma_phong_hoc_seq"', 6, true);
+
+
+--
+-- TOC entry 5415 (class 0 OID 0)
 -- Dependencies: 220
--- Name: Quyen_ma_quyen_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: Quyen_ma_quyen_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."Quyen_ma_quyen_seq"', 3, true);
 
 
 --
--- TOC entry 5415 (class 0 OID 0)
+-- TOC entry 5416 (class 0 OID 0)
 -- Dependencies: 222
--- Name: TaiKhoan_ma_tai_khoan_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: TaiKhoan_ma_tai_khoan_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."TaiKhoan_ma_tai_khoan_seq"', 1, true);
 
 
 --
--- TOC entry 5416 (class 0 OID 0)
+-- TOC entry 5417 (class 0 OID 0)
 -- Dependencies: 258
--- Name: ThamGiaLop_ma_tham_gia_lop_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: ThamGiaLop_ma_tham_gia_lop_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."ThamGiaLop_ma_tham_gia_lop_seq"', 1, false);
 
 
 --
--- TOC entry 5417 (class 0 OID 0)
+-- TOC entry 5418 (class 0 OID 0)
 -- Dependencies: 268
--- Name: ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public."ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq"', 1, false);
@@ -1917,7 +2046,7 @@ SELECT pg_catalog.setval('public."ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq"',
 
 --
 -- TOC entry 5059 (class 2606 OID 16893)
--- Name: BangCap BangCap_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: BangCap BangCap_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."BangCap"
@@ -1926,7 +2055,7 @@ ALTER TABLE ONLY public."BangCap"
 
 --
 -- TOC entry 5069 (class 2606 OID 16950)
--- Name: BangLuong BangLuong_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: BangLuong BangLuong_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."BangLuong"
@@ -1935,7 +2064,7 @@ ALTER TABLE ONLY public."BangLuong"
 
 --
 -- TOC entry 5094 (class 2606 OID 17092)
--- Name: CamKet CamKet_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: CamKet CamKet_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."CamKet"
@@ -1944,7 +2073,7 @@ ALTER TABLE ONLY public."CamKet"
 
 --
 -- TOC entry 5112 (class 2606 OID 17478)
--- Name: ChucVu ChucVu_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: ChucVu ChucVu_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ChucVu"
@@ -1952,8 +2081,8 @@ ALTER TABLE ONLY public."ChucVu"
 
 
 --
--- TOC entry 5114 (class 2606 OID 17480)
--- Name: ChucVu ChucVu_ten_chuc_vu_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 5114 (class 2606 OID 17487)
+-- Name: ChucVu ChucVu_ten_chuc_vu_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ChucVu"
@@ -1962,7 +2091,7 @@ ALTER TABLE ONLY public."ChucVu"
 
 --
 -- TOC entry 5079 (class 2606 OID 17017)
--- Name: ChuongTrinhHoc ChuongTrinhHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: ChuongTrinhHoc ChuongTrinhHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ChuongTrinhHoc"
@@ -1971,7 +2100,7 @@ ALTER TABLE ONLY public."ChuongTrinhHoc"
 
 --
 -- TOC entry 5098 (class 2606 OID 17128)
--- Name: ChuongTrinhKhuyenMai ChuongTrinhKhuyenMai_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: ChuongTrinhKhuyenMai ChuongTrinhKhuyenMai_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ChuongTrinhKhuyenMai"
@@ -1980,7 +2109,7 @@ ALTER TABLE ONLY public."ChuongTrinhKhuyenMai"
 
 --
 -- TOC entry 5108 (class 2606 OID 17428)
--- Name: ChuongTrinhMarketing ChuongTrinhMarketing_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: ChuongTrinhMarketing ChuongTrinhMarketing_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ChuongTrinhMarketing"
@@ -1989,7 +2118,7 @@ ALTER TABLE ONLY public."ChuongTrinhMarketing"
 
 --
 -- TOC entry 5077 (class 2606 OID 17006)
--- Name: CongNo CongNo_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: CongNo CongNo_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."CongNo"
@@ -1998,7 +2127,7 @@ ALTER TABLE ONLY public."CongNo"
 
 --
 -- TOC entry 5062 (class 2606 OID 16905)
--- Name: HoSoBangCap HoSoBangCap_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: HoSoBangCap HoSoBangCap_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."HoSoBangCap"
@@ -2007,7 +2136,7 @@ ALTER TABLE ONLY public."HoSoBangCap"
 
 --
 -- TOC entry 5100 (class 2606 OID 17140)
--- Name: HoatDongNgoaiKhoa HoatDongNgoaiKhoa_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: HoatDongNgoaiKhoa HoatDongNgoaiKhoa_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."HoatDongNgoaiKhoa"
@@ -2016,7 +2145,7 @@ ALTER TABLE ONLY public."HoatDongNgoaiKhoa"
 
 --
 -- TOC entry 5089 (class 2606 OID 17066)
--- Name: HocVien HocVien_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: HocVien HocVien_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."HocVien"
@@ -2025,7 +2154,7 @@ ALTER TABLE ONLY public."HocVien"
 
 --
 -- TOC entry 5064 (class 2606 OID 16918)
--- Name: HopDongLaoDong HopDongLaoDong_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: HopDongLaoDong HopDongLaoDong_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."HopDongLaoDong"
@@ -2034,7 +2163,7 @@ ALTER TABLE ONLY public."HopDongLaoDong"
 
 --
 -- TOC entry 5096 (class 2606 OID 17104)
--- Name: KeHoachGiangDay KeHoachGiangDay_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: KeHoachGiangDay KeHoachGiangDay_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."KeHoachGiangDay"
@@ -2043,7 +2172,7 @@ ALTER TABLE ONLY public."KeHoachGiangDay"
 
 --
 -- TOC entry 5081 (class 2606 OID 17030)
--- Name: KhoaHoc KhoaHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: KhoaHoc KhoaHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."KhoaHoc"
@@ -2052,7 +2181,7 @@ ALTER TABLE ONLY public."KhoaHoc"
 
 --
 -- TOC entry 5086 (class 2606 OID 17055)
--- Name: LopHoc LopHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: LopHoc LopHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."LopHoc"
@@ -2061,7 +2190,7 @@ ALTER TABLE ONLY public."LopHoc"
 
 --
 -- TOC entry 5057 (class 2606 OID 16882)
--- Name: NhanSu NhanSu_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: NhanSu NhanSu_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."NhanSu"
@@ -2070,7 +2199,7 @@ ALTER TABLE ONLY public."NhanSu"
 
 --
 -- TOC entry 5106 (class 2606 OID 17160)
--- Name: PhanCongHoatDong PhanCongHoatDong_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: PhanCongHoatDong PhanCongHoatDong_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhanCongHoatDong"
@@ -2079,7 +2208,7 @@ ALTER TABLE ONLY public."PhanCongHoatDong"
 
 --
 -- TOC entry 5110 (class 2606 OID 17443)
--- Name: PhanCongMarketing PhanCongMarketing_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: PhanCongMarketing PhanCongMarketing_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhanCongMarketing"
@@ -2088,7 +2217,7 @@ ALTER TABLE ONLY public."PhanCongMarketing"
 
 --
 -- TOC entry 5053 (class 2606 OID 16859)
--- Name: PhanQuyen PhanQuyen_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: PhanQuyen PhanQuyen_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhanQuyen"
@@ -2097,7 +2226,7 @@ ALTER TABLE ONLY public."PhanQuyen"
 
 --
 -- TOC entry 5075 (class 2606 OID 16993)
--- Name: PhieuChi PhieuChi_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: PhieuChi PhieuChi_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuChi"
@@ -2106,7 +2235,7 @@ ALTER TABLE ONLY public."PhieuChi"
 
 --
 -- TOC entry 5067 (class 2606 OID 16939)
--- Name: PhieuLuong PhieuLuong_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: PhieuLuong PhieuLuong_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuLuong"
@@ -2115,7 +2244,7 @@ ALTER TABLE ONLY public."PhieuLuong"
 
 --
 -- TOC entry 5073 (class 2606 OID 16979)
--- Name: PhieuThu PhieuThu_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: PhieuThu PhieuThu_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuThu"
@@ -2124,7 +2253,7 @@ ALTER TABLE ONLY public."PhieuThu"
 
 --
 -- TOC entry 5071 (class 2606 OID 16964)
--- Name: PhieuThuong PhieuThuong_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: PhieuThuong PhieuThuong_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuThuong"
@@ -2133,7 +2262,7 @@ ALTER TABLE ONLY public."PhieuThuong"
 
 --
 -- TOC entry 5055 (class 2606 OID 16870)
--- Name: PhongBan PhongBan_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: PhongBan PhongBan_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhongBan"
@@ -2142,7 +2271,7 @@ ALTER TABLE ONLY public."PhongBan"
 
 --
 -- TOC entry 5083 (class 2606 OID 17041)
--- Name: PhongHoc PhongHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: PhongHoc PhongHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhongHoc"
@@ -2151,7 +2280,7 @@ ALTER TABLE ONLY public."PhongHoc"
 
 --
 -- TOC entry 5044 (class 2606 OID 16835)
--- Name: Quyen Quyen_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: Quyen Quyen_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."Quyen"
@@ -2160,7 +2289,7 @@ ALTER TABLE ONLY public."Quyen"
 
 --
 -- TOC entry 5049 (class 2606 OID 16849)
--- Name: TaiKhoan TaiKhoan_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: TaiKhoan TaiKhoan_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."TaiKhoan"
@@ -2169,7 +2298,7 @@ ALTER TABLE ONLY public."TaiKhoan"
 
 --
 -- TOC entry 5092 (class 2606 OID 17080)
--- Name: ThamGiaLop ThamGiaLop_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: ThamGiaLop ThamGiaLop_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ThamGiaLop"
@@ -2178,7 +2307,7 @@ ALTER TABLE ONLY public."ThamGiaLop"
 
 --
 -- TOC entry 5103 (class 2606 OID 17150)
--- Name: ThamGiaNgoaiKhoa ThamGiaNgoaiKhoa_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: ThamGiaNgoaiKhoa ThamGiaNgoaiKhoa_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ThamGiaNgoaiKhoa"
@@ -2187,7 +2316,7 @@ ALTER TABLE ONLY public."ThamGiaNgoaiKhoa"
 
 --
 -- TOC entry 5042 (class 2606 OID 16823)
--- Name: _prisma_migrations _prisma_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: _prisma_migrations _prisma_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public._prisma_migrations
@@ -2196,7 +2325,7 @@ ALTER TABLE ONLY public._prisma_migrations
 
 --
 -- TOC entry 5060 (class 1259 OID 17166)
--- Name: BangCap_ten_bang_cap_key; Type: INDEX; Schema: public; Owner: -
+-- Name: BangCap_ten_bang_cap_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX "BangCap_ten_bang_cap_key" ON public."BangCap" USING btree (ten_bang_cap);
@@ -2204,7 +2333,7 @@ CREATE UNIQUE INDEX "BangCap_ten_bang_cap_key" ON public."BangCap" USING btree (
 
 --
 -- TOC entry 5087 (class 1259 OID 17169)
--- Name: HocVien_email_key; Type: INDEX; Schema: public; Owner: -
+-- Name: HocVien_email_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX "HocVien_email_key" ON public."HocVien" USING btree (email);
@@ -2212,7 +2341,7 @@ CREATE UNIQUE INDEX "HocVien_email_key" ON public."HocVien" USING btree (email);
 
 --
 -- TOC entry 5065 (class 1259 OID 17167)
--- Name: HopDongLaoDong_so_hop_dong_key; Type: INDEX; Schema: public; Owner: -
+-- Name: HopDongLaoDong_so_hop_dong_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX "HopDongLaoDong_so_hop_dong_key" ON public."HopDongLaoDong" USING btree (so_hop_dong);
@@ -2220,7 +2349,7 @@ CREATE UNIQUE INDEX "HopDongLaoDong_so_hop_dong_key" ON public."HopDongLaoDong" 
 
 --
 -- TOC entry 5104 (class 1259 OID 17172)
--- Name: PhanCongHoatDong_ma_nhan_su_ma_hoat_dong_ngoai_khoa_key; Type: INDEX; Schema: public; Owner: -
+-- Name: PhanCongHoatDong_ma_nhan_su_ma_hoat_dong_ngoai_khoa_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX "PhanCongHoatDong_ma_nhan_su_ma_hoat_dong_ngoai_khoa_key" ON public."PhanCongHoatDong" USING btree (ma_nhan_su, ma_hoat_dong_ngoai_khoa);
@@ -2228,7 +2357,7 @@ CREATE UNIQUE INDEX "PhanCongHoatDong_ma_nhan_su_ma_hoat_dong_ngoai_khoa_key" ON
 
 --
 -- TOC entry 5051 (class 1259 OID 17165)
--- Name: PhanQuyen_ma_tai_khoan_ma_quyen_key; Type: INDEX; Schema: public; Owner: -
+-- Name: PhanQuyen_ma_tai_khoan_ma_quyen_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX "PhanQuyen_ma_tai_khoan_ma_quyen_key" ON public."PhanQuyen" USING btree (ma_tai_khoan, ma_quyen);
@@ -2236,7 +2365,7 @@ CREATE UNIQUE INDEX "PhanQuyen_ma_tai_khoan_ma_quyen_key" ON public."PhanQuyen" 
 
 --
 -- TOC entry 5084 (class 1259 OID 17168)
--- Name: PhongHoc_ten_phong_hoc_key; Type: INDEX; Schema: public; Owner: -
+-- Name: PhongHoc_ten_phong_hoc_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX "PhongHoc_ten_phong_hoc_key" ON public."PhongHoc" USING btree (ten_phong_hoc);
@@ -2244,7 +2373,7 @@ CREATE UNIQUE INDEX "PhongHoc_ten_phong_hoc_key" ON public."PhongHoc" USING btre
 
 --
 -- TOC entry 5045 (class 1259 OID 17161)
--- Name: Quyen_ten_quyen_key; Type: INDEX; Schema: public; Owner: -
+-- Name: Quyen_ten_quyen_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX "Quyen_ten_quyen_key" ON public."Quyen" USING btree (ten_quyen);
@@ -2252,7 +2381,7 @@ CREATE UNIQUE INDEX "Quyen_ten_quyen_key" ON public."Quyen" USING btree (ten_quy
 
 --
 -- TOC entry 5046 (class 1259 OID 17163)
--- Name: TaiKhoan_email_key; Type: INDEX; Schema: public; Owner: -
+-- Name: TaiKhoan_email_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX "TaiKhoan_email_key" ON public."TaiKhoan" USING btree (email);
@@ -2260,7 +2389,7 @@ CREATE UNIQUE INDEX "TaiKhoan_email_key" ON public."TaiKhoan" USING btree (email
 
 --
 -- TOC entry 5047 (class 1259 OID 17164)
--- Name: TaiKhoan_ma_nhan_su_key; Type: INDEX; Schema: public; Owner: -
+-- Name: TaiKhoan_ma_nhan_su_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX "TaiKhoan_ma_nhan_su_key" ON public."TaiKhoan" USING btree (ma_nhan_su);
@@ -2268,7 +2397,7 @@ CREATE UNIQUE INDEX "TaiKhoan_ma_nhan_su_key" ON public."TaiKhoan" USING btree (
 
 --
 -- TOC entry 5050 (class 1259 OID 17162)
--- Name: TaiKhoan_ten_dang_nhap_key; Type: INDEX; Schema: public; Owner: -
+-- Name: TaiKhoan_ten_dang_nhap_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX "TaiKhoan_ten_dang_nhap_key" ON public."TaiKhoan" USING btree (ten_dang_nhap);
@@ -2276,7 +2405,7 @@ CREATE UNIQUE INDEX "TaiKhoan_ten_dang_nhap_key" ON public."TaiKhoan" USING btre
 
 --
 -- TOC entry 5090 (class 1259 OID 17170)
--- Name: ThamGiaLop_ma_hoc_vien_ma_lop_hoc_key; Type: INDEX; Schema: public; Owner: -
+-- Name: ThamGiaLop_ma_hoc_vien_ma_lop_hoc_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX "ThamGiaLop_ma_hoc_vien_ma_lop_hoc_key" ON public."ThamGiaLop" USING btree (ma_hoc_vien, ma_lop_hoc);
@@ -2284,7 +2413,7 @@ CREATE UNIQUE INDEX "ThamGiaLop_ma_hoc_vien_ma_lop_hoc_key" ON public."ThamGiaLo
 
 --
 -- TOC entry 5101 (class 1259 OID 17171)
--- Name: ThamGiaNgoaiKhoa_ma_hoc_vien_ma_hoat_dong_ngoai_khoa_key; Type: INDEX; Schema: public; Owner: -
+-- Name: ThamGiaNgoaiKhoa_ma_hoc_vien_ma_hoat_dong_ngoai_khoa_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX "ThamGiaNgoaiKhoa_ma_hoc_vien_ma_hoat_dong_ngoai_khoa_key" ON public."ThamGiaNgoaiKhoa" USING btree (ma_hoc_vien, ma_hoat_dong_ngoai_khoa);
@@ -2292,7 +2421,7 @@ CREATE UNIQUE INDEX "ThamGiaNgoaiKhoa_ma_hoc_vien_ma_hoat_dong_ngoai_khoa_key" O
 
 --
 -- TOC entry 5138 (class 2606 OID 17283)
--- Name: CamKet CamKet_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: CamKet CamKet_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."CamKet"
@@ -2300,8 +2429,17 @@ ALTER TABLE ONLY public."CamKet"
 
 
 --
+-- TOC entry 5145 (class 2606 OID 17499)
+-- Name: ChuongTrinhMarketing ChuongTrinhMarketing_ma_khoa_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ChuongTrinhMarketing"
+    ADD CONSTRAINT "ChuongTrinhMarketing_ma_khoa_hoc_fkey" FOREIGN KEY (ma_khoa_hoc) REFERENCES public."KhoaHoc"(ma_khoa_hoc) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
 -- TOC entry 5131 (class 2606 OID 17248)
--- Name: CongNo CongNo_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: CongNo CongNo_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."CongNo"
@@ -2310,7 +2448,7 @@ ALTER TABLE ONLY public."CongNo"
 
 --
 -- TOC entry 5120 (class 2606 OID 17198)
--- Name: HoSoBangCap HoSoBangCap_ma_bang_cap_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: HoSoBangCap HoSoBangCap_ma_bang_cap_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."HoSoBangCap"
@@ -2319,7 +2457,7 @@ ALTER TABLE ONLY public."HoSoBangCap"
 
 --
 -- TOC entry 5121 (class 2606 OID 17193)
--- Name: HoSoBangCap HoSoBangCap_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: HoSoBangCap HoSoBangCap_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."HoSoBangCap"
@@ -2328,7 +2466,7 @@ ALTER TABLE ONLY public."HoSoBangCap"
 
 --
 -- TOC entry 5122 (class 2606 OID 17203)
--- Name: HopDongLaoDong HopDongLaoDong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: HopDongLaoDong HopDongLaoDong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."HopDongLaoDong"
@@ -2337,7 +2475,7 @@ ALTER TABLE ONLY public."HopDongLaoDong"
 
 --
 -- TOC entry 5139 (class 2606 OID 17288)
--- Name: KeHoachGiangDay KeHoachGiangDay_ma_khoa_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: KeHoachGiangDay KeHoachGiangDay_ma_khoa_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."KeHoachGiangDay"
@@ -2346,7 +2484,7 @@ ALTER TABLE ONLY public."KeHoachGiangDay"
 
 --
 -- TOC entry 5140 (class 2606 OID 17293)
--- Name: KeHoachGiangDay KeHoachGiangDay_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: KeHoachGiangDay KeHoachGiangDay_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."KeHoachGiangDay"
@@ -2355,7 +2493,7 @@ ALTER TABLE ONLY public."KeHoachGiangDay"
 
 --
 -- TOC entry 5132 (class 2606 OID 17253)
--- Name: KhoaHoc KhoaHoc_ma_chuong_trinh_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: KhoaHoc KhoaHoc_ma_chuong_trinh_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."KhoaHoc"
@@ -2364,7 +2502,7 @@ ALTER TABLE ONLY public."KhoaHoc"
 
 --
 -- TOC entry 5133 (class 2606 OID 17268)
--- Name: LopHoc LopHoc_ma_khoa_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: LopHoc LopHoc_ma_khoa_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."LopHoc"
@@ -2373,7 +2511,7 @@ ALTER TABLE ONLY public."LopHoc"
 
 --
 -- TOC entry 5134 (class 2606 OID 17258)
--- Name: LopHoc LopHoc_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: LopHoc LopHoc_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."LopHoc"
@@ -2382,7 +2520,7 @@ ALTER TABLE ONLY public."LopHoc"
 
 --
 -- TOC entry 5135 (class 2606 OID 17263)
--- Name: LopHoc LopHoc_ma_phong_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: LopHoc LopHoc_ma_phong_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."LopHoc"
@@ -2390,8 +2528,17 @@ ALTER TABLE ONLY public."LopHoc"
 
 
 --
--- TOC entry 5118 (class 2606 OID 17188)
--- Name: NhanSu NhanSu_ma_phong_ban_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 5118 (class 2606 OID 17494)
+-- Name: NhanSu NhanSu_ma_chuc_vu_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."NhanSu"
+    ADD CONSTRAINT "NhanSu_ma_chuc_vu_fkey" FOREIGN KEY (ma_chuc_vu) REFERENCES public."ChucVu"(ma_chuc_vu) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 5119 (class 2606 OID 17188)
+-- Name: NhanSu NhanSu_ma_phong_ban_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."NhanSu"
@@ -2400,7 +2547,7 @@ ALTER TABLE ONLY public."NhanSu"
 
 --
 -- TOC entry 5143 (class 2606 OID 17318)
--- Name: PhanCongHoatDong PhanCongHoatDong_ma_hoat_dong_ngoai_khoa_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: PhanCongHoatDong PhanCongHoatDong_ma_hoat_dong_ngoai_khoa_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhanCongHoatDong"
@@ -2409,7 +2556,7 @@ ALTER TABLE ONLY public."PhanCongHoatDong"
 
 --
 -- TOC entry 5144 (class 2606 OID 17313)
--- Name: PhanCongHoatDong PhanCongHoatDong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: PhanCongHoatDong PhanCongHoatDong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhanCongHoatDong"
@@ -2417,8 +2564,26 @@ ALTER TABLE ONLY public."PhanCongHoatDong"
 
 
 --
+-- TOC entry 5146 (class 2606 OID 17504)
+-- Name: PhanCongMarketing PhanCongMarketing_ma_chuong_trinh_marketing_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."PhanCongMarketing"
+    ADD CONSTRAINT "PhanCongMarketing_ma_chuong_trinh_marketing_fkey" FOREIGN KEY (ma_chuong_trinh_marketing) REFERENCES public."ChuongTrinhMarketing"(ma_chuong_trinh_marketing) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 5147 (class 2606 OID 17509)
+-- Name: PhanCongMarketing PhanCongMarketing_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."PhanCongMarketing"
+    ADD CONSTRAINT "PhanCongMarketing_ma_nhan_su_fkey" FOREIGN KEY (ma_nhan_su) REFERENCES public."NhanSu"(ma_nhan_su) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
 -- TOC entry 5116 (class 2606 OID 17183)
--- Name: PhanQuyen PhanQuyen_ma_quyen_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: PhanQuyen PhanQuyen_ma_quyen_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhanQuyen"
@@ -2427,7 +2592,7 @@ ALTER TABLE ONLY public."PhanQuyen"
 
 --
 -- TOC entry 5117 (class 2606 OID 17178)
--- Name: PhanQuyen PhanQuyen_ma_tai_khoan_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: PhanQuyen PhanQuyen_ma_tai_khoan_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhanQuyen"
@@ -2436,7 +2601,7 @@ ALTER TABLE ONLY public."PhanQuyen"
 
 --
 -- TOC entry 5130 (class 2606 OID 17243)
--- Name: PhieuChi PhieuChi_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: PhieuChi PhieuChi_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuChi"
@@ -2445,7 +2610,7 @@ ALTER TABLE ONLY public."PhieuChi"
 
 --
 -- TOC entry 5123 (class 2606 OID 17213)
--- Name: PhieuLuong PhieuLuong_ma_bang_luong_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: PhieuLuong PhieuLuong_ma_bang_luong_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuLuong"
@@ -2454,7 +2619,7 @@ ALTER TABLE ONLY public."PhieuLuong"
 
 --
 -- TOC entry 5124 (class 2606 OID 17208)
--- Name: PhieuLuong PhieuLuong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: PhieuLuong PhieuLuong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuLuong"
@@ -2463,7 +2628,7 @@ ALTER TABLE ONLY public."PhieuLuong"
 
 --
 -- TOC entry 5126 (class 2606 OID 17238)
--- Name: PhieuThu PhieuThu_ma_cam_ket_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: PhieuThu PhieuThu_ma_cam_ket_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuThu"
@@ -2472,7 +2637,7 @@ ALTER TABLE ONLY public."PhieuThu"
 
 --
 -- TOC entry 5127 (class 2606 OID 17223)
--- Name: PhieuThu PhieuThu_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: PhieuThu PhieuThu_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuThu"
@@ -2481,7 +2646,7 @@ ALTER TABLE ONLY public."PhieuThu"
 
 --
 -- TOC entry 5128 (class 2606 OID 17233)
--- Name: PhieuThu PhieuThu_ma_khuyen_mai_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: PhieuThu PhieuThu_ma_khuyen_mai_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuThu"
@@ -2490,7 +2655,7 @@ ALTER TABLE ONLY public."PhieuThu"
 
 --
 -- TOC entry 5129 (class 2606 OID 17228)
--- Name: PhieuThu PhieuThu_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: PhieuThu PhieuThu_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuThu"
@@ -2499,7 +2664,7 @@ ALTER TABLE ONLY public."PhieuThu"
 
 --
 -- TOC entry 5125 (class 2606 OID 17218)
--- Name: PhieuThuong PhieuThuong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: PhieuThuong PhieuThuong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."PhieuThuong"
@@ -2508,7 +2673,7 @@ ALTER TABLE ONLY public."PhieuThuong"
 
 --
 -- TOC entry 5115 (class 2606 OID 17173)
--- Name: TaiKhoan TaiKhoan_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: TaiKhoan TaiKhoan_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."TaiKhoan"
@@ -2517,7 +2682,7 @@ ALTER TABLE ONLY public."TaiKhoan"
 
 --
 -- TOC entry 5136 (class 2606 OID 17273)
--- Name: ThamGiaLop ThamGiaLop_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: ThamGiaLop ThamGiaLop_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ThamGiaLop"
@@ -2526,7 +2691,7 @@ ALTER TABLE ONLY public."ThamGiaLop"
 
 --
 -- TOC entry 5137 (class 2606 OID 17278)
--- Name: ThamGiaLop ThamGiaLop_ma_lop_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: ThamGiaLop ThamGiaLop_ma_lop_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ThamGiaLop"
@@ -2535,7 +2700,7 @@ ALTER TABLE ONLY public."ThamGiaLop"
 
 --
 -- TOC entry 5141 (class 2606 OID 17308)
--- Name: ThamGiaNgoaiKhoa ThamGiaNgoaiKhoa_ma_hoat_dong_ngoai_khoa_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: ThamGiaNgoaiKhoa ThamGiaNgoaiKhoa_ma_hoat_dong_ngoai_khoa_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ThamGiaNgoaiKhoa"
@@ -2544,7 +2709,7 @@ ALTER TABLE ONLY public."ThamGiaNgoaiKhoa"
 
 --
 -- TOC entry 5142 (class 2606 OID 17303)
--- Name: ThamGiaNgoaiKhoa ThamGiaNgoaiKhoa_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: ThamGiaNgoaiKhoa ThamGiaNgoaiKhoa_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."ThamGiaNgoaiKhoa"
@@ -2552,46 +2717,19 @@ ALTER TABLE ONLY public."ThamGiaNgoaiKhoa"
 
 
 --
--- TOC entry 5146 (class 2606 OID 17444)
--- Name: PhanCongMarketing fk_ct_marketing; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 5360 (class 0 OID 0)
+-- Dependencies: 5
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: postgres
 --
 
-ALTER TABLE ONLY public."PhanCongMarketing"
-    ADD CONSTRAINT fk_ct_marketing FOREIGN KEY (ma_chuong_trinh_marketing) REFERENCES public."ChuongTrinhMarketing"(ma_chuong_trinh_marketing) ON DELETE CASCADE;
+REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 
 
---
--- TOC entry 5145 (class 2606 OID 17429)
--- Name: ChuongTrinhMarketing fk_khoa_hoc; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public."ChuongTrinhMarketing"
-    ADD CONSTRAINT fk_khoa_hoc FOREIGN KEY (ma_khoa_hoc) REFERENCES public."KhoaHoc"(ma_khoa_hoc) ON DELETE SET NULL;
-
-
---
--- TOC entry 5147 (class 2606 OID 17449)
--- Name: PhanCongMarketing fk_nhan_su_marketing; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public."PhanCongMarketing"
-    ADD CONSTRAINT fk_nhan_su_marketing FOREIGN KEY (ma_nhan_su) REFERENCES public."NhanSu"(ma_nhan_su) ON DELETE CASCADE;
-
-
---
--- TOC entry 5119 (class 2606 OID 17481)
--- Name: NhanSu fk_nhansu_chucvu; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public."NhanSu"
-    ADD CONSTRAINT fk_nhansu_chucvu FOREIGN KEY (ma_chuc_vu) REFERENCES public."ChucVu"(ma_chuc_vu);
-
-
--- Completed on 2026-04-16 16:44:27
+-- Completed on 2026-04-18 21:52:36
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict KR1hgfK7mNRlkUb8L2JyoxEJbkbatlAtDk9MCrx7l0aNg9mJwN5Gew4ecRm16Xf
+\unrestrict AB0odzibiphoG8FYSDYfjgCnLgaJAHBtsepYdPlIBNNUpdOkWA7KLGnYZbMiWFF
 
