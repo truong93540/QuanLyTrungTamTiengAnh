@@ -54,6 +54,13 @@ model PhongBan {
   nhan_su        NhanSu[]
 }
 
+model ChucVu {
+  ma_chuc_vu  Int      @id @default(autoincrement())
+  ten_chuc_vu String   @unique
+  ghi_chu     String?  @db.Text
+  nhan_su     NhanSu[]
+}
+
 model NhanSu {
   ma_nhan_su    Int       @id @default(autoincrement())
   ho_ten        String
@@ -61,10 +68,11 @@ model NhanSu {
   gioi_tinh     String?
   so_dien_thoai String?
   dia_chi       String?
-  chuc_vu       String?
+  ma_chuc_vu    Int
   ma_phong_ban  Int
 
   phong_ban            PhongBan            @relation(fields: [ma_phong_ban], references: [ma_phong_ban])
+  chuc_vu              ChucVu              @relation(fields: [ma_chuc_vu], references: [ma_chuc_vu])
   tai_khoan            TaiKhoan?
   hop_dong             HopDongLaoDong[]
   phieu_luong          PhieuLuong[]
@@ -208,7 +216,7 @@ model KhoaHoc {
   thoi_luong      String?
   hoc_phi         Decimal
   trinh_do        String?
-  trang_thai   String?  @default("Hoạt động")
+  trang_thai      String? @default("Hoạt động")
   ma_chuong_trinh Int
 
   chuong_trinh ChuongTrinhHoc         @relation(fields: [ma_chuong_trinh], references: [ma_chuong_trinh])

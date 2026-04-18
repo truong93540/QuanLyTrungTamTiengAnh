@@ -55,9 +55,15 @@ const menuItems = [
         children: [
             { title: '4.1 Kế hoạch giảng dạy', href: '/dashboard/dao-tao/ke-hoach' },
             { title: '4.2 Chương trình học', href: '/dashboard/dao-tao/chuong-trinh' },
+<<<<<<< HEAD
+            { title: '4.3 Thời khóa biểu', href: '/dashboard/dao-tao/thoi-khoa-bieu' },
+            { title: '4.4 Quản lý nhân sự', href: '/dashboard/dao-tao/nhan-su' },
+            { title: '4.5 Hồ sơ học viên', href: '/dashboard/dao-tao/hoc-vien' },
+=======
             { title: '4.3 Quản lý nhân sự', href: '/dashboard/dao-tao/nhan-su' },
             { title: '4.4 Hồ sơ học viên', href: '/dashboard/dao-tao/hoc-vien' },
             { title: '4.5 Quản lý lớp học', href: '/dashboard/dao-tao/lop-hoc' },
+>>>>>>> feature/taoquanlidanhmuc-taoquanlihosohocvien
         ],
     },
     {
@@ -74,22 +80,12 @@ const menuItems = [
     {
         title: '6. Báo cáo thống kê',
         icon: FaChartPie,
-        children: [
-            { title: '6.1 SL Học sinh theo tháng', href: '/dashboard/bao-cao/hoc-sinh' },
-            { title: '6.2 Tổng lương chi trả', href: '/dashboard/bao-cao/tong-luong' },
-            { title: '6.3 Hoạt động Marketing', href: '/dashboard/bao-cao/marketing' },
-            { title: '6.4 Hoạt động Ngoại khóa', href: '/dashboard/bao-cao/ngoai-khoa' },
-            { title: '6.5 Học phí theo khóa học', href: '/dashboard/bao-cao/hoc-phi' },
-        ],
     },
 ]
 
 export default function Sidebar() {
-    const router = useRouter()
-    const pathname = usePathname() // Lấy URL hiện tại để bôi đậm menu đang xem
-    const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({
-        '1. Quản lý hệ thống': true, // Mặc định mở tab đầu tiên
-    })
+    const pathname = usePathname()
+    const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({})
 
     const toggleMenu = (title: string) => {
         setOpenMenus((prev) => ({
@@ -112,34 +108,37 @@ export default function Sidebar() {
             {/* Danh sách Menu*/}
             <nav className="flex-1 overflow-y-auto py-4 custom-scrollbar">
                 {menuItems.map((item) => (
-                    <div key={item.title} className="border-b border-blue-800/30">
+                    <div key={item.title} className="border-b border-blue-800/30 ">
                         <button
                             onClick={() => toggleMenu(item.title)}
-                            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-blue-800 transition-all">
+                            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-blue-800 transition-all cursor-pointer">
                             <div className="flex items-center gap-3">
                                 <item.icon className="text-lg text-blue-300" />
                                 <span className="text-[14px] font-semibold tracking-wide">
                                     {item.title}
                                 </span>
                             </div>
-                            {openMenus[item.title] ? (
-                                <FaChevronUp className="text-[10px] text-blue-300" />
-                            ) : (
-                                <FaChevronDown className="text-[10px] opacity-40" />
-                            )}
+
+                            {openMenus[item.title]
+                                ? item.children && (
+                                      <FaChevronUp className="text-[10px] text-blue-300" />
+                                  )
+                                : item.children && (
+                                      <FaChevronDown className="text-[10px] opacity-40" />
+                                  )}
                         </button>
 
                         {/* Render Menu Con */}
                         {openMenus[item.title] && item.children && (
-                            <div className="bg-[#0a3578] py-2">
+                            <div className="bg-[#0a3578] py-2 ">
                                 {item.children.map((child) => {
-                                    const isActive = pathname === child.href // Kiểm tra xem có đang ở trang này không
+                                    const isActive = pathname === child.href
 
                                     return (
                                         <Link
                                             key={child.title}
                                             href={child.href}
-                                            className={`flex items-center gap-3 px-11 py-2.5 transition-colors text-[13px] ${
+                                            className={`flex items-center gap-3 px-11 py-2.5 transition-colors text-[13px] cursor-pointer ${
                                                 isActive
                                                     ? 'text-white font-bold bg-blue-600/50 border-l-4 border-yellow-400'
                                                     : 'text-blue-100 hover:text-white hover:bg-blue-800/50'
