@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { FaEdit, FaPlus, FaSave, FaSearch, FaTimes, FaTrash } from 'react-icons/fa'
 
-// 1. Cập nhật Interface theo bảng PhongBan
+
 interface PhongBan {
     ma_phong_ban: number
     ten_phong_ban: string
@@ -26,7 +26,6 @@ export default function DanhMucPhongBanPage() {
 
     const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
 
-    // 2. Cập nhật State cho form nhập liệu
     const [formData, setFormData] = useState({
         ma_phong_ban: '',
         ten_phong_ban: '',
@@ -37,7 +36,6 @@ export default function DanhMucPhongBanPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Đổi đường dẫn API sang phong-ban
                 const response = await fetch('/api/danh-muc/phong-ban')
                 if (response.ok) {
                     const result = await response.json()
@@ -74,8 +72,6 @@ export default function DanhMucPhongBanPage() {
 
         try {
             const method = editingId ? 'PUT' : 'POST'
-
-            // Xử lý ngày tháng: Nếu rỗng thì gửi null
             const payload = {
                 ...formData,
                 ngay_thanh_lap: formData.ngay_thanh_lap || null,
@@ -113,7 +109,6 @@ export default function DanhMucPhongBanPage() {
     }
 
     const handleEditClick = (row: PhongBan) => {
-        // Cắt chuỗi ngày tháng để đưa vào input type="date" (YYYY-MM-DD)
         const formattedDate = row.ngay_thanh_lap ? new Date(row.ngay_thanh_lap).toISOString().split('T')[0] : ''
 
         setFormData({
@@ -178,7 +173,7 @@ export default function DanhMucPhongBanPage() {
                 Quản lý Danh mục Phòng ban
             </h1>
 
-            {/* FORM NHẬP LIỆU */}
+            {}
             <div className="mb-8 p-5 bg-gray-50 border rounded-lg">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
@@ -265,7 +260,7 @@ export default function DanhMucPhongBanPage() {
                 </div>
             </div>
 
-            {/* BẢNG HIỂN THỊ */}
+            {}
             <div className="overflow-x-auto">
                 {isLoading ? (
                     <div className="text-center py-10 text-gray-500 font-medium">Đang tải dữ liệu...</div>
@@ -316,7 +311,7 @@ export default function DanhMucPhongBanPage() {
                 )}
             </div>
 
-            {/* PHÂN TRANG */}
+            {}
             {!isLoading && data.length > 0 && (
                 <div className="flex justify-between items-center mt-6 font-medium text-gray-600">
                     <div className="text-sm">
