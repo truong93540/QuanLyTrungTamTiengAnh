@@ -98,7 +98,7 @@ export default function DanhMucPhongHocPage() {
 
             {isFormOpen && (
                 <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
-                    <h2 className="text-lg font-bold mb-4 text-white">
+                    <h2 className="text-lg font-bold mb-4 text-black">
                         {editingId ? 'Cập nhật phòng học' : 'Thêm phòng học mới'}
                     </h2>
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
