@@ -1,4 +1,3 @@
-// File: src/app/dashboard/danh-muc/phong-hoc/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -15,7 +14,6 @@ export default function DanhMucPhongHocPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
 
-    // Form state
     const [isFormOpen, setIsFormOpen] = useState(false)
     const [editingId, setEditingId] = useState<number | null>(null)
     const [formData, setFormData] = useState({
@@ -72,9 +70,9 @@ export default function DanhMucPhongHocPage() {
     }
 
     return (
-        <div className="p-6 bg-white min-h-screen">
+        <div className="p-6 bg-white min-h-screen text-black">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-blue-800">DANH MỤC PHÒNG HỌC</h1>
+                <h1 className="text-2xl font-bold text-black">DANH MỤC PHÒNG HỌC</h1>
                 <button
                     onClick={() => {
                         setIsFormOpen(true)
@@ -85,24 +83,22 @@ export default function DanhMucPhongHocPage() {
                 </button>
             </div>
 
-            {/* Thanh tìm kiếm */}
             <div className="mb-4 relative max-w-md">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-black">
                     <FaSearch />
                 </span>
                 <input
                     type="text"
                     placeholder="Tìm kiếm tên phòng..."
-                    className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
 
-            {/* Form Modal (Dạng inline đơn giản) */}
             {isFormOpen && (
                 <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
-                    <h2 className="text-lg font-bold mb-4 text-blue-700">
+                    <h2 className="text-lg font-bold mb-4 text-black">
                         {editingId ? 'Cập nhật phòng học' : 'Thêm phòng học mới'}
                     </h2>
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -112,7 +108,7 @@ export default function DanhMucPhongHocPage() {
                             </label>
                             <input
                                 required
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border rounded text-black"
                                 value={formData.ten_phong_hoc}
                                 onChange={(e) =>
                                     setFormData({ ...formData, ten_phong_hoc: e.target.value })
@@ -126,7 +122,7 @@ export default function DanhMucPhongHocPage() {
                             <input
                                 type="number"
                                 required
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border rounded text-black"
                                 value={formData.suc_chua}
                                 onChange={(e) =>
                                     setFormData({ ...formData, suc_chua: e.target.value })
@@ -150,10 +146,9 @@ export default function DanhMucPhongHocPage() {
                 </div>
             )}
 
-            {/* Bảng dữ liệu */}
             <div className="bg-white border rounded-lg overflow-hidden shadow-sm">
-                <table className="w-full text-left">
-                    <thead className="bg-blue-600 text-white">
+                <table className="w-full text-left text-black">
+                    <thead className="bg-blue-600 text-black">
                         <tr>
                             <th className="p-4">Mã phòng</th>
                             <th className="p-4">Tên phòng học</th>
@@ -164,7 +159,7 @@ export default function DanhMucPhongHocPage() {
                     <tbody>
                         {isLoading ? (
                             <tr>
-                                <td colSpan={4} className="text-center p-10">
+                                <td colSpan={4} className="text-center p-10 text-black">
                                     Đang tải dữ liệu...
                                 </td>
                             </tr>
@@ -173,13 +168,15 @@ export default function DanhMucPhongHocPage() {
                                 <tr
                                     key={item.ma_phong_hoc}
                                     className="border-b hover:bg-gray-50 transition">
-                                    <td className="p-4 font-mono text-gray-500">
+                                    <td className="p-4 font-mono text-black">
                                         {item.ma_phong_hoc}
                                     </td>
-                                    <td className="p-4 font-bold text-gray-700">
+                                    <td className="p-4 font-bold text-black">
                                         {item.ten_phong_hoc}
                                     </td>
-                                    <td className="p-4">{item.suc_chua} học viên</td>
+                                    <td className="p-4 text-black">
+                                        {item.suc_chua} học viên
+                                    </td>
                                     <td className="p-4 flex justify-center gap-3">
                                         <button
                                             onClick={() => {
