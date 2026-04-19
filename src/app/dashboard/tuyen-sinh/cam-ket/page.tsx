@@ -3,15 +3,14 @@
 import { useState, useEffect } from 'react'
 import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash } from 'react-icons/fa'
 
-// Cập nhật Interface dựa trên hình ảnh thiết kế CSDL
 interface CamKet {
     ma_cam_ket: number
     ngay_ky: string
-    ngay_het_han?: string | null // Bảng không ghi Not null, nên có thể null
+    ngay_het_han?: string | null
     noi_dung_cam_ket: string
     trang_thai: string
     ma_hoc_vien: number
-    hoc_vien?: { ho_ten: string } // Quan hệ với bảng học viên (nếu có)
+    hoc_vien?: { ho_ten: string }
 }
 
 export default function QuanLyCamKetPage() {
@@ -19,7 +18,6 @@ export default function QuanLyCamKetPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [editingId, setEditingId] = useState<number | null>(null)
 
-    // Cập nhật state formData khớp với các thuộc tính
     const [formData, setFormData] = useState({
         ma_cam_ket: '',
         ngay_ky: '',
@@ -27,6 +25,7 @@ export default function QuanLyCamKetPage() {
         noi_dung_cam_ket: '',
         trang_thai: '',
         ma_hoc_vien: '',
+        ten_hoc_vien: '', // THÊM MỚI: State cho tên học viên
     })
 
     const [currentPage, setCurrentPage] = useState(1)
@@ -42,7 +41,6 @@ export default function QuanLyCamKetPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Sửa API endpoint thành cam-ket
                 const response = await fetch('/api/tuyen-sinh/cam-ket')
                 if (response.ok) {
                     const result = await response.json()
@@ -62,7 +60,6 @@ export default function QuanLyCamKetPage() {
     }
 
     const handleEditClick = (row: CamKet) => {
-        // Format ngày tháng từ ISO string sang YYYY-MM-DD
         const formattedNgayKy = new Date(row.ngay_ky).toISOString().split('T')[0]
         const formattedNgayHetHan = row.ngay_het_han ? new Date(row.ngay_het_han).toISOString().split('T')[0] : ''
 
@@ -73,6 +70,7 @@ export default function QuanLyCamKetPage() {
             noi_dung_cam_ket: row.noi_dung_cam_ket,
             trang_thai: row.trang_thai,
             ma_hoc_vien: row.ma_hoc_vien.toString(),
+            ten_hoc_vien: row.hoc_vien?.ho_ten || '', // THÊM MỚI: Đổ tên HV vào ô khi ấn Sửa
         })
         setEditingId(row.ma_cam_ket)
         window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -86,6 +84,7 @@ export default function QuanLyCamKetPage() {
             noi_dung_cam_ket: '',
             trang_thai: '',
             ma_hoc_vien: '',
+            ten_hoc_vien: '', // THÊM MỚI: Reset ô tên HV
         })
         setEditingId(null)
     }
@@ -113,20 +112,13 @@ export default function QuanLyCamKetPage() {
     }
 
     const handleSaveCamKet = async () => {
-        // Validation dựa trên cột Not Null trong thiết kế CSDL
-        if (
-            !formData.ngay_ky ||
-            !formData.noi_dung_cam_ket ||
-            !formData.trang_thai ||
-            !formData.ma_hoc_vien
-        ) {
+        if (!formData.ngay_ky || !formData.noi_dung_cam_ket || !formData.trang_thai || !formData.ma_hoc_vien) {
             alert('Vui lòng nhập đầy đủ các thông tin bắt buộc (Ngày ký, Nội dung, Trạng thái, Mã học viên)!')
             return
         }
 
         try {
             const method = editingId ? 'PUT' : 'POST'
-            // Chuyển đổi dữ liệu rỗng của ngày hết hạn thành null để lưu CSDL
             const payload = {
                 ...formData,
                 ngay_het_han: formData.ngay_het_han || null 
@@ -167,6 +159,7 @@ export default function QuanLyCamKetPage() {
             if (formData.ngay_ky) params.append('ngay_ky', formData.ngay_ky)
             if (formData.ma_hoc_vien) params.append('ma_hoc_vien', formData.ma_hoc_vien)
             if (formData.trang_thai) params.append('trang_thai', formData.trang_thai)
+            if (formData.ten_hoc_vien) params.append('ten_hoc_vien', formData.ten_hoc_vien) // THÊM MỚI: Đẩy từ khóa tìm kiếm lên URL
 
             const response = await fetch(`/api/tuyen-sinh/cam-ket?${params.toString()}`)
             if (response.ok) {
@@ -210,7 +203,22 @@ export default function QuanLyCamKetPage() {
                             name="ma_hoc_vien"
                             value={formData.ma_hoc_vien}
                             onChange={handleChange}
+                            placeholder="Nhập mã học viên..."
                             className="w-3/4 border border-gray-300 rounded p-2 focus:outline-blue-500"
+                        />
+                    </div>
+
+                    {/* THÊM MỚI: Ô Textbox cho Tên học viên */}
+                    <div className="flex items-center">
+                        <label className="w-1/4 text-sm font-medium text-gray-700">Tên học viên:</label>
+                        <input
+                            type="text"
+                            name="ten_hoc_vien"
+                            value={formData.ten_hoc_vien}
+                            onChange={handleChange}
+                            placeholder="Nhập tên học viên để tìm kiếm..."
+                            title="Ô này chỉ dùng để tìm kiếm, hệ thống lưu theo Mã học viên"
+                            className="w-3/4 border border-gray-300 rounded p-2 focus:outline-blue-500 placeholder:text-gray-400"
                         />
                     </div>
 
