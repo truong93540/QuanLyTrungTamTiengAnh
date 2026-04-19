@@ -40,9 +40,28 @@ export async function DELETE(request: Request) {
     try {
         const { searchParams } = new URL(request.url)
         const id = searchParams.get('id')
+        
+        if (!id) {
+            return NextResponse.json({ error: 'Thiếu ID học viên' }, { status: 400 })
+        }
+
         await xoaHocVien(Number(id))
         return NextResponse.json({ message: 'Xóa thành công' })
-    } catch (error) {
-        return NextResponse.json({ error: 'Lỗi khi xóa học viên' }, { status: 500 })
+        
+    } catch (error: any) {
+        console.error('Lỗi khi xóa học viên:', error)
+        
+        // Kiểm tra nếu lỗi do Prisma Foreign Key Constraint (Mã lỗi P2003 của Prisma)
+        if (error.code === 'P2003') {
+            return NextResponse.json(
+                { error: 'Không thể xóa! Học viên này đã phát sinh dữ liệu (đóng học phí, xếp lớp, v.v.). Bạn nên chuyển trạng thái sang "Bảo lưu" hoặc "Nghỉ học".' }, 
+                { status: 409 } // 409 Conflict
+            )
+        }
+
+        return NextResponse.json(
+            { error: 'Lỗi hệ thống khi thực hiện xóa dữ liệu.' }, 
+            { status: 500 }
+        )
     }
 }

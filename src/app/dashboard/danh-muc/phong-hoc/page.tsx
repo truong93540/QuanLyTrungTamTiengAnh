@@ -174,7 +174,7 @@ export default function DanhMucPhongHocPage() {
                                     key={item.ma_phong_hoc}
                                     className="border-b hover:bg-gray-50 transition">
                                     <td className="p-4 font-mono text-gray-500">
-                                        PH-{item.ma_phong_hoc}
+                                        {item.ma_phong_hoc}
                                     </td>
                                     <td className="p-4 font-bold text-gray-700">
                                         {item.ten_phong_hoc}
