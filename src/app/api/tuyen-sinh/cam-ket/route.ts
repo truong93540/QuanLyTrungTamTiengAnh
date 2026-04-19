@@ -19,6 +19,9 @@ export async function GET(request: Request) {
             noi_dung_cam_ket: searchParams.get('noi_dung_cam_ket'),
             trang_thai: searchParams.get('trang_thai'),
             ma_hoc_vien: searchParams.get('ma_hoc_vien'),
+            
+            // ĐÃ BỔ SUNG: Nhận tham số ten_hoc_vien từ giao diện gửi lên
+            ten_hoc_vien: searchParams.get('ten_hoc_vien'),
         }
 
         const danhSach = await layDanhSachCamKet(filters)
@@ -33,7 +36,7 @@ export async function POST(request: Request) {
     try {
         const body = await request.json()
 
-        // 1. Bóc tách chi tiết các trường dữ liệu cần thêm mới (Bỏ qua ma_cam_ket vì nó là tự tăng)
+        // 1. Bóc tách chi tiết các trường dữ liệu cần thêm mới
         const { 
             ngay_ky, 
             ngay_het_han, 
@@ -53,7 +56,7 @@ export async function POST(request: Request) {
         // 3. Đóng gói dữ liệu chuẩn chỉ để gửi cho Service (hoặc Prisma)
         const duLieuMoi = {
             ngay_ky: new Date(ngay_ky),
-            ngay_het_han: ngay_het_han ? new Date(ngay_het_han) : null, // Xử lý trường Nullable
+            ngay_het_han: ngay_het_han ? new Date(ngay_het_han) : null,
             noi_dung_cam_ket: String(noi_dung_cam_ket),
             trang_thai: String(trang_thai),
             ma_hoc_vien: Number(ma_hoc_vien)
@@ -89,7 +92,6 @@ export async function PUT(request: Request) {
 
         // 3. Đóng gói dữ liệu cập nhật
         const duLieuCapNhat = {
-            // Tương tự như thêm mới, nhưng dùng cho update
             ...(ngay_ky && { ngay_ky: new Date(ngay_ky) }),
             ngay_het_han: ngay_het_han ? new Date(ngay_het_han) : null,
             ...(noi_dung_cam_ket && { noi_dung_cam_ket: String(noi_dung_cam_ket) }),

@@ -1,17 +1,16 @@
-// File: src/app/api/danh-muc/phong-ban/route.ts
 import { NextResponse } from 'next/server'
 import {
     layDanhSachPhongBan,
     taoPhongBanMoi,
     capNhatPhongBan,
     xoaPhongBan,
-} from '@/services/DanhMuc/phongBanService' // Lưu ý: Cần tạo file service này
+} from '@/services/DanhMuc/phongBanService' 
 
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url)
         
-        // 1. Nhận các tham số tìm kiếm từ URL khớp với bảng PhongBan
+       
         const filters = {
             ma_phong_ban: searchParams.get('ma_phong_ban'),
             ten_phong_ban: searchParams.get('ten_phong_ban'),
@@ -31,13 +30,10 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json()
-
-        // 2. Validate ràng buộc bắt buộc (Not Null) của bảng PhongBan
         if (!body.ten_phong_ban) {
             return NextResponse.json({ error: 'Thiếu Tên phòng ban' }, { status: 400 })
         }
 
-        // Xử lý riêng trường hợp ngày tháng: Ép kiểu hoặc set Null
         const duLieuMoi = {
             ten_phong_ban: String(body.ten_phong_ban),
             mo_ta: body.mo_ta ? String(body.mo_ta) : null,
@@ -61,7 +57,6 @@ export async function PUT(request: Request) {
             return NextResponse.json({ error: 'Thiếu mã phòng ban để cập nhật' }, { status: 400 })
         }
 
-        // Đóng gói dữ liệu cập nhật, xử lý ngày tháng an toàn
         const duLieuCapNhat = {
             ...(body.ten_phong_ban && { ten_phong_ban: String(body.ten_phong_ban) }),
             ...(body.mo_ta !== undefined && { mo_ta: body.mo_ta ? String(body.mo_ta) : null }),

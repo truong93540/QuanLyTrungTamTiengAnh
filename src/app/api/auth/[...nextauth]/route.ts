@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt'
 import { prisma } from '@/lib/prisma'
 import { JWT } from 'next-auth/jwt'
 
-// 1. Định nghĩa Interface cho User trả về từ authorize
+
 interface ExtendedUser extends User {
     role: string
     ma_nhan_su: number
