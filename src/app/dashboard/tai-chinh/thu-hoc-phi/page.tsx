@@ -29,6 +29,7 @@ export default function PhieuThuHocPhiPage() {
         ma_nhan_su: '',
         noi_dung: '',
     })
+    const [formError, setFormError] = useState<string | null>(null)
 
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 10
@@ -58,6 +59,7 @@ export default function PhieuThuHocPhiPage() {
     }, [])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormError(null)
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
@@ -88,6 +90,7 @@ export default function PhieuThuHocPhiPage() {
             ma_nhan_su: '',
             noi_dung: '',
         })
+        setFormError(null)
         setEditingId(null)
     }
 
@@ -105,7 +108,6 @@ export default function PhieuThuHocPhiPage() {
                 })
 
                 if (response.ok) {
-                    // Dùng hàm filter để loại bỏ dòng vừa xóa khỏi danh sách hiện tại (không cần load lại trang)
                     setData(data.filter((item) => item.ma_phieu_thu !== id))
                     alert('Đã xóa phiếu thu thành công!')
                 } else {
@@ -126,9 +128,16 @@ export default function PhieuThuHocPhiPage() {
             !formData.ma_hoc_vien ||
             !formData.ma_nhan_su
         ) {
-            alert('Vui lòng nhập đầy đủ thông tin bắt buộc!')
+            setFormError('Vui lòng nhập đầy đủ thông tin bắt buộc!')
             return
         }
+
+        if (isNaN(Number(formData.ma_hoc_vien)) || isNaN(Number(formData.ma_nhan_su))) {
+            setFormError('Mã học viên và mã nhân sự phải là số.')
+            return
+        }
+
+        setFormError(null)
 
         try {
             const method = editingId ? 'PUT' : 'POST'
@@ -159,11 +168,14 @@ export default function PhieuThuHocPhiPage() {
                 // Lưu xong thì làm sạch form
                 handleCancelEdit()
             } else {
-                alert(`Có lỗi xảy ra khi ${editingId ? 'cập nhật' : 'thêm'} phiếu thu.`)
+                const errorResponse = await response.json().catch(() => null)
+                setFormError(
+                    errorResponse?.error || `Có lỗi xảy ra khi ${editingId ? 'cập nhật' : 'thêm'} phiếu thu.`,
+                )
             }
         } catch (error) {
             console.error('Lỗi:', error)
-            alert('Không thể kết nối đến máy chủ.')
+            setFormError('Không thể kết nối đến máy chủ.')
         }
     }
 
@@ -207,7 +219,7 @@ export default function PhieuThuHocPhiPage() {
                             name="ma_phieu_thu"
                             value={formData.ma_phieu_thu}
                             onChange={handleChange}
-                            placeholder={editingId ? 'Đang sửa đổi...' : 'Nhập mã để tìm...'}
+                            placeholder={editingId ? 'Đang sửa đổi...' : ''}
                             disabled={editingId !== null} // Khóa ô này nếu đang Sửa
                             className={`w-3/4 border rounded p-2 focus:outline-blue-500  ${editingId ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-300'}`}
                         />
@@ -276,6 +288,12 @@ export default function PhieuThuHocPhiPage() {
                     </div>
                 </div>
             </div>
+
+            {formError && (
+                <div className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {formError}
+                </div>
+            )}
 
             {/* Giao diện nút bấm thay đổi linh hoạt theo chế độ */}
             <div className="flex justify-end gap-4 mb-8 border-b pb-6">

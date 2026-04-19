@@ -1,10 +1,32 @@
 import { NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import {
     layDanhSachPhieuThu,
     taoPhieuThuMoi,
     capNhatPhieuThu,
     xoaPhieuThu,
+    PhieuThuValidationError,
 } from '@/services/TaiChinh/phieuThuService'
+
+const getPrismaErrorResponse = (error: unknown) => {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2003') {
+            const field = (error.meta as any)?.field_name || ''
+            if (field.includes('ma_hoc_vien')) {
+                return { error: 'Mã học viên không tồn tại.', status: 400 }
+            }
+            if (field.includes('ma_nhan_su')) {
+                return { error: 'Mã nhân sự lập phiếu không tồn tại.', status: 400 }
+            }
+            return { error: 'Dữ liệu tham chiếu không hợp lệ.', status: 400 }
+        }
+        if (error.code === 'P2025') {
+            return { error: 'Phiếu thu không tồn tại.', status: 404 }
+        }
+    }
+
+    return null
+}
 
 export async function GET(request: Request) {
     try {
@@ -17,10 +39,10 @@ export async function GET(request: Request) {
             ma_nhan_su: searchParams.get('ma_nhan_su'),
         }
 
-        // Nhờ đầu bếp nấu
+        
         const danhSach = await layDanhSachPhieuThu(filters)
 
-        // Bưng món ra cho khách
+        
         return NextResponse.json(danhSach)
     } catch (error) {
         console.error('Lỗi GET:', error)
@@ -37,6 +59,15 @@ export async function POST(request: Request) {
         return NextResponse.json(phieuThuMoi, { status: 201 })
     } catch (error) {
         console.error('Lỗi POST:', error)
+        if (error instanceof PhieuThuValidationError) {
+            return NextResponse.json({ error: error.message }, { status: 400 })
+        }
+
+        const prismaResponse = getPrismaErrorResponse(error)
+        if (prismaResponse) {
+            return NextResponse.json(prismaResponse, { status: prismaResponse.status })
+        }
+
         return NextResponse.json({ error: 'Lỗi khi thêm vào cơ sở dữ liệu' }, { status: 500 })
     }
 }
@@ -54,6 +85,15 @@ export async function PUT(request: Request) {
         return NextResponse.json(phieuThuCapNhat, { status: 200 })
     } catch (error) {
         console.error('Lỗi PUT:', error)
+        if (error instanceof PhieuThuValidationError) {
+            return NextResponse.json({ error: error.message }, { status: 400 })
+        }
+
+        const prismaResponse = getPrismaErrorResponse(error)
+        if (prismaResponse) {
+            return NextResponse.json(prismaResponse, { status: prismaResponse.status })
+        }
+
         return NextResponse.json({ error: 'Lỗi khi cập nhật cơ sở dữ liệu' }, { status: 500 })
     }
 }
