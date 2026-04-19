@@ -72,13 +72,13 @@ export default function DanhMucPhongHocPage() {
     return (
         <div className="p-6 bg-white min-h-screen text-black">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-black">DANH MỤC PHÒNG HỌC</h1>
+                <h1 className="text-2xl font-bold text-white">DANH MỤC PHÒNG HỌC</h1>
                 <button
                     onClick={() => {
                         setIsFormOpen(true)
                         setEditingId(null)
                     }}
-                    className="bg-green-600 text-black px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700 transition">
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition">
                     <FaPlus /> Thêm phòng học mới
                 </button>
             </div>
@@ -98,7 +98,7 @@ export default function DanhMucPhongHocPage() {
 
             {isFormOpen && (
                 <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
-                    <h2 className="text-lg font-bold mb-4 text-black">
+                    <h2 className="text-lg font-bold mb-4 text-white">
                         {editingId ? 'Cập nhật phòng học' : 'Thêm phòng học mới'}
                     </h2>
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -148,7 +148,7 @@ export default function DanhMucPhongHocPage() {
 
             <div className="bg-white border rounded-lg overflow-hidden shadow-sm">
                 <table className="w-full text-left text-black">
-                    <thead className="bg-blue-600 text-black">
+                    <thead className="bg-blue-600 text-white">
                         <tr>
                             <th className="p-4">Mã phòng</th>
                             <th className="p-4">Tên phòng học</th>
