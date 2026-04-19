@@ -174,7 +174,7 @@ export default function DanhMucChucVuPage() {
                             type="number"
                             name="ma_chuc_vu"
                             value={formData.ma_chuc_vu}
-                            placeholder={editingId ? 'Đang sửa đổi...' : 'Nhập mã để tìm...'}
+                            placeholder={editingId ? 'Đang sửa đổi...' : 'Nhập mã chức vụ...'}
                             onChange={handleChange}
                             disabled={!!editingId}
                             className={`w-full border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800 ${editingId ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-300'}`}
