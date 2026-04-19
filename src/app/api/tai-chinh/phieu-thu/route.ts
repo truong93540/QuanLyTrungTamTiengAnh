@@ -11,7 +11,7 @@ import {
 const getPrismaErrorResponse = (error: unknown) => {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2003') {
-            const field = (error.meta as any)?.field_name || ''
+            const field = (error.meta as { field_name?: string })?.field_name || ''
             if (field.includes('ma_hoc_vien')) {
                 return { error: 'Mã học viên không tồn tại.', status: 400 }
             }
@@ -39,10 +39,8 @@ export async function GET(request: Request) {
             ma_nhan_su: searchParams.get('ma_nhan_su'),
         }
 
-        
         const danhSach = await layDanhSachPhieuThu(filters)
 
-        
         return NextResponse.json(danhSach)
     } catch (error) {
         console.error('Lỗi GET:', error)
