@@ -256,6 +256,7 @@ model HocVien {
   so_dien_thoai String?
   email         String?   @unique
   dia_chi       String?
+  trang_thai    String?
 
   cam_ket             CamKet[]
   phieu_thu           PhieuThu[]
