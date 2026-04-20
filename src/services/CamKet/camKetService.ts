@@ -1,16 +1,11 @@
-// File: src/services/TuyenSinh/camKetService.ts
 import { prisma } from '@/lib/prisma'
-
-// Interface cho bộ lọc tìm kiếm
 interface CamKetFilter {
     ma_cam_ket?: string | null
     ngay_ky?: string | null
     trang_thai?: string | null
     ma_hoc_vien?: string | null
-    ten_hoc_vien?: string | null // THÊM MỚI: Nhận từ khóa tìm kiếm tên
+    ten_hoc_vien?: string | null 
 }
-
-// Interface định dạng dữ liệu truyền vào khi Tạo mới/Cập nhật
 interface CamKetData {
     ngay_ky: Date
     ngay_het_han?: Date | null
@@ -18,10 +13,8 @@ interface CamKetData {
     trang_thai: string
     ma_hoc_vien: number
 }
-
-// 1. LẤY DANH SÁCH (CÓ BỘ LỌC)
 export const layDanhSachCamKet = async (filters: CamKetFilter) => {
-    // Nhận thêm biến ten_hoc_vien từ filters
+ 
     const { ma_cam_ket, ngay_ky, trang_thai, ma_hoc_vien, ten_hoc_vien } = filters
 
     const whereClause: any = {}
@@ -36,15 +29,12 @@ export const layDanhSachCamKet = async (filters: CamKetFilter) => {
         const nextDay = new Date(date)
         nextDay.setDate(date.getDate() + 1)
         whereClause.ngay_ky = { gte: date, lt: nextDay }
-    }
-
-    // THÊM MỚI: Xử lý tìm kiếm qua bảng quan hệ HocVien
+    } 
     if (ten_hoc_vien) {
         whereClause.hoc_vien = {
             ho_ten: { contains: ten_hoc_vien, mode: 'insensitive' }
         }
     }
-
     return await prisma.camKet.findMany({
         where: whereClause,
         include: {
@@ -54,7 +44,7 @@ export const layDanhSachCamKet = async (filters: CamKetFilter) => {
     })
 }
 
-// 2. TẠO MỚI BẢN CAM KẾT
+
 export const taoCamKetMoi = async (data: CamKetData) => {
     return await prisma.camKet.create({
         data: {
@@ -70,7 +60,7 @@ export const taoCamKetMoi = async (data: CamKetData) => {
     })
 }
 
-// 3. CẬP NHẬT BẢN CAM KẾT
+
 export const capNhatCamKet = async (ma_cam_ket: number, data: Partial<CamKetData>) => {
     return await prisma.camKet.update({
         where: { ma_cam_ket: ma_cam_ket },
@@ -87,7 +77,7 @@ export const capNhatCamKet = async (ma_cam_ket: number, data: Partial<CamKetData
     })
 }
 
-// 4. XÓA BẢN CAM KẾT
+
 export const xoaCamKet = async (ma_cam_ket: number) => {
     return await prisma.camKet.delete({
         where: { ma_cam_ket: ma_cam_ket },

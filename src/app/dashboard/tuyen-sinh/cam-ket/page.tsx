@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash } from 'react-icons/fa'
+import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaUserGraduate } from 'react-icons/fa'
 
 interface CamKet {
     ma_cam_ket: number
@@ -16,6 +16,10 @@ interface CamKet {
 export default function QuanLyCamKetPage() {
     const [data, setData] = useState<CamKet[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const [searchTerm, setSearchTerm] = useState('')
+
+  
+    const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingId, setEditingId] = useState<number | null>(null)
 
     const [formData, setFormData] = useState({
@@ -31,13 +35,7 @@ export default function QuanLyCamKetPage() {
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 10
 
-    const indexOfLastItem = currentPage * itemsPerPage
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage
-    const currentItems = data.slice(indexOfFirstItem, indexOfLastItem)
-    const totalPages = Math.ceil(data.length / itemsPerPage)
-
-    const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
-
+    // Fetch dữ liệu
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -59,7 +57,23 @@ export default function QuanLyCamKetPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
-    const handleEditClick = (row: CamKet) => {
+    // Mở Modal Thêm
+    const openAddModal = () => {
+        setFormData({
+            ma_cam_ket: '',
+            ngay_ky: new Date().toISOString().split('T')[0], // Mặc định ngày hôm nay
+            ngay_het_han: '',
+            noi_dung_cam_ket: '',
+            trang_thai: '',
+            ma_hoc_vien: '',
+            ten_hoc_vien: '', 
+        })
+        setEditingId(null)
+        setIsModalOpen(true)
+    }
+
+    
+    const openEditModal = (row: CamKet) => {
         const formattedNgayKy = new Date(row.ngay_ky).toISOString().split('T')[0]
         const formattedNgayHetHan = row.ngay_het_han ? new Date(row.ngay_het_han).toISOString().split('T')[0] : ''
 
@@ -73,19 +87,11 @@ export default function QuanLyCamKetPage() {
             ten_hoc_vien: row.hoc_vien?.ho_ten || '', 
         })
         setEditingId(row.ma_cam_ket)
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        setIsModalOpen(true)
     }
 
-    const handleCancelEdit = () => {
-        setFormData({
-            ma_cam_ket: '',
-            ngay_ky: '',
-            ngay_het_han: '',
-            noi_dung_cam_ket: '',
-            trang_thai: '',
-            ma_hoc_vien: '',
-            ten_hoc_vien: '', 
-        })
+    const closeModal = () => {
+        setIsModalOpen(false)
         setEditingId(null)
     }
 
@@ -141,7 +147,7 @@ export default function QuanLyCamKetPage() {
                     alert('Thêm bản cam kết thành công!')
                 }
 
-                handleCancelEdit()
+                closeModal()
             } else {
                 alert(`Có lỗi xảy ra khi ${editingId ? 'cập nhật' : 'thêm'} bản cam kết.`)
             }
@@ -151,220 +157,255 @@ export default function QuanLyCamKetPage() {
         }
     }
 
-    const handleSearch = async () => {
-        setIsLoading(true)
-        try {
-            const params = new URLSearchParams()
-            if (formData.ma_cam_ket) params.append('ma_cam_ket', formData.ma_cam_ket)
-            if (formData.ngay_ky) params.append('ngay_ky', formData.ngay_ky)
-            if (formData.ma_hoc_vien) params.append('ma_hoc_vien', formData.ma_hoc_vien)
-            if (formData.trang_thai) params.append('trang_thai', formData.trang_thai)
-            if (formData.ten_hoc_vien) params.append('ten_hoc_vien', formData.ten_hoc_vien)
+  
+    const filteredData = data.filter(item => 
+        (item.hoc_vien?.ho_ten || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.ma_hoc_vien.toString().includes(searchTerm)
+    )
 
-            const response = await fetch(`/api/tuyen-sinh/cam-ket?${params.toString()}`)
-            if (response.ok) {
-                const result = await response.json()
-                setData(result)
-                setCurrentPage(1)
-            }
-        } catch (error) {
-            console.error('Lỗi khi tìm kiếm:', error)
-        } finally {
-            setIsLoading(false)
-        }
-    }
+    
+    const indexOfLastItem = currentPage * itemsPerPage
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage
+    const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem)
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage)
+    const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-sm min-h-screen">
-            <h1 className="text-2xl font-bold text-center text-gray-800 mb-8 uppercase">
-                Quản lý Bảng Cam Kết
-            </h1>
+        <div className="bg-gray-50 min-h-screen p-6">
+            <div className="bg-white rounded-lg shadow-md p-6">
+                
+          
+                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+                    <h1 className="text-2xl font-bold text-[#1d4ed8] flex items-center gap-3 uppercase">
+                        <FaUserGraduate className="text-blue-600" />
+                        Quản lý Bảng Cam Kết
+                    </h1>
+                    <button 
+                        onClick={openAddModal}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-[#1d4ed8] text-white rounded-md hover:bg-blue-700 font-medium transition shadow-sm"
+                    >
+                        <FaPlus /> Thêm cam kết
+                    </button>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-20 mb-6 text-gray-700">
-                {/* Cột Form Trái */}
-                <div className="space-y-4">
-                    <div className="flex items-center">
-                        <label className="w-1/4 text-sm font-medium text-gray-700">Mã cam kết:</label>
-                        <input
-                            type="number"
-                            name="ma_cam_ket"
-                            value={formData.ma_cam_ket}
-                            onChange={handleChange}
-                            placeholder={editingId ? 'Đang sửa đổi...' : 'Nhập mã để tìm...'}
-                            disabled={editingId !== null}
-                            className={`w-3/4 border rounded p-2 focus:outline-blue-500  ${editingId ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-300'}`}
-                        />
-                    </div>
-                    
-                    <div className="flex items-center">
-                        <label className="w-1/4 text-sm font-medium text-gray-700">Mã học viên: <span className="text-red-500">*</span></label>
-                        <input
-                            type="number"
-                            name="ma_hoc_vien"
-                            value={formData.ma_hoc_vien}
-                            onChange={handleChange}
-                            placeholder="Nhập mã học viên..."
-                            className="w-3/4 border border-gray-300 rounded p-2 focus:outline-blue-500"
-                        />
-                    </div>
-
-                    <div className="flex items-center">
-                        <label className="w-1/4 text-sm font-medium text-gray-700">Trạng thái: <span className="text-red-500">*</span></label>
-                        <select
-                            name="trang_thai"
-                            value={formData.trang_thai}
-                            onChange={handleChange}
-                            className="w-3/4 border border-gray-300 rounded p-2 focus:outline-blue-500 bg-white"
-                        >
-                            <option value="">-- Chọn trạng thái --</option>
-                            <option value="Đang hiệu lực">Đang hiệu lực</option>
-                            <option value="Đã hết hạn">Đã hết hạn</option>
-                            <option value="Đã hủy bỏ">Đã hủy bỏ</option>
-                        </select>
-                    </div>
-
-                    {}
-                    <div className="flex items-center">
-                        <label className="w-1/4 text-sm font-medium text-gray-700">Tên học viên:</label>
+      
+                <div className="mb-6 w-full md:w-1/2 lg:w-1/3">
+                    <div className="relative">
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <FaSearch />
+                        </span>
                         <input
                             type="text"
-                            name="ten_hoc_vien"
-                            value={formData.ten_hoc_vien}
-                            onChange={handleChange}
-                            placeholder="Nhập tên học viên để tìm kiếm..."
-                            title="Ô này chỉ dùng để tìm kiếm, hệ thống lưu theo Mã học viên"
-                            disabled={editingId !== null} 
-                            className={`w-3/4 border rounded p-2 focus:outline-blue-500 placeholder:text-gray-400 ${
-                                editingId ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-300'
-                            }`}
+                            placeholder="Tìm theo tên hoặc mã học viên..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value)
+                                setCurrentPage(1) 
+                            }}
+                           className="w-full border border-gray-300 rounded-md py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] focus:border-transparent transition shadow-sm placeholder-gray-500 text-gray-900"
                         />
                     </div>
                 </div>
 
-                {}
-                <div className="space-y-4 flex flex-col">
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center w-1/2">
-                            <label className="w-1/3 text-sm font-medium text-gray-700">Ngày ký: <span className="text-red-500">*</span></label>
-                            <input
-                                type="date"
-                                name="ngay_ky"
-                                value={formData.ngay_ky}
-                                onChange={handleChange}
-                                className="w-2/3 border border-gray-300 rounded p-2 focus:outline-blue-500 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                            />
-                        </div>
-                        <div className="flex items-center w-1/2">
-                            <label className="w-2/5 text-sm font-medium text-gray-700 text-right pr-2">Ngày hết hạn:</label>
-                            <input
-                                type="date"
-                                name="ngay_het_han"
-                                value={formData.ngay_het_han}
-                                onChange={handleChange}
-                                className="w-3/5 border border-gray-300 rounded p-2 focus:outline-blue-500 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                            />
-                        </div>
-                    </div>
 
-                    <div className="flex items-start flex-1">
-                        <label className="w-1/6 text-sm font-medium text-gray-700 pt-2">Nội dung: <span className="text-red-500">*</span></label>
-                        <textarea
-                            name="noi_dung_cam_ket"
-                            value={formData.noi_dung_cam_ket}
-                            onChange={handleChange}
-                            className="w-5/6 h-full min-h-[120px] border border-gray-300 rounded p-2 focus:outline-blue-500 resize-none"
-                            placeholder="Nhập nội dung thỏa thuận cam kết..."
-                        ></textarea>
-                    </div>
-                </div>
-            </div>
-
-            {}
-            <div className="flex justify-end gap-4 mb-8 border-b pb-6">
-                {!editingId ? (
-                    <>
-                        <button onClick={handleSearch} className="flex items-center gap-2 px-6 py-2 border border-gray-400 rounded hover:bg-gray-100 font-medium transition text-gray-600 cursor-pointer">
-                            <FaSearch /> Tìm kiếm
-                        </button>
-                        <button onClick={handleSaveCamKet} className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium transition shadow-sm cursor-pointer">
-                            <FaPlus /> Thêm cam kết
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <button onClick={handleCancelEdit} className="flex items-center gap-2 px-6 py-2 border border-gray-400 rounded hover:bg-gray-100 font-medium transition text-gray-600 cursor-pointer">
-                            <FaTimes /> Hủy sửa
-                        </button>
-                        <button onClick={handleSaveCamKet} className="flex items-center gap-2 px-6 py-2 bg-[#16a34a] text-white rounded hover:bg-green-700 font-medium transition shadow-sm cursor-pointer">
-                            <FaSave /> Cập nhật cam kết
-                        </button>
-                    </>
-                )}
-            </div>
-
-            {}
-            <div className="overflow-x-auto">
-                {isLoading ? (
-                    <div className="text-center py-10 text-gray-500 font-medium">Đang tải dữ liệu từ CSDL...</div>
-                ) : (
-                    <table className="w-full border-collapse border border-gray-300 text-sm text-center">
-                        <thead className="bg-gray-100 text-gray-700">
+                <div className="overflow-x-auto rounded-t-lg border border-gray-200">
+                    <table className="w-full text-sm text-left">
+                       <thead className="bg-[#1d4ed8] text-white uppercase font-semibold text-xs">
                             <tr>
-                                <th className="border border-gray-300 p-3">Mã CK</th>
-                                <th className="border border-gray-300 p-3">Mã HV</th>
-                                <th className="border border-gray-300 p-3">Tên Học Viên</th>
-                                <th className="border border-gray-300 p-3">Ngày Ký</th>
-                                <th className="border border-gray-300 p-3">Ngày Hết Hạn</th>
-                                <th className="border border-gray-300 p-3 w-64">Nội Dung</th>
-                                <th className="border border-gray-300 p-3">Trạng Thái</th>
-                                <th className="border border-gray-300 p-3 w-24">Hành Động</th>
+                               
+                                <th className="px-4 py-4 text-center whitespace-nowrap">Mã Cam Kết</th>
+                                <th className="px-4 py-4 text-center whitespace-nowrap">Mã Học Viên</th>
+                                
+                                <th className="px-4 py-4 whitespace-nowrap min-w-[200px] text-center">Tên Học Viên</th>
+                                <th className="px-4 py-4 text-center whitespace-nowrap">Ngày Ký</th>
+                                <th className="px-4 py-4 text-center whitespace-nowrap">Ngày Hết Hạn</th>
+                                
+                                
+                                <th className="px-4 py-4 w-[25%] text-center">Nội Dung</th>
+                                
+                                <th className="px-4 py-4 text-center whitespace-nowrap">Trạng Thái</th>
+                                <th className="px-4 py-4 text-center w-28 whitespace-nowrap">Thao Tác</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {currentItems.map((row) => (
-                                <tr key={row.ma_cam_ket} className={`transition text-gray-700 ${editingId === row.ma_cam_ket ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'}`}>
-                                    <td className="border border-gray-300 p-3 font-semibold">{row.ma_cam_ket}</td>
-                                    <td className="border border-gray-300 p-3">{row.ma_hoc_vien}</td>
-                                    <td className="border border-gray-300 p-3 font-medium text-blue-600">{row.hoc_vien?.ho_ten || 'Không rõ'}</td>
-                                    <td className="border border-gray-300 p-3">{new Date(row.ngay_ky).toLocaleDateString('vi-VN')}</td>
-                                    <td className="border border-gray-300 p-3">{row.ngay_het_han ? new Date(row.ngay_het_han).toLocaleDateString('vi-VN') : <span className="text-gray-400 italic">Vô thời hạn</span>}</td>
-                                    <td className="border border-gray-300 p-3 text-left">
-                                        <div className="line-clamp-2" title={row.noi_dung_cam_ket}>{row.noi_dung_cam_ket}</div>
-                                    </td>
-                                    <td className="border border-gray-300 p-3">
-                                        <span className={`px-2 py-1 rounded text-xs font-semibold ${row.trang_thai === 'Đang hiệu lực' ? 'bg-green-100 text-green-700' : row.trang_thai === 'Đã hết hạn' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                                            {row.trang_thai}
-                                        </span>
-                                    </td>
-                                    <td className="border border-gray-300 p-3">
-                                        <div className="flex justify-center">
-                                            <button onClick={() => handleEditClick(row)} className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-yellow-100 hover:text-yellow-600 transition cursor-pointer" title="Sửa cam kết">
-                                                <FaEdit />
-                                            </button>
-                                            <button onClick={() => handleDeleteClick(row.ma_cam_ket)} className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-red-100 hover:text-red-600 transition ml-1 cursor-pointer" title="Xóa cam kết">
-                                                <FaTrash />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                        <tbody className="text-gray-700">
+                            {isLoading ? (
+                                <tr><td colSpan={8} className="text-center py-8 font-medium">Đang tải dữ liệu...</td></tr>
+                            ) : currentItems.length === 0 ? (
+                                <tr><td colSpan={8} className="text-center py-8 text-gray-500">Không tìm thấy cam kết nào.</td></tr>
+                            ) : (
+                                currentItems.map((row, index) => (
+                                    <tr key={row.ma_cam_ket} className={`border-b hover:bg-blue-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                                        <td className="px-4 py-4 text-center font-medium">{row.ma_cam_ket}</td>
+                                        <td className="px-4 py-4 text-center">{row.ma_hoc_vien}</td>
+                                        <td className="px-4 py-4 text-gray-900 capitalize whitespace-nowrap">
+                                          {row.hoc_vien?.ho_ten || 'Không rõ'}
+                                        </td>
+                                        <td className="px-4 py-4 text-center text-gray-600">{new Date(row.ngay_ky).toLocaleDateString('vi-VN')}</td>
+                                        <td className="px-4 py-4 text-center text-gray-600">
+                                            {row.ngay_het_han ? new Date(row.ngay_het_han).toLocaleDateString('vi-VN') : <span className="text-gray-400 italic">Vô thời hạn</span>}
+                                        </td>
+                                        <td className="px-4 py-4">
+                                            <div className="line-clamp-2" title={row.noi_dung_cam_ket}>{row.noi_dung_cam_ket}</div>
+                                        </td>
+                                        <td className="px-4 py-4 text-center">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
+                                                row.trang_thai === 'Đang hiệu lực' ? 'bg-green-100 text-green-700' : 
+                                                row.trang_thai === 'Đã hết hạn' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+                                            }`}>
+                                                {row.trang_thai}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-4">
+                                            <div className="flex justify-center gap-2">
+                                                <button onClick={() => openEditModal(row)} className="p-2 text-blue-600 bg-blue-100 rounded hover:bg-blue-200 transition" title="Sửa cam kết">
+                                                    <FaEdit />
+                                                </button>
+                                                <button onClick={() => handleDeleteClick(row.ma_cam_ket)} className="p-2 text-red-600 bg-red-100 rounded hover:bg-red-200 transition" title="Xóa cam kết">
+                                                    <FaTrash />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Phân trang */}
+                {!isLoading && filteredData.length > 0 && (
+                    <div className="flex flex-col sm:flex-row justify-between items-center mt-6 font-medium text-gray-600 text-sm gap-4">
+                        <div>
+                            Hiển thị <span className="font-bold text-gray-800">{indexOfFirstItem + 1}</span> đến <span className="font-bold text-gray-800">{Math.min(indexOfLastItem, filteredData.length)}</span> trong tổng số <span className="font-bold text-gray-800">{filteredData.length}</span> cam kết
+                        </div>
+                        <div className="flex gap-1">
+                            <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} className={`px-3 py-1.5 rounded border ${currentPage === 1 ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' : 'hover:bg-gray-100 border-gray-300'}`}>Trước</button>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                                <button key={number} onClick={() => paginate(number)} className={`px-3 py-1.5 rounded border ${currentPage === number ? 'bg-[#1d4ed8] text-white border-[#1d4ed8]' : 'hover:bg-gray-100 border-gray-300'}`}>{number}</button>
+                            ))}
+                            <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className={`px-3 py-1.5 rounded border ${currentPage === totalPages ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' : 'hover:bg-gray-100 border-gray-300'}`}>Sau</button>
+                        </div>
+                    </div>
                 )}
             </div>
 
-            {}
-            {!isLoading && data.length > 0 && (
-                <div className="flex justify-between items-center mt-6 font-medium text-gray-600">
-                    <div className="text-sm">
-                        Hiển thị <span className="font-bold text-gray-800">{indexOfFirstItem + 1}</span> đến <span className="font-bold text-gray-800">{Math.min(indexOfLastItem, data.length)}</span> trong tổng số <span className="font-bold text-gray-800">{data.length}</span> cam kết
-                    </div>
-                    <div className="flex gap-2">
-                        <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} className={`px-3 py-1 rounded border ${currentPage === 1 ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' : 'hover:bg-gray-100 border-gray-300'}`}>Trước</button>
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                            <button key={number} onClick={() => paginate(number)} className={`px-3 py-1 rounded border ${currentPage === number ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-100 border-gray-300'}`}>{number}</button>
-                        ))}
-                        <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className={`px-3 py-1 rounded border ${currentPage === totalPages ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' : 'hover:bg-gray-100 border-gray-300'}`}>Sau</button>
+            {/* ========================================== */}
+            {/* MODAL THÊM / SỬA CAM KẾT */}
+            {/* ========================================== */}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg w-full max-w-2xl shadow-2xl animate-fade-in-up flex flex-col max-h-[90vh]">
+                        {/* Modal Header */}
+                        <div className="flex justify-between items-center p-5 border-b bg-gray-50 rounded-t-lg">
+                            <h2 className="text-xl font-bold text-gray-800">
+                                {editingId ? 'Cập Nhật Bản Cam Kết' : 'Thêm Bản Cam Kết Mới'}
+                            </h2>
+                            <button onClick={closeModal} className="text-gray-400 hover:text-red-500 transition">
+                                <FaTimes size={24} />
+                            </button>
+                        </div>
+
+                      {/* Modal Body (Scrollable if needed) */}
+                        <div className="p-6 space-y-5 overflow-y-auto">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Mã học viên <span className="text-red-500">*</span></label>
+                                    <input 
+                                        type="number" 
+                                        name="ma_hoc_vien" 
+                                        value={formData.ma_hoc_vien} 
+                                        onChange={handleChange} 
+                                        placeholder="Nhập mã..." 
+                                       
+                                        className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 font-medium"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái <span className="text-red-500">*</span></label>
+                                    <select 
+                                        name="trang_thai" 
+                                        value={formData.trang_thai} 
+                                        onChange={handleChange} 
+                                        
+                                        className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white text-gray-900 font-medium"
+                                    >
+                                        <option value="">-- Chọn trạng thái --</option>
+                                        <option value="Đang hiệu lực">Đang hiệu lực</option>
+                                        <option value="Đã hết hạn">Đã hết hạn</option>
+                                        <option value="Đã hủy bỏ">Đã hủy bỏ</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Ngày ký <span className="text-red-500">*</span></label>
+                                    <input 
+                                        type="date" 
+                                        name="ngay_ky" 
+                                        value={formData.ngay_ky} 
+                                        onChange={handleChange} 
+                                      
+                                        className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 font-medium"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Ngày hết hạn</label>
+                                    <input 
+                                        type="date" 
+                                        name="ngay_het_han" 
+                                        value={formData.ngay_het_han} 
+                                        onChange={handleChange} 
+                                        
+                                        className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 font-medium"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Các trường hiển thị thêm thông tin (Chỉ đọc) khi Sửa */}
+                            {editingId && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 bg-gray-50 p-4 rounded-md border border-gray-200">
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">Mã cam kết (Hệ thống cấp)</label>
+                                        {/* Ô khóa (disabled) tôi để viền xám đậm (border-gray-400) để phân biệt với ô đang nhập */}
+                                        <input type="text" value={formData.ma_cam_ket} disabled className="w-full border border-gray-400 bg-gray-200 text-gray-800 font-semibold rounded p-2 text-sm cursor-not-allowed" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">Tên học viên</label>
+                                        <input type="text" value={formData.ten_hoc_vien} disabled className="w-full border border-gray-400 bg-gray-200 text-gray-800 font-semibold rounded p-2 text-sm cursor-not-allowed" />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Nội dung cam kết <span className="text-red-500">*</span></label>
+                                <textarea 
+                                    name="noi_dung_cam_ket" 
+                                    value={formData.noi_dung_cam_ket} 
+                                    onChange={handleChange} 
+                                    rows={5}
+                                    placeholder="Nhập chi tiết các điều khoản..."
+                                    
+                                    className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none resize-none text-gray-900 font-medium"
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-5 border-t bg-gray-50 rounded-b-lg flex justify-end gap-3">
+                            <button 
+                                onClick={closeModal} 
+                                className="px-5 py-2 border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-100 font-medium transition"
+                            >
+                                Hủy bỏ
+                            </button>
+                            <button 
+                                onClick={handleSaveCamKet} 
+                                className="flex items-center gap-2 px-5 py-2 bg-[#1d4ed8] text-white rounded-md hover:bg-blue-700 font-medium transition shadow-sm"
+                            >
+                                <FaSave /> {editingId ? 'Cập nhật' : 'Lưu cam kết'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
