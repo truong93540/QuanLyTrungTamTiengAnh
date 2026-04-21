@@ -94,7 +94,7 @@ export default function DanhMucPhongBanPage() {
                     )
                     alert('Cập nhật phòng ban thành công!')
                 } else {
-                    setData([savedPhongBan, ...data])
+                    setData([...data, savedPhongBan])
                     alert('Thêm phòng ban thành công!')
                 }
 
