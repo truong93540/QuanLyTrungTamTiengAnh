@@ -61,9 +61,21 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: 'Thiếu mã chức vụ cần xóa' }, { status: 400 })
         }
 
-        await xoaChucVu(Number(id))
-
-        return NextResponse.json({ message: 'Xóa thành công' }, { status: 200 })
+        try {
+            await xoaChucVu(Number(id))
+            return NextResponse.json({ message: 'Xóa thành công' }, { status: 200 })
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                if (error.message === 'CONFLICT_RELATION') {
+                    return NextResponse.json(
+                        { error: 'Không thể xóa chức vụ này vì vẫn còn nhân sự đang đảm nhiệm.' },
+                        { status: 409 }, // Mã lỗi 409: Conflict (Xung đột dữ liệu)
+                    )
+                }
+                return NextResponse.json({ error: error.message }, { status: 500 })
+            }
+        }
+        return NextResponse.json({ error: 'Đã xảy ra lỗi không xác định' }, { status: 500 })
     } catch (error) {
         console.error('Lỗi DELETE:', error)
         return NextResponse.json({ error: 'Lỗi khi xóa khỏi cơ sở dữ liệu' }, { status: 500 })

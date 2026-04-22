@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation' // Để highlight menu đang chọn
+import { usePathname } from 'next/navigation' // Để highlight menu đang chọn
 import {
     FaCogs,
     FaListUl,

@@ -1,5 +1,7 @@
 'use client'
 
+import Alert from '@/components/Alert'
+import ConfirmModal from '@/components/ConfirmModal'
 import { useState, useEffect, use } from 'react'
 import { FaEdit, FaPlus, FaSave, FaSearch, FaTimes, FaTrash } from 'react-icons/fa'
 
@@ -14,6 +16,11 @@ export default function DanhMucChucVuPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [editingId, setEditingId] = useState<number | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [alert, setAlert] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+    const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; id: number | null }>({
+        isOpen: false,
+        id: null,
+    })
 
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 10
@@ -66,6 +73,10 @@ export default function DanhMucChucVuPage() {
         }
     }, [formData.ten_chuc_vu])
 
+    const showAlert = (message: string, type: 'success' | 'error') => {
+        setAlert({ message, type })
+    }
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
@@ -81,7 +92,7 @@ export default function DanhMucChucVuPage() {
 
     const handleSaveChucVu = async () => {
         if (!formData.ten_chuc_vu.trim()) {
-            alert('Vui lòng nhập đầy đủ thông tin bắt buộc!')
+            showAlert('Vui lòng nhập đầy đủ thông tin bắt buộc!', 'error')
             return
         }
 
@@ -103,20 +114,23 @@ export default function DanhMucChucVuPage() {
                             item.ma_chuc_vu === savedChucVu.ma_chuc_vu ? savedChucVu : item,
                         ),
                     )
-                    alert('Cập nhật chức vụ thành công!')
+                    showAlert('Cập nhật chức vụ thành công!', 'success')
                 } else {
                     setData([savedChucVu, ...data])
-                    alert('Thêm chức vụ thành công!')
+                    showAlert('Thêm chức vụ thành công!', 'success')
                 }
                 closeModal()
 
                 handleCancelEdit()
             } else {
-                alert(`Có lỗi xảy ra khi ${editingId ? 'cập nhật' : 'thêm'} chức vụ.`)
+                showAlert(
+                    `Có lỗi xảy ra khi ${editingId ? 'cập nhật' : 'thêm'} chức vụ.`,
+                    'success',
+                )
             }
         } catch (error) {
             console.error('Lỗi:', error)
-            alert('Không thể kết nối đến máy chủ.')
+            showAlert('Không thể kết nối đến máy chủ.', 'error')
         }
     }
 
@@ -131,27 +145,29 @@ export default function DanhMucChucVuPage() {
         window.scrollTo({ top: 0, behavior: 'smooth' }) // Tự động cuộn lên form
     }
 
-    const handleDeleteClick = async (id: number) => {
-        const isConfirm = window.confirm(
-            'Bạn có chắc chắn muốn xóa chức vụ này không? Hành động này không thể hoàn tác!',
-        )
+    const handleDeleteClick = (id: number) => {
+        setConfirmDelete({ isOpen: true, id: id })
+    }
 
-        if (isConfirm) {
-            try {
-                const response = await fetch(`/api/danh-muc/chuc-vu?id=${id}`, {
-                    method: 'DELETE',
-                })
+    const handleConfirmDelete = async () => {
+        if (!confirmDelete.id) return
 
-                if (response.ok) {
-                    setData(data.filter((item) => item.ma_chuc_vu !== id))
-                    alert('Đã xóa chức vụ thành công!')
-                } else {
-                    alert('Có lỗi xảy ra khi xóa.')
-                }
-            } catch (error) {
-                console.error('Lỗi xóa:', error)
-                alert('Không thể kết nối đến máy chủ.')
+        try {
+            const response = await fetch(`/api/danh-muc/chuc-vu?id=${confirmDelete.id}`, {
+                method: 'DELETE',
+            })
+
+            const result = await response.json()
+
+            if (response.ok) {
+                setData(data.filter((item) => item.ma_chuc_vu !== confirmDelete.id))
+                showAlert('Đã xóa chức vụ thành công!', 'success')
+            } else {
+                showAlert(result.error || 'Có lỗi xảy ra khi xóa.', 'error')
             }
+        } catch (error) {
+            console.error('Lỗi xóa:', error)
+            showAlert('Không thể kết nối đến máy chủ.', 'error')
         }
     }
 
@@ -390,6 +406,24 @@ export default function DanhMucChucVuPage() {
                     </div>
                 </div>
             )}
+
+            {alert && (
+                <Alert
+                    message={alert.message}
+                    type={alert.type}
+                    onClose={() => setAlert(null)}
+                    autoClose={3000}
+                />
+            )}
+
+            <ConfirmModal
+                isOpen={confirmDelete.isOpen}
+                title="Xác nhận xóa"
+                message="Bạn có chắc chắn muốn xóa phiếu thu này? Hành động này sẽ không thể khôi phục lại dữ liệu."
+                onConfirm={handleConfirmDelete}
+                onClose={() => setConfirmDelete({ isOpen: false, id: null })}
+                type="danger"
+            />
         </div>
     )
 }

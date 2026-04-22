@@ -49,6 +49,14 @@ export const capNhatChucVu = async (ma_chuc_vu: number, data: ChucVuData) => {
 }
 
 export const xoaChucVu = async (ma_chuc_vu: number) => {
+    const countNhanSu = await prisma.nhanSu.count({
+        where: { ma_chuc_vu: ma_chuc_vu },
+    })
+
+    if (countNhanSu > 0) {
+        throw new Error(`CONFLICT_RELATION`)
+    }
+
     return await prisma.chucVu.delete({
         where: { ma_chuc_vu: ma_chuc_vu },
     })
