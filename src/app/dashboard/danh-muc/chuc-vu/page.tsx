@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { FaEdit, FaPlus, FaSave, FaSearch, FaTimes, FaTrash } from 'react-icons/fa'
 
 interface ChucVu {
@@ -13,9 +13,10 @@ export default function DanhMucChucVuPage() {
     const [data, setData] = useState<ChucVu[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [editingId, setEditingId] = useState<number | null>(null)
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
     const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 5
+    const itemsPerPage = 10
 
     const indexOfLastItem = currentPage * itemsPerPage
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
@@ -46,6 +47,24 @@ export default function DanhMucChucVuPage() {
         }
         fetchData()
     }, [])
+
+    useEffect(() => {
+        if (formData.ten_chuc_vu === '') {
+            const fetchAllData = async () => {
+                try {
+                    const response = await fetch('/api/danh-muc/chuc-vu')
+                    if (response.ok) {
+                        const result = await response.json()
+                        setData(result)
+                        setCurrentPage(1)
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tải tất cả dữ liệu:', error)
+                }
+            }
+            fetchAllData()
+        }
+    }, [formData.ten_chuc_vu])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -89,6 +108,7 @@ export default function DanhMucChucVuPage() {
                     setData([savedChucVu, ...data])
                     alert('Thêm chức vụ thành công!')
                 }
+                closeModal()
 
                 handleCancelEdit()
             } else {
@@ -106,12 +126,12 @@ export default function DanhMucChucVuPage() {
             ten_chuc_vu: row.ten_chuc_vu,
             ghi_chu: row.ghi_chu || '',
         })
-        setEditingId(row.ma_chuc_vu) // Bật chế độ Sửa
+        setEditingId(row.ma_chuc_vu)
+        setIsModalOpen(true)
         window.scrollTo({ top: 0, behavior: 'smooth' }) // Tự động cuộn lên form
     }
 
     const handleDeleteClick = async (id: number) => {
-        // Hiện hộp thoại cảnh báo trước khi xóa thật
         const isConfirm = window.confirm(
             'Bạn có chắc chắn muốn xóa chức vụ này không? Hành động này không thể hoàn tác!',
         )
@@ -123,7 +143,6 @@ export default function DanhMucChucVuPage() {
                 })
 
                 if (response.ok) {
-                    // Dùng hàm filter để loại bỏ dòng vừa xóa khỏi danh sách hiện tại (không cần load lại trang)
                     setData(data.filter((item) => item.ma_chuc_vu !== id))
                     alert('Đã xóa chức vụ thành công!')
                 } else {
@@ -140,9 +159,7 @@ export default function DanhMucChucVuPage() {
         setIsLoading(true)
         try {
             const params = new URLSearchParams()
-            if (formData.ma_chuc_vu) params.append('ma_chuc_vu', formData.ma_chuc_vu)
             if (formData.ten_chuc_vu) params.append('ten_chuc_vu', formData.ten_chuc_vu)
-            if (formData.ghi_chu) params.append('ghi_chu', formData.ghi_chu)
 
             const response = await fetch(`/api/danh-muc/chuc-vu?${params.toString()}`)
             if (response.ok) {
@@ -157,87 +174,136 @@ export default function DanhMucChucVuPage() {
         }
     }
 
+    const handleOpenModel = () => {
+        setIsModalOpen(true)
+    }
+
+    const closeModal = () => {
+        setIsModalOpen(false)
+    }
+
+    const openAddModel = () => {
+        handleOpenModel()
+        setFormData({
+            ma_chuc_vu: '',
+            ten_chuc_vu: '',
+            ghi_chu: '',
+        })
+    }
+
     return (
         <div className="bg-white p-6 rounded-lg shadow-sm min-h-screen max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold text-center text-gray-800 mb-8 uppercase">
                 Quản lý Danh mục Chức vụ
             </h1>
 
-            {/* FORM NHẬP LIỆU NHỎ GỌN */}
-            <div className="mb-8 p-4 bg-gray-50 border rounded-lg items-end">
-                <div className="flex gap-4">
-                    <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Mã chức vụ:
-                        </label>
-                        <input
-                            type="number"
-                            name="ma_chuc_vu"
-                            value={formData.ma_chuc_vu}
-                            placeholder={editingId ? 'Đang sửa đổi...' : 'Nhập mã chức vụ...'}
-                            onChange={handleChange}
-                            disabled={!!editingId}
-                            className={`w-full border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800 ${editingId ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-300'}`}
-                        />
+            {/* Model */}
+            {isModalOpen && (
+                <div className="w-full h-full fixed bg-black/50 left-0 top-0 flex items-center justify-center">
+                    <div className="mb-8 p-4 border rounded-lg w-[60%] max-h-[90vh] bg-white">
+                        <div className="flex justify-between items-center p-5 border-b rounded-t-lg">
+                            <h2 className="text-xl font-bold text-gray-800">
+                                {editingId ? 'Cập Nhật Bản Cam Kết' : 'Thêm Bản Cam Kết Mới'}
+                            </h2>
+                            <button
+                                onClick={closeModal}
+                                className="text-gray-400 hover:text-red-500 cursor-pointer transition">
+                                <FaTimes size={24} />
+                            </button>
+                        </div>
+                        <div className="flex gap-4 mt-3">
+                            {editingId && (
+                                <div className="flex-1">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Mã chức vụ:
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="ma_chuc_vu"
+                                        value={formData.ma_chuc_vu}
+                                        placeholder={
+                                            editingId ? 'Đang sửa đổi...' : 'Nhập mã chức vụ...'
+                                        }
+                                        onChange={handleChange}
+                                        disabled={!!editingId}
+                                        className={`w-full border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800 ${editingId ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-300'}`}
+                                    />
+                                </div>
+                            )}
+
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Tên chức vụ:
+                                </label>
+                                <input
+                                    type="text"
+                                    name="ten_chuc_vu"
+                                    value={formData.ten_chuc_vu}
+                                    onChange={handleChange}
+                                    placeholder="VD: Trợ giảng..."
+                                    className="w-full border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Ghi chú:
+                            </label>
+                            <textarea
+                                name="ghi_chu"
+                                value={formData.ghi_chu}
+                                onChange={handleChange}
+                                placeholder="VD: Chức vụ này dành cho trợ giảng..."
+                                className="w-full border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800"
+                            />
+                        </div>
+                        <div className="p-5 border-t rounded-b-lg flex justify-end gap-3">
+                            <button
+                                onClick={closeModal}
+                                className="px-5 py-2 border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-100 font-medium transition cursor-pointer">
+                                Hủy bỏ
+                            </button>
+                            <button
+                                onClick={handleSaveChucVu}
+                                className="flex items-center gap-2 px-5 py-2 bg-[#1d4ed8] text-white rounded-md hover:bg-blue-700 font-medium transition shadow-sm cursor-pointer">
+                                <FaSave /> {editingId ? 'Cập nhật' : 'Lưu chức vụ'}
+                            </button>
+                        </div>
                     </div>
-                    <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Tên chức vụ:
-                        </label>
+                </div>
+            )}
+            <div className="flex justify-between items-end gap-4 mb-4">
+                <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Tìm kiếm theo tên chức vụ:
+                    </label>
+                    <div className="flex gap-2">
                         <input
                             type="text"
                             name="ten_chuc_vu"
                             value={formData.ten_chuc_vu}
                             onChange={handleChange}
+                            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                             placeholder="VD: Trợ giảng..."
-                            className="w-full border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800"
+                            className="border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800"
                         />
+                        <button
+                            onClick={handleSearch}
+                            className="flex items-center gap-2 px-6 py-2 font-medium transition shadow-sm cursor-pointer bg-blue-600 text-white rounded hover:bg-blue-700">
+                            <FaSearch /> Tìm kiếm
+                        </button>
                     </div>
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú:</label>
-                    <textarea
-                        name="ghi_chu"
-                        value={formData.ghi_chu}
-                        onChange={handleChange}
-                        placeholder="VD: Chức vụ này dành cho trợ giảng..."
-                        className="w-full border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800"
-                    />
-                </div>
 
-                <div className="flex justify-end">
-                    {!editingId ? (
-                        <>
-                            <button
-                                onClick={handleSearch}
-                                className="flex items-center gap-2 px-6 py-2 border border-gray-400 rounded hover:bg-gray-100 font-medium transition text-gray-600 cursor-pointer mt-2">
-                                <FaSearch /> Tìm kiếm
-                            </button>
-                            <button
-                                className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium transition shadow-sm cursor-pointer mt-2 ml-2"
-                                onClick={handleSaveChucVu}>
-                                <FaPlus /> Thêm mới
-                            </button>
-                        </>
-                    ) : (
-                        <div className="flex gap-2">
-                            <button
-                                onClick={handleCancelEdit}
-                                className="flex items-center gap-2 px-4 py-2 border border-gray-400 rounded hover:bg-gray-100 font-medium transition text-gray-600 cursor-pointer">
-                                <FaTimes /> Hủy
-                            </button>
-                            <button
-                                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium transition shadow-sm cursor-pointer"
-                                onClick={handleSaveChucVu}>
-                                <FaSave /> Lưu
-                            </button>
-                        </div>
-                    )}
-                </div>
+                <button
+                    className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium transition shadow-sm cursor-pointer"
+                    onClick={openAddModel}>
+                    <FaPlus /> Thêm mới
+                </button>
             </div>
 
             {/* BẢNG HIỂN THỊ */}
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto mt-4">
                 {isLoading ? (
                     <div className="text-center py-10 text-gray-500 font-medium">Đang tải...</div>
                 ) : (
