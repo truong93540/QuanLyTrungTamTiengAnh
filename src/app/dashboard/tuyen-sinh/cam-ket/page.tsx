@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaUserGraduate } from 'react-icons/fa'
 
 interface CamKet {
@@ -18,7 +18,6 @@ export default function QuanLyCamKetPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
 
-  
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingId, setEditingId] = useState<number | null>(null)
 
@@ -32,8 +31,13 @@ export default function QuanLyCamKetPage() {
         ten_hoc_vien: '', 
     })
 
+    // State cho tính năng Autocomplete
+    const [studentSuggestions, setStudentSuggestions] = useState<any[]>([])
+    const [showSuggestions, setShowSuggestions] = useState(false)
+    const [isSearching, setIsSearching] = useState(false)
+
     const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 10
+    const itemsPerPage = 5
 
     // Fetch dữ liệu
     useEffect(() => {
@@ -57,11 +61,70 @@ export default function QuanLyCamKetPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
+    // --- ĐÃ SỬA: ĐƯA CÁC HÀM XỬ LÝ TÌM KIẾM RA NGOÀI HÀM LƯU ---
+
+    // 1. Xử lý khi gõ Tên học viên
+    const handleNameChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const nameValue = e.target.value
+        setFormData({ ...formData, ten_hoc_vien: nameValue, ma_hoc_vien: '' }) 
+
+        if (nameValue.trim().length < 2) {
+            setStudentSuggestions([])
+            setShowSuggestions(false)
+            return
+        }
+
+        setIsSearching(true)
+        try {
+            const response = await fetch(`/api/tuyen-sinh/hoc-vien?search=${nameValue}`)
+            if (response.ok) {
+                const data = await response.json()
+                setStudentSuggestions(data)
+                setShowSuggestions(true)
+            }
+        } catch (error) {
+            console.error('Lỗi tìm kiếm học viên:', error)
+        } finally {
+            setIsSearching(false)
+        }
+    }
+
+    // 2. Xử lý khi click chọn 1 học viên từ danh sách gợi ý
+    const selectStudent = (student: any) => {
+        setFormData({ 
+            ...formData, 
+            ten_hoc_vien: student.ho_ten, 
+            ma_hoc_vien: student.ma_hoc_vien.toString() 
+        })
+        setShowSuggestions(false)
+    }
+
+    // 3. Xử lý khi gõ Mã học viên (Tìm ngược lại Tên)
+    const handleIdBlur = async () => {
+        if (!formData.ma_hoc_vien) return
+
+        try {
+            const response = await fetch(`/api/tuyen-sinh/hoc-vien?id=${formData.ma_hoc_vien}`)
+            if (response.ok) {
+                const data = await response.json()
+                const student = Array.isArray(data) ? data[0] : data
+                if (student) {
+                    setFormData({ ...formData, ten_hoc_vien: student.ho_ten })
+                } else {
+                    setFormData({ ...formData, ten_hoc_vien: 'Không tìm thấy học viên' })
+                }
+            }
+        } catch (error) {
+            console.error('Lỗi tìm ID:', error)
+        }
+    }
+    // -------------------------------------------------------------
+
     // Mở Modal Thêm
     const openAddModal = () => {
         setFormData({
             ma_cam_ket: '',
-            ngay_ky: new Date().toISOString().split('T')[0], // Mặc định ngày hôm nay
+            ngay_ky: '',
             ngay_het_han: '',
             noi_dung_cam_ket: '',
             trang_thai: '',
@@ -69,10 +132,11 @@ export default function QuanLyCamKetPage() {
             ten_hoc_vien: '', 
         })
         setEditingId(null)
+        setStudentSuggestions([]) // Reset gợi ý
+        setShowSuggestions(false)
         setIsModalOpen(true)
     }
 
-    
     const openEditModal = (row: CamKet) => {
         const formattedNgayKy = new Date(row.ngay_ky).toISOString().split('T')[0]
         const formattedNgayHetHan = row.ngay_het_han ? new Date(row.ngay_het_han).toISOString().split('T')[0] : ''
@@ -87,12 +151,15 @@ export default function QuanLyCamKetPage() {
             ten_hoc_vien: row.hoc_vien?.ho_ten || '', 
         })
         setEditingId(row.ma_cam_ket)
+        setStudentSuggestions([]) // Reset gợi ý
+        setShowSuggestions(false)
         setIsModalOpen(true)
     }
 
     const closeModal = () => {
         setIsModalOpen(false)
         setEditingId(null)
+        setShowSuggestions(false)
     }
 
     const handleDeleteClick = async (id: number) => {
@@ -117,6 +184,7 @@ export default function QuanLyCamKetPage() {
         }
     }
 
+    // --- ĐÃ SỬA: KHÔI PHỤC LẠI HÀM LƯU CHUẨN ---
     const handleSaveCamKet = async () => {
         if (!formData.ngay_ky || !formData.noi_dung_cam_ket || !formData.trang_thai || !formData.ma_hoc_vien) {
             alert('Vui lòng nhập đầy đủ các thông tin bắt buộc (Ngày ký, Nội dung, Trạng thái, Mã học viên)!')
@@ -157,13 +225,11 @@ export default function QuanLyCamKetPage() {
         }
     }
 
-  
     const filteredData = data.filter(item => 
         (item.hoc_vien?.ho_ten || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.ma_hoc_vien.toString().includes(searchTerm)
     )
 
-    
     const indexOfLastItem = currentPage * itemsPerPage
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
     const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem)
@@ -174,7 +240,6 @@ export default function QuanLyCamKetPage() {
         <div className="bg-gray-50 min-h-screen p-6">
             <div className="bg-white rounded-lg shadow-md p-6">
                 
-          
                 <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
                     <h1 className="text-2xl font-bold text-[#1d4ed8] flex items-center gap-3 uppercase">
                         <FaUserGraduate className="text-blue-600" />
@@ -188,7 +253,6 @@ export default function QuanLyCamKetPage() {
                     </button>
                 </div>
 
-      
                 <div className="mb-6 w-full md:w-1/2 lg:w-1/3">
                     <div className="relative">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
@@ -202,27 +266,21 @@ export default function QuanLyCamKetPage() {
                                 setSearchTerm(e.target.value)
                                 setCurrentPage(1) 
                             }}
-                           className="w-full border border-gray-300 rounded-md py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] focus:border-transparent transition shadow-sm placeholder-gray-500 text-gray-900"
+                            className="w-full border border-gray-300 rounded-md py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] focus:border-transparent transition shadow-sm placeholder-gray-500 text-gray-900"
                         />
                     </div>
                 </div>
 
-
                 <div className="overflow-x-auto rounded-t-lg border border-gray-200">
                     <table className="w-full text-sm text-left">
-                       <thead className="bg-[#1d4ed8] text-white uppercase font-semibold text-xs">
+                        <thead className="bg-[#1d4ed8] text-white uppercase font-semibold text-xs">
                             <tr>
-                               
                                 <th className="px-4 py-4 text-center whitespace-nowrap">Mã Cam Kết</th>
                                 <th className="px-4 py-4 text-center whitespace-nowrap">Mã Học Viên</th>
-                                
                                 <th className="px-4 py-4 whitespace-nowrap min-w-[200px] text-center">Tên Học Viên</th>
                                 <th className="px-4 py-4 text-center whitespace-nowrap">Ngày Ký</th>
                                 <th className="px-4 py-4 text-center whitespace-nowrap">Ngày Hết Hạn</th>
-                                
-                                
                                 <th className="px-4 py-4 w-[25%] text-center">Nội Dung</th>
-                                
                                 <th className="px-4 py-4 text-center whitespace-nowrap">Trạng Thái</th>
                                 <th className="px-4 py-4 text-center w-28 whitespace-nowrap">Thao Tác</th>
                             </tr>
@@ -305,9 +363,50 @@ export default function QuanLyCamKetPage() {
                             </button>
                         </div>
 
-                      {/* Modal Body (Scrollable if needed) */}
+                        {/* Modal Body */}
                         <div className="p-6 space-y-5 overflow-y-auto">
+                            
+                            {/* --- ĐÃ SỬA: SẮP XẾP LẠI LAYOUT LƯỚI ĐỂ CHỨA CẢ TÊN VÀ MÃ HỌC VIÊN --- */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                
+                                {/* Ô TÊN HỌC VIÊN KÈM DROPDOWN GỢI Ý */}
+                                <div className="relative">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tên học viên <span className="text-red-500">*</span></label>
+                                    <input 
+                                        type="text" 
+                                        name="ten_hoc_vien" 
+                                        value={formData.ten_hoc_vien} 
+                                        onChange={handleNameChange} 
+                                        onFocus={() => studentSuggestions.length > 0 && setShowSuggestions(true)}
+                                        placeholder="Nhập tên học viên..." 
+                                        autoComplete="off"
+                                        className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 font-medium"
+                                    />
+                                    
+                                    {/* MENU DROPDOWN */}
+                                    {showSuggestions && (
+                                        <ul className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                                            {isSearching ? (
+                                                <li className="p-3 text-sm text-gray-500 text-center">Đang tìm kiếm...</li>
+                                            ) : studentSuggestions.length > 0 ? (
+                                                studentSuggestions.map((sv) => (
+                                                    <li 
+                                                        key={sv.ma_hoc_vien}
+                                                        onClick={() => selectStudent(sv)}
+                                                        className="p-3 hover:bg-blue-100 cursor-pointer border-b border-gray-100 last:border-0"
+                                                    >
+                                                        <div className="font-bold text-gray-800">{sv.ho_ten}</div>
+                                                        <div className="text-xs text-gray-500 mt-1">Mã HV: <span className="text-blue-600 font-semibold">{sv.ma_hoc_vien}</span></div>
+                                                    </li>
+                                                ))
+                                            ) : (
+                                                <li className="p-3 text-sm text-red-500 text-center">Không tìm thấy học viên</li>
+                                            )}
+                                        </ul>
+                                    )}
+                                </div>
+
+                                {/* Ô MÃ HỌC VIÊN CÓ SỰ KIỆN onBlur */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Mã học viên <span className="text-red-500">*</span></label>
                                     <input 
@@ -315,18 +414,20 @@ export default function QuanLyCamKetPage() {
                                         name="ma_hoc_vien" 
                                         value={formData.ma_hoc_vien} 
                                         onChange={handleChange} 
-                                        placeholder="Nhập mã..." 
-                                       
-                                        className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 font-medium"
+                                        onBlur={handleIdBlur} 
+                                        placeholder="Hoặc nhập mã..." 
+                                        className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 font-medium bg-gray-50"
                                     />
                                 </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái <span className="text-red-500">*</span></label>
                                     <select 
                                         name="trang_thai" 
                                         value={formData.trang_thai} 
                                         onChange={handleChange} 
-                                        
                                         className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white text-gray-900 font-medium"
                                     >
                                         <option value="">-- Chọn trạng thái --</option>
@@ -335,9 +436,6 @@ export default function QuanLyCamKetPage() {
                                         <option value="Đã hủy bỏ">Đã hủy bỏ</option>
                                     </select>
                                 </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Ngày ký <span className="text-red-500">*</span></label>
                                     <input 
@@ -345,10 +443,12 @@ export default function QuanLyCamKetPage() {
                                         name="ngay_ky" 
                                         value={formData.ngay_ky} 
                                         onChange={handleChange} 
-                                      
                                         className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 font-medium"
                                     />
                                 </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Ngày hết hạn</label>
                                     <input 
@@ -356,22 +456,19 @@ export default function QuanLyCamKetPage() {
                                         name="ngay_het_han" 
                                         value={formData.ngay_het_han} 
                                         onChange={handleChange} 
-                                        
                                         className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 font-medium"
                                     />
                                 </div>
                             </div>
 
-                            {/* Các trường hiển thị thêm thông tin (Chỉ đọc) khi Sửa */}
                             {editingId && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 bg-gray-50 p-4 rounded-md border border-gray-200">
                                     <div>
                                         <label className="block text-xs font-medium text-gray-500 mb-1">Mã cam kết (Hệ thống cấp)</label>
-                                        {/* Ô khóa (disabled) tôi để viền xám đậm (border-gray-400) để phân biệt với ô đang nhập */}
                                         <input type="text" value={formData.ma_cam_ket} disabled className="w-full border border-gray-400 bg-gray-200 text-gray-800 font-semibold rounded p-2 text-sm cursor-not-allowed" />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-500 mb-1">Tên học viên</label>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">Tên học viên đã lưu</label>
                                         <input type="text" value={formData.ten_hoc_vien} disabled className="w-full border border-gray-400 bg-gray-200 text-gray-800 font-semibold rounded p-2 text-sm cursor-not-allowed" />
                                     </div>
                                 </div>
@@ -385,7 +482,6 @@ export default function QuanLyCamKetPage() {
                                     onChange={handleChange} 
                                     rows={5}
                                     placeholder="Nhập chi tiết các điều khoản..."
-                                    
                                     className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none resize-none text-gray-900 font-medium"
                                 ></textarea>
                             </div>
