@@ -1,10 +1,12 @@
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 interface PhieuThuFilter {
     ma_phieu_thu?: string | null
     so_tien?: string | null
     ngay_thu?: string | null
     ma_hoc_vien?: string | null
+    ten_hoc_vien?: string | null
     ma_nhan_su?: string | null
 }
 
@@ -31,33 +33,24 @@ const validatePhieuThuReferences = async (ma_hoc_vien: number, ma_nhan_su: numbe
 }
 
 export const layDanhSachPhieuThu = async (filters: PhieuThuFilter) => {
-    const { ma_phieu_thu, so_tien, ngay_thu, ma_hoc_vien, ma_nhan_su } = filters
+    const { ten_hoc_vien } = filters
 
-    const whereClause: {
-        ma_phieu_thu?: number
-        so_tien?: number
-        ma_hoc_vien?: number
-        ma_nhan_su?: number
-        ngay_thu?: { gte: Date; lt: Date }
-    } = {}
+    const whereClause: Prisma.PhieuThuWhereInput = {}
 
-    if (ma_phieu_thu) whereClause.ma_phieu_thu = Number(ma_phieu_thu)
-    if (so_tien) whereClause.so_tien = Number(so_tien)
-    if (ma_hoc_vien) whereClause.ma_hoc_vien = Number(ma_hoc_vien)
-    if (ma_nhan_su) whereClause.ma_nhan_su = Number(ma_nhan_su)
-
-    if (ngay_thu) {
-        const date = new Date(ngay_thu)
-        const nextDay = new Date(date)
-        nextDay.setDate(date.getDate() + 1)
-        whereClause.ngay_thu = { gte: date, lt: nextDay }
+    if (ten_hoc_vien) {
+        whereClause.hoc_vien = {
+            ho_ten: {
+                contains: ten_hoc_vien,
+                mode: 'insensitive',
+            },
+        }
     }
 
     return await prisma.phieuThu.findMany({
         where: whereClause,
         include: {
-            hoc_vien: { select: { ho_ten: true } },
-            nhan_su: { select: { ho_ten: true } },
+            hoc_vien: true,
+            nhan_su: true,
         },
         orderBy: { ngay_thu: 'desc' },
     })

@@ -32,11 +32,7 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url)
         const filters = {
-            ma_phieu_thu: searchParams.get('ma_phieu_thu'),
-            so_tien: searchParams.get('so_tien'),
-            ngay_thu: searchParams.get('ngay_thu'),
-            ma_hoc_vien: searchParams.get('ma_hoc_vien'),
-            ma_nhan_su: searchParams.get('ma_nhan_su'),
+            ten_hoc_vien: searchParams.get('ten_hoc_vien'),
         }
 
         const danhSach = await layDanhSachPhieuThu(filters)

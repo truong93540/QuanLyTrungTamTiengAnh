@@ -2,8 +2,6 @@ import NextAuth, { User } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcrypt'
 import { prisma } from '@/lib/prisma'
-import { JWT } from 'next-auth/jwt'
-
 
 interface ExtendedUser extends User {
     role: string

@@ -10,9 +10,7 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url)
         const filters = {
-            ma_chuc_vu: searchParams.get('ma_chuc_vu'),
             ten_chuc_vu: searchParams.get('ten_chuc_vu'),
-            ghi_chu: searchParams.get('ghi_chu'),
         }
 
         const danhSach = await layDanhSachChucVu(filters)

@@ -152,7 +152,7 @@ export default function Sidebar() {
 
             <div className="p-4 border-t border-blue-800/50">
                 <button
-                    className="flex items-center gap-3 w-full p-3 bg-red-600/90 rounded hover:bg-red-700 transition text-sm font-medium justify-center"
+                    className="flex items-center gap-3 w-full p-3 bg-red-600/90 rounded hover:bg-red-700 transition text-sm font-medium justify-center cursor-pointer"
                     onClick={handleLogout}>
                     <FaSignOutAlt />
                     Đăng xuất (1.5)

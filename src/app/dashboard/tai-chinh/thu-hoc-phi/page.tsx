@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash } from 'react-icons/fa'
@@ -17,9 +17,9 @@ interface PhieuThu {
 export default function PhieuThuHocPhiPage() {
     const [data, setData] = useState<PhieuThu[]>([])
     const [isLoading, setIsLoading] = useState(true)
-
-    // State nhận biết đang ở chế độ Sửa (lưu ID của phiếu đang sửa), nếu null là đang Thêm mới
     const [editingId, setEditingId] = useState<number | null>(null)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const [formData, setFormData] = useState({
         ma_phieu_thu: '',
@@ -28,6 +28,7 @@ export default function PhieuThuHocPhiPage() {
         ma_hoc_vien: '',
         ma_nhan_su: '',
         noi_dung: '',
+        ten_hoc_vien: '',
     })
     const [formError, setFormError] = useState<string | null>(null)
 
@@ -58,26 +59,27 @@ export default function PhieuThuHocPhiPage() {
         fetchData()
     }, [])
 
+    useEffect(() => {
+        if (formData.ten_hoc_vien === '') {
+            const fetchAllData = async () => {
+                try {
+                    const response = await fetch('/api/tai-chinh/phieu-thu')
+                    if (response.ok) {
+                        const result = await response.json()
+                        setData(result)
+                        setCurrentPage(1)
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tải tất cả dữ liệu:', error)
+                }
+            }
+            fetchAllData()
+        }
+    }, [formData.ten_hoc_vien])
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormError(null)
         setFormData({ ...formData, [e.target.name]: e.target.value })
-    }
-
-    // === HÀM BẤM NÚT SỬA Ở TỪNG DÒNG ===
-    const handleEditClick = (row: PhieuThu) => {
-        // Format ngày tháng từ ISO string (CSDL) sang YYYY-MM-DD để đưa lên thẻ <input type="date">
-        const formattedDate = new Date(row.ngay_thu).toISOString().split('T')[0]
-
-        setFormData({
-            ma_phieu_thu: row.ma_phieu_thu.toString(),
-            so_tien: row.so_tien.toString(),
-            ngay_thu: formattedDate,
-            ma_hoc_vien: row.ma_hoc_vien.toString(),
-            ma_nhan_su: row.ma_nhan_su.toString(),
-            noi_dung: row.noi_dung,
-        })
-        setEditingId(row.ma_phieu_thu) // Bật chế độ Sửa
-        window.scrollTo({ top: 0, behavior: 'smooth' }) // Tự động cuộn lên form
     }
 
     // === HÀM HỦY SỬA (Làm sạch form) ===
@@ -89,6 +91,7 @@ export default function PhieuThuHocPhiPage() {
             ma_hoc_vien: '',
             ma_nhan_su: '',
             noi_dung: '',
+            ten_hoc_vien: '',
         })
         setFormError(null)
         setEditingId(null)
@@ -120,8 +123,8 @@ export default function PhieuThuHocPhiPage() {
         }
     }
 
-    // === HÀM LƯU DỮ LIỆU (Dùng chung cho THÊM và SỬA) ===
     const handleSavePhieuThu = async () => {
+        if (isSubmitting) return
         if (
             !formData.so_tien ||
             !formData.ngay_thu ||
@@ -139,6 +142,7 @@ export default function PhieuThuHocPhiPage() {
 
         setFormError(null)
 
+        setIsSubmitting(true)
         try {
             const method = editingId ? 'PUT' : 'POST'
 
@@ -152,30 +156,32 @@ export default function PhieuThuHocPhiPage() {
                 const savedPhieuThu = await response.json()
 
                 if (editingId) {
-                    // Nếu là Sửa: Tìm dòng cũ trong bảng và thay bằng dòng mới cập nhật
                     setData(
                         data.map((item) =>
                             item.ma_phieu_thu === savedPhieuThu.ma_phieu_thu ? savedPhieuThu : item,
                         ),
                     )
                     alert('Cập nhật phiếu thu thành công!')
+                    setIsModalOpen(false)
                 } else {
-                    // Nếu là Thêm: Đẩy dòng mới lên đầu bảng
                     setData([savedPhieuThu, ...data])
                     alert('Thêm phiếu thu thành công!')
+                    setIsModalOpen(false)
                 }
 
-                // Lưu xong thì làm sạch form
                 handleCancelEdit()
             } else {
                 const errorResponse = await response.json().catch(() => null)
                 setFormError(
-                    errorResponse?.error || `Có lỗi xảy ra khi ${editingId ? 'cập nhật' : 'thêm'} phiếu thu.`,
+                    errorResponse?.error ||
+                        `Có lỗi xảy ra khi ${editingId ? 'cập nhật' : 'thêm'} phiếu thu.`,
                 )
             }
         } catch (error) {
             console.error('Lỗi:', error)
             setFormError('Không thể kết nối đến máy chủ.')
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -183,13 +189,9 @@ export default function PhieuThuHocPhiPage() {
         setIsLoading(true)
         try {
             const params = new URLSearchParams()
-            if (formData.ma_phieu_thu) params.append('ma_phieu_thu', formData.ma_phieu_thu)
-            if (formData.so_tien) params.append('so_tien', formData.so_tien)
-            if (formData.ngay_thu) params.append('ngay_thu', formData.ngay_thu)
-            if (formData.ma_hoc_vien) params.append('ma_hoc_vien', formData.ma_hoc_vien)
-            if (formData.ma_nhan_su) params.append('ma_nhan_su', formData.ma_nhan_su)
+            if (formData.ten_hoc_vien) params.append('ten_hoc_vien', formData.ten_hoc_vien)
 
-            const response = await fetch(`/api/phieu-thu?${params.toString()}`)
+            const response = await fetch(`/api/tai-chinh/phieu-thu?${params.toString()}`)
             if (response.ok) {
                 const result = await response.json()
                 setData(result)
@@ -201,129 +203,196 @@ export default function PhieuThuHocPhiPage() {
             setIsLoading(false)
         }
     }
+    const closeModal = () => {
+        setIsModalOpen(false)
+        handleCancelEdit()
+    }
+    const openModalForAdd = () => {
+        setIsModalOpen(true)
+        setFormData({
+            ma_phieu_thu: '',
+            so_tien: '',
+            ngay_thu: new Date().toISOString().split('T')[0],
+            ma_hoc_vien: '',
+            noi_dung: '',
+            ma_nhan_su: '',
+            ten_hoc_vien: '',
+        })
+    }
+    const openModalForEdit = (row: PhieuThu) => {
+        const formattedDate = new Date(row.ngay_thu).toISOString().split('T')[0]
+        setFormData({
+            ma_phieu_thu: row.ma_phieu_thu.toString(),
+            so_tien: row.so_tien.toString(),
+            ngay_thu: formattedDate,
+            ma_hoc_vien: row.ma_hoc_vien.toString(),
+            ma_nhan_su: row.ma_nhan_su.toString(),
+            noi_dung: row.noi_dung,
+            ten_hoc_vien: row.hoc_vien?.ho_ten || '',
+        })
+        setEditingId(row.ma_phieu_thu)
+        setIsModalOpen(true)
+    }
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-sm min-h-screen">
             <h1 className="text-2xl font-bold text-center text-gray-800 mb-8 uppercase">
                 Quản lý phiếu thu học phí
             </h1>
+            {/* Model */}
+            {isModalOpen && (
+                <div className="fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-50 transition-opacity">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-4xl mx-auto shadow-lg">
+                        <div className="flex justify-between items-center p-5 border-b rounded-t-lg">
+                            <h2 className="text-xl font-bold text-gray-800">
+                                {editingId
+                                    ? 'Cập nhật phiếu thu học phí'
+                                    : 'Thêm mới phiếu thu học phí'}
+                            </h2>
+                            <button
+                                onClick={closeModal}
+                                className="text-gray-400 hover:text-red-500 cursor-pointer transition">
+                                <FaTimes size={24} />
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-20 mb-6 text-gray-700 mt-5">
+                            <div className="space-y-4">
+                                {editingId && (
+                                    <div className="flex items-center">
+                                        <label className="w-1/4 text-sm font-medium text-gray-700">
+                                            Mã phiếu thu:
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="ma_phieu_thu"
+                                            value={formData.ma_phieu_thu}
+                                            onChange={handleChange}
+                                            placeholder={editingId ? 'Đang sửa đổi...' : ''}
+                                            disabled={editingId !== null}
+                                            className={`w-3/4 border rounded p-2 focus:outline-blue-500  ${editingId ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-300'}`}
+                                        />
+                                    </div>
+                                )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-20 mb-6 text-gray-700">
-                <div className="space-y-4">
-                    <div className="flex items-center">
-                        <label className="w-1/4 text-sm font-medium text-gray-700">
-                            Mã phiếu thu:
-                        </label>
-                        <input
-                            type="number"
-                            name="ma_phieu_thu"
-                            value={formData.ma_phieu_thu}
-                            onChange={handleChange}
-                            placeholder={editingId ? 'Đang sửa đổi...' : ''}
-                            disabled={editingId !== null} // Khóa ô này nếu đang Sửa
-                            className={`w-3/4 border rounded p-2 focus:outline-blue-500  ${editingId ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-300'}`}
-                        />
-                    </div>
-                    <div className="flex items-center">
-                        <label className="w-1/4 text-sm font-medium text-gray-700">Số tiền:</label>
-                        <div className="w-3/4 relative">
-                            <input
-                                type="number"
-                                name="so_tien"
-                                value={formData.so_tien}
-                                onChange={handleChange}
-                                className="w-full border border-gray-300 rounded p-2 pr-12 focus:outline-blue-500"
-                            />
-                            <span className="absolute right-3 top-2 text-gray-500 font-medium">
-                                VNĐ
-                            </span>
+                                <div className="flex items-center">
+                                    <label className="w-1/4 text-sm font-medium text-gray-700">
+                                        Số tiền:
+                                    </label>
+                                    <div className="w-3/4 relative">
+                                        <input
+                                            type="number"
+                                            name="so_tien"
+                                            value={formData.so_tien}
+                                            onChange={handleChange}
+                                            className="w-full border border-gray-300 rounded p-2 pr-12 focus:outline-blue-500"
+                                        />
+                                        <span className="absolute right-3 top-2 text-gray-500 font-medium">
+                                            VNĐ
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center">
+                                    <label className="w-1/4 text-sm font-medium text-gray-700">
+                                        Ngày thu:
+                                    </label>
+                                    <input
+                                        type="date"
+                                        name="ngay_thu"
+                                        value={formData.ngay_thu}
+                                        onChange={handleChange}
+                                        className="w-3/4 border border-gray-300 rounded p-2 focus:outline-blue-500 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                                    />
+                                </div>
+                                <div className="flex items-center">
+                                    <label className="w-1/4 text-sm font-medium text-gray-700">
+                                        Mã học viên:
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="ma_hoc_vien"
+                                        value={formData.ma_hoc_vien}
+                                        onChange={handleChange}
+                                        className="w-3/4 border border-gray-300 rounded p-2 focus:outline-blue-500"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 flex flex-col">
+                                <div className="flex items-center">
+                                    <label className="w-1/3 text-sm font-medium text-gray-700">
+                                        Mã nhân sự lập phiếu:
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="ma_nhan_su"
+                                        value={formData.ma_nhan_su}
+                                        onChange={handleChange}
+                                        className="w-2/3 border border-gray-300 rounded p-2 focus:outline-blue-500"
+                                    />
+                                </div>
+                                <div className="flex items-start flex-1">
+                                    <label className="w-1/3 text-sm font-medium text-gray-700 pt-2">
+                                        Nội dung:
+                                    </label>
+                                    <textarea
+                                        name="noi_dung"
+                                        value={formData.noi_dung}
+                                        onChange={handleChange}
+                                        className="w-2/3 h-full min-h-30 border border-gray-300 rounded p-2 focus:outline-blue-500 resize-none"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        {formError && (
+                            <div className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                {formError}
+                            </div>
+                        )}
+                        <div className="p-5 border-t rounded-b-lg flex justify-end gap-3">
+                            <button
+                                onClick={closeModal}
+                                className="px-5 py-2 border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-100 font-medium transition cursor-pointer">
+                                Hủy bỏ
+                            </button>
+                            <button
+                                onClick={handleSavePhieuThu}
+                                disabled={isSubmitting}
+                                className="flex items-center gap-2 px-5 py-2 bg-[#1d4ed8] text-white rounded-md hover:bg-blue-700 font-medium transition shadow-sm cursor-pointer">
+                                <FaSave /> {editingId ? 'Cập nhật' : 'Lưu phiếu thu'}
+                            </button>
                         </div>
                     </div>
-                    <div className="flex items-center">
-                        <label className="w-1/4 text-sm font-medium text-gray-700">Ngày thu:</label>
-                        <input
-                            type="date"
-                            name="ngay_thu"
-                            value={formData.ngay_thu}
-                            onChange={handleChange}
-                            className="w-3/4 border border-gray-300 rounded p-2 focus:outline-blue-500 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                        />
-                    </div>
-                    <div className="flex items-center">
-                        <label className="w-1/4 text-sm font-medium text-gray-700">
-                            Mã học viên:
-                        </label>
-                        <input
-                            type="number"
-                            name="ma_hoc_vien"
-                            value={formData.ma_hoc_vien}
-                            onChange={handleChange}
-                            className="w-3/4 border border-gray-300 rounded p-2 focus:outline-blue-500"
-                        />
-                    </div>
-                </div>
-
-                <div className="space-y-4 flex flex-col">
-                    <div className="flex items-center">
-                        <label className="w-1/3 text-sm font-medium text-gray-700">
-                            Mã nhân sự lập phiếu:
-                        </label>
-                        <input
-                            type="number"
-                            name="ma_nhan_su"
-                            value={formData.ma_nhan_su}
-                            onChange={handleChange}
-                            className="w-2/3 border border-gray-300 rounded p-2 focus:outline-blue-500"
-                        />
-                    </div>
-                    <div className="flex items-start flex-1">
-                        <label className="w-1/3 text-sm font-medium text-gray-700 pt-2">
-                            Nội dung:
-                        </label>
-                        <textarea
-                            name="noi_dung"
-                            value={formData.noi_dung}
-                            onChange={handleChange}
-                            className="w-2/3 h-full min-h-30 border border-gray-300 rounded p-2 focus:outline-blue-500 resize-none"></textarea>
-                    </div>
-                </div>
-            </div>
-
-            {formError && (
-                <div className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    {formError}
                 </div>
             )}
+            {/* end model */}
 
-            {/* Giao diện nút bấm thay đổi linh hoạt theo chế độ */}
-            <div className="flex justify-end gap-4 mb-8 border-b pb-6">
-                {!editingId ? (
-                    <>
+            <div className="flex justify-between items-end gap-4 mb-8 border-b pb-6">
+                <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Tìm kiếm theo tên học viên:
+                    </label>
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            name="ten_hoc_vien"
+                            value={formData.ten_hoc_vien}
+                            onChange={handleChange}
+                            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                            placeholder="Nhập tên học viên..."
+                            className="border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800"
+                        />
                         <button
                             onClick={handleSearch}
-                            className="flex items-center gap-2 px-6 py-2 border border-gray-400 rounded hover:bg-gray-100 font-medium transition text-gray-600 cursor-pointer">
+                            className="flex items-center gap-2 px-6 py-2 font-medium transition shadow-sm cursor-pointer bg-blue-600 text-white rounded hover:bg-blue-700">
                             <FaSearch /> Tìm kiếm
                         </button>
-                        <button
-                            onClick={handleSavePhieuThu}
-                            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium transition shadow-sm cursor-pointer">
-                            <FaPlus /> Thêm phiếu thu
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <button
-                            onClick={handleCancelEdit}
-                            className="flex items-center gap-2 px-6 py-2 border border-gray-400 rounded hover:bg-gray-100 font-medium transition text-gray-600 cursor-pointer">
-                            <FaTimes /> Hủy sửa
-                        </button>
-                        <button
-                            onClick={handleSavePhieuThu}
-                            className="flex items-center gap-2 px-6 py-2 bg-[#16a34a] text-white rounded hover:bg-green-700 font-medium transition shadow-sm cursor-pointer">
-                            <FaSave /> Cập nhật phiếu thu
-                        </button>
-                    </>
-                )}
+                    </div>
+                </div>
+                <button
+                    onClick={openModalForAdd}
+                    className="flex items-center gap-2 px-6 py-2 font-medium transition shadow-sm cursor-pointer bg-blue-600 text-white rounded hover:bg-blue-700">
+                    <FaPlus /> Thêm mới
+                </button>
             </div>
 
             <div className="overflow-x-auto">
@@ -376,7 +445,7 @@ export default function PhieuThuHocPhiPage() {
                                     <td className="border border-gray-300 p-3">
                                         <div className="flex justify-center">
                                             <button
-                                                onClick={() => handleEditClick(row)}
+                                                onClick={() => openModalForEdit(row)}
                                                 className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-yellow-100 hover:text-yellow-600 transition cursor-pointer"
                                                 title="Sửa phiếu thu">
                                                 <FaEdit />
