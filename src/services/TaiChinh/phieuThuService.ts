@@ -16,6 +16,7 @@ interface PhieuThuData {
     noi_dung: string
     ma_hoc_vien: string | number
     ma_nhan_su: string | number
+    ma_cam_ket?: string | number | null
 }
 
 export class PhieuThuValidationError extends Error {}
@@ -69,6 +70,7 @@ export const taoPhieuThuMoi = async (data: PhieuThuData) => {
             noi_dung: data.noi_dung,
             ma_hoc_vien: maHocVien,
             ma_nhan_su: maNhanSu,
+            ma_cam_ket: data.ma_cam_ket ? Number(data.ma_cam_ket) : null,
         },
         include: {
             hoc_vien: { select: { ho_ten: true } },
@@ -91,6 +93,7 @@ export const capNhatPhieuThu = async (ma_phieu_thu: number, data: PhieuThuData) 
             noi_dung: data.noi_dung,
             ma_hoc_vien: maHocVien,
             ma_nhan_su: maNhanSu,
+            ma_cam_ket: data.ma_cam_ket ? Number(data.ma_cam_ket) : null,
         },
         include: {
             hoc_vien: { select: { ho_ten: true } },
