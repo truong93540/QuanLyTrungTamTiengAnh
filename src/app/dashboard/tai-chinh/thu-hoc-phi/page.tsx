@@ -258,7 +258,7 @@ export default function PhieuThuHocPhiPage() {
             !formData.ma_nhan_su ||
             !formData.ma_cam_ket
         ) {
-            setFormError('Vui lòng nhập đầy đủ thông tin bắt buộc, bao gồm cả cam kết!')
+            setFormError('Vui lòng nhập đầy đủ thông tin!')
             return
         }
 
