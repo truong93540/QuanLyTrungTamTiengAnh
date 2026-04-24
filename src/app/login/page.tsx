@@ -54,7 +54,7 @@ export default function LoginPage() {
                     {error && <p className="text-red-500 text-sm">{error}</p>}
                     <button
                         type="submit"
-                        className="w-full rounded bg-blue-600 p-3 text-white hover:bg-blue-700">
+                        className="w-full rounded bg-blue-600 p-3 text-white hover:bg-blue-700 cursor-pointer transition-colors">
                         Đăng nhập
                     </button>
                 </form>
