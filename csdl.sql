@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict AB0odzibiphoG8FYSDYfjgCnLgaJAHBtsepYdPlIBNNUpdOkWA7KLGnYZbMiWFF
+
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
 
--- Started on 2026-04-18 21:52:36
+
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -22,6 +22,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+
 -- TOC entry 5 (class 2615 OID 16809)
 -- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
 --
@@ -1994,9 +1995,12 @@ SELECT pg_catalog.setval('public."PhieuThuong_ma_phieu_thuong_seq"', 1, false);
 -- TOC entry 5413 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: PhongBan_ma_phong_ban_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+
 --
 
-SELECT pg_catalog.setval('public."PhongBan_ma_phong_ban_seq"', 1, true);
+SET SESSION AUTHORIZATION DEFAULT;
+
+ALTER TABLE public."BangCap" DISABLE TRIGGER ALL;
 
 
 --
@@ -2008,13 +2012,14 @@ SELECT pg_catalog.setval('public."PhongBan_ma_phong_ban_seq"', 1, true);
 SELECT pg_catalog.setval('public."PhongHoc_ma_phong_hoc_seq"', 6, true);
 
 
---
--- TOC entry 5415 (class 0 OID 0)
--- Dependencies: 220
--- Name: Quyen_ma_quyen_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+ALTER TABLE public."BangCap" ENABLE TRIGGER ALL;
+
 --
 
-SELECT pg_catalog.setval('public."Quyen_ma_quyen_seq"', 3, true);
+--
+
+ALTER TABLE public."BangLuong" DISABLE TRIGGER ALL;
+
 
 
 --
@@ -2026,31 +2031,38 @@ SELECT pg_catalog.setval('public."Quyen_ma_quyen_seq"', 3, true);
 SELECT pg_catalog.setval('public."TaiKhoan_ma_tai_khoan_seq"', 1, true);
 
 
---
--- TOC entry 5417 (class 0 OID 0)
--- Dependencies: 258
--- Name: ThamGiaLop_ma_tham_gia_lop_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public."ThamGiaLop_ma_tham_gia_lop_seq"', 1, false);
-
+ALTER TABLE public."BangLuong" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5418 (class 0 OID 0)
--- Dependencies: 268
--- Name: ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public."ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq"', 1, false);
-
 
 --
--- TOC entry 5059 (class 2606 OID 16893)
--- Name: BangCap BangCap_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+
+ALTER TABLE public."HocVien" DISABLE TRIGGER ALL;
+
+
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (1, 'Trần Thị Thu Hà', '2005-05-20 00:00:00', NULL, '0912345678', 'thuha@gmail.com', NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (2, 'Lê Văn Nam', '2004-10-15 00:00:00', NULL, '0988776655', 'vannam.le@gmail.com', NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (3, 'Nguyễn Minh Anh', '2005-08-12 00:00:00', 'Nữ', NULL, NULL, NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (4, 'Phạm Hoàng Long', '2006-03-22 00:00:00', 'Nam', NULL, NULL, NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (5, 'Đỗ Thùy Chi', '2004-12-05 00:00:00', 'Nữ', NULL, NULL, NULL);
+INSERT INTO public."HocVien" (ma_hoc_vien, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, email, dia_chi) VALUES (6, 'Bùi Văn Mạnh', '2005-01-30 00:00:00', 'Nam', NULL, NULL, NULL);
+
+
+
+ALTER TABLE public."HocVien" ENABLE TRIGGER ALL;
+
 --
 
-ALTER TABLE ONLY public."BangCap"
-    ADD CONSTRAINT "BangCap_pkey" PRIMARY KEY (ma_bang_cap);
+--
+
+ALTER TABLE public."CamKet" DISABLE TRIGGER ALL;
+
+INSERT INTO public."CamKet" (ma_cam_ket, ngay_ky, ngay_het_han, noi_dung_cam_ket, trang_thai, ma_hoc_vien) VALUES (4, '2026-04-03 00:00:00', '2026-07-30 00:00:00', 'Cam kết của học viên về việc tuân thủ nội quy học bán trú cùng người nước ngoài', 'Đã hủy bỏ', 4);
+INSERT INTO public."CamKet" (ma_cam_ket, ngay_ky, ngay_het_han, noi_dung_cam_ket, trang_thai, ma_hoc_vien) VALUES (1, '2026-04-16 00:00:00', '2026-10-16 00:00:00', 'Cam kết đầu ra chứng chỉ IELTS 6.0, hoàn trả 100% học phí nếu không đạt.', 'Đang hiệu lực', 1);
+INSERT INTO public."CamKet" (ma_cam_ket, ngay_ky, ngay_het_han, noi_dung_cam_ket, trang_thai, ma_hoc_vien) VALUES (5, '2026-04-05 00:00:00', '2026-09-30 00:00:00', 'Cam kết tuân thủ nội quy và làm đầu đủ btvn', 'Đang hiệu lực', 3);
+INSERT INTO public."CamKet" (ma_cam_ket, ngay_ky, ngay_het_han, noi_dung_cam_ket, trang_thai, ma_hoc_vien) VALUES (8, '2026-01-20 00:00:00', '2026-03-20 00:00:00', 'Cam kết tiếng anh', 'Đã hết hạn', 5);
+INSERT INTO public."CamKet" (ma_cam_ket, ngay_ky, ngay_het_han, noi_dung_cam_ket, trang_thai, ma_hoc_vien) VALUES (2, '2026-04-18 00:00:00', '2026-09-20 00:00:00', 'Cam kết học viên tuân thủ nội quy trung tâm và hoàn thành đủ bài tập về nhà.', 'Đã hết hạn', 2);
+INSERT INTO public."CamKet" (ma_cam_ket, ngay_ky, ngay_het_han, noi_dung_cam_ket, trang_thai, ma_hoc_vien) VALUES (10, '2026-04-08 00:00:00', '2026-09-30 00:00:00', 'Cam kết', 'Đã hủy bỏ', 2);
 
 
 --
@@ -2062,375 +2074,313 @@ ALTER TABLE ONLY public."BangLuong"
     ADD CONSTRAINT "BangLuong_pkey" PRIMARY KEY (ma_bang_luong);
 
 
---
--- TOC entry 5094 (class 2606 OID 17092)
--- Name: CamKet CamKet_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+ALTER TABLE public."CamKet" ENABLE TRIGGER ALL;
+
 --
 
-ALTER TABLE ONLY public."CamKet"
-    ADD CONSTRAINT "CamKet_pkey" PRIMARY KEY (ma_cam_ket);
+--
 
+ALTER TABLE public."ChucVu" DISABLE TRIGGER ALL;
+
+
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (3, 'Quản lý đào tạo', 'Lập kế hoạch giảng dạy, kiểm soát chất lượng giáo viên và chương trình học.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (6, 'Trợ giảng (Tutor)', 'Hỗ trợ giáo viên trong lớp, kèm cặp học viên yếu và chấm bài tập.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (7, 'Nhân viên Tư vấn (Sales)', 'Tìm kiếm học viên mới, tư vấn khóa học và ký kết hợp đồng.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (8, 'Nhân viên Marketing', 'Chạy quảng cáo, quản lý Fanpage và tổ chức sự kiện ngoại khóa.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (9, 'Kế toán', 'Quản lý thu chi, lập phiếu thu học phí và tính lương nhân sự.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (10, 'Lễ tân', 'Đón tiếp khách, hướng dẫn học viên và trực điện thoại hotline.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (1, 'Quản trị viên', 'Quản lý toàn bộ hệ thống');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (4, 'Giáo viên nước ngoài', 'Giảng dạy trực tiếp, tập trung vào kỹ năng nghe - nói.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (2, 'Giáo viên bản ngữ', 'Chịu trách nhiệm về giáo trình và chất lượng giảng dạy.');
+INSERT INTO public."ChucVu" (ma_chuc_vu, ten_chuc_vu, ghi_chu) VALUES (5, 'Giáo viên Việt', 'Giảng dạy ngữ pháp, luyện thi IELTS/TOEIC và hỗ trợ học viên.');
 
 --
 -- TOC entry 5112 (class 2606 OID 17478)
 -- Name: ChucVu ChucVu_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."ChucVu"
-    ADD CONSTRAINT "ChucVu_pkey" PRIMARY KEY (ma_chuc_vu);
 
 
---
--- TOC entry 5114 (class 2606 OID 17487)
--- Name: ChucVu ChucVu_ten_chuc_vu_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."ChucVu"
-    ADD CONSTRAINT "ChucVu_ten_chuc_vu_key" UNIQUE (ten_chuc_vu);
-
+ALTER TABLE public."ChucVu" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5079 (class 2606 OID 17017)
--- Name: ChuongTrinhHoc ChuongTrinhHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."ChuongTrinhHoc"
-    ADD CONSTRAINT "ChuongTrinhHoc_pkey" PRIMARY KEY (ma_chuong_trinh);
-
 
 --
--- TOC entry 5098 (class 2606 OID 17128)
--- Name: ChuongTrinhKhuyenMai ChuongTrinhKhuyenMai_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."ChuongTrinhKhuyenMai"
-    ADD CONSTRAINT "ChuongTrinhKhuyenMai_pkey" PRIMARY KEY (ma_khuyen_mai);
+ALTER TABLE public."ChuongTrinhHoc" DISABLE TRIGGER ALL;
 
 
+
+
+ALTER TABLE public."ChuongTrinhHoc" ENABLE TRIGGER ALL;
+
 --
--- TOC entry 5108 (class 2606 OID 17428)
--- Name: ChuongTrinhMarketing ChuongTrinhMarketing_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+
 --
+
+ALTER TABLE public."ChuongTrinhKhuyenMai" DISABLE TRIGGER ALL;
+
+
 
 ALTER TABLE ONLY public."ChuongTrinhMarketing"
     ADD CONSTRAINT "ChuongTrinhMarketing_pkey" PRIMARY KEY (ma_chuong_trinh_marketing);
 
 
---
--- TOC entry 5077 (class 2606 OID 17006)
--- Name: CongNo CongNo_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."CongNo"
-    ADD CONSTRAINT "CongNo_pkey" PRIMARY KEY (ma_cong_no);
-
+ALTER TABLE public."ChuongTrinhKhuyenMai" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5062 (class 2606 OID 16905)
--- Name: HoSoBangCap HoSoBangCap_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."HoSoBangCap"
-    ADD CONSTRAINT "HoSoBangCap_pkey" PRIMARY KEY (ma_ho_so_bang_cap);
-
 
 --
--- TOC entry 5100 (class 2606 OID 17140)
--- Name: HoatDongNgoaiKhoa HoatDongNgoaiKhoa_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."HoatDongNgoaiKhoa"
-    ADD CONSTRAINT "HoatDongNgoaiKhoa_pkey" PRIMARY KEY (ma_hoat_dong_ngoai_khoa);
+ALTER TABLE public."KhoaHoc" DISABLE TRIGGER ALL;
 
 
+
+ALTER TABLE public."KhoaHoc" ENABLE TRIGGER ALL;
+
 --
--- TOC entry 5089 (class 2606 OID 17066)
--- Name: HocVien HocVien_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+
 --
+
+ALTER TABLE public."ChuongTrinhMarketing" DISABLE TRIGGER ALL;
+
+
 
 ALTER TABLE ONLY public."HocVien"
     ADD CONSTRAINT "HocVien_pkey" PRIMARY KEY (ma_hoc_vien);
 
 
---
--- TOC entry 5064 (class 2606 OID 16918)
--- Name: HopDongLaoDong HopDongLaoDong_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."HopDongLaoDong"
-    ADD CONSTRAINT "HopDongLaoDong_pkey" PRIMARY KEY (ma_hop_dong);
-
+ALTER TABLE public."ChuongTrinhMarketing" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5096 (class 2606 OID 17104)
--- Name: KeHoachGiangDay KeHoachGiangDay_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."KeHoachGiangDay"
-    ADD CONSTRAINT "KeHoachGiangDay_pkey" PRIMARY KEY (ma_ke_hoach);
-
 
 --
--- TOC entry 5081 (class 2606 OID 17030)
--- Name: KhoaHoc KhoaHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."KhoaHoc"
-    ADD CONSTRAINT "KhoaHoc_pkey" PRIMARY KEY (ma_khoa_hoc);
+ALTER TABLE public."CongNo" DISABLE TRIGGER ALL;
 
 
+
+
+ALTER TABLE public."CongNo" ENABLE TRIGGER ALL;
+
 --
--- TOC entry 5086 (class 2606 OID 17055)
--- Name: LopHoc LopHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+
 --
+
+ALTER TABLE public."PhongBan" DISABLE TRIGGER ALL;
+
+INSERT INTO public."PhongBan" (ma_phong_ban, ten_phong_ban, mo_ta, ngay_thanh_lap) VALUES (1, 'Ban Quản Trị', 'Điều hành toàn bộ hệ thống HP English Homestay', '2026-04-10 22:47:10.979');
+INSERT INTO public."PhongBan" (ma_phong_ban, ten_phong_ban, mo_ta, ngay_thanh_lap) VALUES (2, 'Phòng Đào tạo', 'Quản lý giáo viên, chương trình giảng dạy và chất lượng học viên.', '2026-04-10 22:47:10');
+INSERT INTO public."PhongBan" (ma_phong_ban, ten_phong_ban, mo_ta, ngay_thanh_lap) VALUES (3, 'Phòng Tuyển sinh', 'Tư vấn khóa học, tìm kiếm học viên và chăm sóc khách hàng.', '2026-04-10 22:47:10');
+INSERT INTO public."PhongBan" (ma_phong_ban, ten_phong_ban, mo_ta, ngay_thanh_lap) VALUES (5, 'Phòng Marketing', 'Truyền thông, quảng bá hình ảnh và tổ chức sự kiện ngoại khóa.', '2026-04-10 22:47:10');
+INSERT INTO public."PhongBan" (ma_phong_ban, ten_phong_ban, mo_ta, ngay_thanh_lap) VALUES (4, 'Phòng Kế toán', 'Quản lý thu chi học phí, quỹ homestay và bảng lương nhân sự công ty.', '2026-04-10 00:00:00');
+
+
 
 ALTER TABLE ONLY public."LopHoc"
     ADD CONSTRAINT "LopHoc_pkey" PRIMARY KEY (ma_lop_hoc);
 
 
---
--- TOC entry 5057 (class 2606 OID 16882)
--- Name: NhanSu NhanSu_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+ALTER TABLE public."PhongBan" ENABLE TRIGGER ALL;
+
 --
 
-ALTER TABLE ONLY public."NhanSu"
-    ADD CONSTRAINT "NhanSu_pkey" PRIMARY KEY (ma_nhan_su);
+--
 
+ALTER TABLE public."NhanSu" DISABLE TRIGGER ALL;
+
+
+INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, dia_chi, ma_chuc_vu, ma_phong_ban) VALUES (1, 'Nguyễn Văn Trường', NULL, NULL, '0987654321', NULL, 1, 1);
+INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, dia_chi, ma_chuc_vu, ma_phong_ban) VALUES (2, 'Lê Văn Nam', '1995-05-10 00:00:00', 'Nam', '0912334455', 'Ngô Quyền, Hải Phòng', 3, 2);
+INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, dia_chi, ma_chuc_vu, ma_phong_ban) VALUES (3, 'Trần Thị Thu Hà', '1998-11-20 00:00:00', 'Nữ', '0988776655', 'Lê Chân, Hải Phòng', 6, 3);
+INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, dia_chi, ma_chuc_vu, ma_phong_ban) VALUES (4, 'Phạm Minh Đức', '1990-03-15 00:00:00', 'Nam', '0904556677', 'Hồng Bàng, Hải Phòng', 2, 1);
+INSERT INTO public."NhanSu" (ma_nhan_su, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, dia_chi, ma_chuc_vu, ma_phong_ban) VALUES (5, 'Đỗ Thùy Linh', '2000-07-25 00:00:00', 'Nữ', '0936112233', 'Thủy Nguyên, Hải Phòng', 8, 4);
 
 --
 -- TOC entry 5106 (class 2606 OID 17160)
 -- Name: PhanCongHoatDong PhanCongHoatDong_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."PhanCongHoatDong"
-    ADD CONSTRAINT "PhanCongHoatDong_pkey" PRIMARY KEY (ma_phan_cong);
 
 
---
--- TOC entry 5110 (class 2606 OID 17443)
--- Name: PhanCongMarketing PhanCongMarketing_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."PhanCongMarketing"
-    ADD CONSTRAINT "PhanCongMarketing_pkey" PRIMARY KEY (ma_phan_cong_marketing);
-
+ALTER TABLE public."NhanSu" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5053 (class 2606 OID 16859)
--- Name: PhanQuyen PhanQuyen_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+
 --
+
+ALTER TABLE public."HoSoBangCap" DISABLE TRIGGER ALL;
+
+
 
 ALTER TABLE ONLY public."PhanQuyen"
     ADD CONSTRAINT "PhanQuyen_pkey" PRIMARY KEY (ma_phan_quyen);
 
 
---
--- TOC entry 5075 (class 2606 OID 16993)
--- Name: PhieuChi PhieuChi_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."PhieuChi"
-    ADD CONSTRAINT "PhieuChi_pkey" PRIMARY KEY (ma_phieu_chi);
-
+ALTER TABLE public."HoSoBangCap" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5067 (class 2606 OID 16939)
--- Name: PhieuLuong PhieuLuong_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."PhieuLuong"
-    ADD CONSTRAINT "PhieuLuong_pkey" PRIMARY KEY (ma_phieu_luong);
 
 
---
--- TOC entry 5073 (class 2606 OID 16979)
--- Name: PhieuThu PhieuThu_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
+ALTER TABLE public."HoatDongNgoaiKhoa" DISABLE TRIGGER ALL;
 
-ALTER TABLE ONLY public."PhieuThu"
-    ADD CONSTRAINT "PhieuThu_pkey" PRIMARY KEY (ma_phieu_thu);
 
+
+
+ALTER TABLE public."HoatDongNgoaiKhoa" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5071 (class 2606 OID 16964)
--- Name: PhieuThuong PhieuThuong_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+
 --
+
+ALTER TABLE public."HopDongLaoDong" DISABLE TRIGGER ALL;
+
+
+
 
 ALTER TABLE ONLY public."PhieuThuong"
     ADD CONSTRAINT "PhieuThuong_pkey" PRIMARY KEY (ma_phieu_thuong);
 
 
---
--- TOC entry 5055 (class 2606 OID 16870)
--- Name: PhongBan PhongBan_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."PhongBan"
-    ADD CONSTRAINT "PhongBan_pkey" PRIMARY KEY (ma_phong_ban);
-
+ALTER TABLE public."HopDongLaoDong" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5083 (class 2606 OID 17041)
--- Name: PhongHoc PhongHoc_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."PhongHoc"
-    ADD CONSTRAINT "PhongHoc_pkey" PRIMARY KEY (ma_phong_hoc);
-
 
 --
--- TOC entry 5044 (class 2606 OID 16835)
--- Name: Quyen Quyen_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."Quyen"
-    ADD CONSTRAINT "Quyen_pkey" PRIMARY KEY (ma_quyen);
+ALTER TABLE public."KeHoachGiangDay" DISABLE TRIGGER ALL;
 
 
+
+
+ALTER TABLE public."KeHoachGiangDay" ENABLE TRIGGER ALL;
+
 --
--- TOC entry 5049 (class 2606 OID 16849)
--- Name: TaiKhoan TaiKhoan_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
+
+
+ALTER TABLE public."PhongHoc" DISABLE TRIGGER ALL;
+
+
 
 ALTER TABLE ONLY public."TaiKhoan"
     ADD CONSTRAINT "TaiKhoan_pkey" PRIMARY KEY (ma_tai_khoan);
 
 
---
--- TOC entry 5092 (class 2606 OID 17080)
--- Name: ThamGiaLop ThamGiaLop_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."ThamGiaLop"
-    ADD CONSTRAINT "ThamGiaLop_pkey" PRIMARY KEY (ma_tham_gia_lop);
-
+ALTER TABLE public."PhongHoc" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5103 (class 2606 OID 17150)
--- Name: ThamGiaNgoaiKhoa ThamGiaNgoaiKhoa_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."ThamGiaNgoaiKhoa"
-    ADD CONSTRAINT "ThamGiaNgoaiKhoa_pkey" PRIMARY KEY (ma_tham_gia_ngoai_khoa);
-
 
 --
--- TOC entry 5042 (class 2606 OID 16823)
--- Name: _prisma_migrations _prisma_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public._prisma_migrations
-    ADD CONSTRAINT _prisma_migrations_pkey PRIMARY KEY (id);
+ALTER TABLE public."LopHoc" DISABLE TRIGGER ALL;
 
 
+
+ALTER TABLE public."LopHoc" ENABLE TRIGGER ALL;
+
 --
--- TOC entry 5060 (class 1259 OID 17166)
--- Name: BangCap_ten_bang_cap_key; Type: INDEX; Schema: public; Owner: postgres
+
 --
+
+ALTER TABLE public."PhanCongHoatDong" DISABLE TRIGGER ALL;
+
+
+
 
 CREATE UNIQUE INDEX "BangCap_ten_bang_cap_key" ON public."BangCap" USING btree (ten_bang_cap);
 
 
---
--- TOC entry 5087 (class 1259 OID 17169)
--- Name: HocVien_email_key; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX "HocVien_email_key" ON public."HocVien" USING btree (email);
-
+ALTER TABLE public."PhanCongHoatDong" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5065 (class 1259 OID 17167)
--- Name: HopDongLaoDong_so_hop_dong_key; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX "HopDongLaoDong_so_hop_dong_key" ON public."HopDongLaoDong" USING btree (so_hop_dong);
 
 
---
--- TOC entry 5104 (class 1259 OID 17172)
--- Name: PhanCongHoatDong_ma_nhan_su_ma_hoat_dong_ngoai_khoa_key; Type: INDEX; Schema: public; Owner: postgres
---
+ALTER TABLE public."PhanCongMarketing" DISABLE TRIGGER ALL;
 
-CREATE UNIQUE INDEX "PhanCongHoatDong_ma_nhan_su_ma_hoat_dong_ngoai_khoa_key" ON public."PhanCongHoatDong" USING btree (ma_nhan_su, ma_hoat_dong_ngoai_khoa);
 
+
+
+ALTER TABLE public."PhanCongMarketing" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5051 (class 1259 OID 17165)
--- Name: PhanQuyen_ma_tai_khoan_ma_quyen_key; Type: INDEX; Schema: public; Owner: postgres
+
 --
+
+ALTER TABLE public."Quyen" DISABLE TRIGGER ALL;
+
+INSERT INTO public."Quyen" (ma_quyen, ten_quyen, trang_thai) VALUES (1, 'ADMIN', 'Hoạt động');
+INSERT INTO public."Quyen" (ma_quyen, ten_quyen, trang_thai) VALUES (2, 'GIAO_VIEN', 'Hoạt động');
+
+
 
 CREATE UNIQUE INDEX "PhanQuyen_ma_tai_khoan_ma_quyen_key" ON public."PhanQuyen" USING btree (ma_tai_khoan, ma_quyen);
 
 
---
--- TOC entry 5084 (class 1259 OID 17168)
--- Name: PhongHoc_ten_phong_hoc_key; Type: INDEX; Schema: public; Owner: postgres
+ALTER TABLE public."Quyen" ENABLE TRIGGER ALL;
+
 --
 
-CREATE UNIQUE INDEX "PhongHoc_ten_phong_hoc_key" ON public."PhongHoc" USING btree (ten_phong_hoc);
+--
 
+ALTER TABLE public."TaiKhoan" DISABLE TRIGGER ALL;
+
+
+INSERT INTO public."TaiKhoan" (ma_tai_khoan, ten_dang_nhap, mat_khau, email, trang_thai, ma_nhan_su) VALUES (1, 'admin', '123456', 'admin@hp-homestay.edu.vn', 'Hoạt động', 1);
 
 --
 -- TOC entry 5045 (class 1259 OID 17161)
 -- Name: Quyen_ten_quyen_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE UNIQUE INDEX "Quyen_ten_quyen_key" ON public."Quyen" USING btree (ten_quyen);
 
 
---
--- TOC entry 5046 (class 1259 OID 17163)
--- Name: TaiKhoan_email_key; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX "TaiKhoan_email_key" ON public."TaiKhoan" USING btree (email);
-
+ALTER TABLE public."TaiKhoan" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5047 (class 1259 OID 17164)
--- Name: TaiKhoan_ma_nhan_su_key; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX "TaiKhoan_ma_nhan_su_key" ON public."TaiKhoan" USING btree (ma_nhan_su);
 
 
---
--- TOC entry 5050 (class 1259 OID 17162)
--- Name: TaiKhoan_ten_dang_nhap_key; Type: INDEX; Schema: public; Owner: postgres
---
+ALTER TABLE public."PhanQuyen" DISABLE TRIGGER ALL;
 
-CREATE UNIQUE INDEX "TaiKhoan_ten_dang_nhap_key" ON public."TaiKhoan" USING btree (ten_dang_nhap);
 
+INSERT INTO public."PhanQuyen" (ma_phan_quyen, ma_tai_khoan, ma_quyen) VALUES (1, 1, 1);
+
+
+
+ALTER TABLE public."PhanQuyen" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5090 (class 1259 OID 17170)
--- Name: ThamGiaLop_ma_hoc_vien_ma_lop_hoc_key; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX "ThamGiaLop_ma_hoc_vien_ma_lop_hoc_key" ON public."ThamGiaLop" USING btree (ma_hoc_vien, ma_lop_hoc);
-
 
 --
--- TOC entry 5101 (class 1259 OID 17171)
--- Name: ThamGiaNgoaiKhoa_ma_hoc_vien_ma_hoat_dong_ngoai_khoa_key; Type: INDEX; Schema: public; Owner: postgres
---
 
-CREATE UNIQUE INDEX "ThamGiaNgoaiKhoa_ma_hoc_vien_ma_hoat_dong_ngoai_khoa_key" ON public."ThamGiaNgoaiKhoa" USING btree (ma_hoc_vien, ma_hoat_dong_ngoai_khoa);
+ALTER TABLE public."PhieuChi" DISABLE TRIGGER ALL;
 
 
---
--- TOC entry 5138 (class 2606 OID 17283)
--- Name: CamKet CamKet_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."CamKet"
-    ADD CONSTRAINT "CamKet_ma_hoc_vien_fkey" FOREIGN KEY (ma_hoc_vien) REFERENCES public."HocVien"(ma_hoc_vien) ON UPDATE CASCADE ON DELETE RESTRICT;
 
+ALTER TABLE public."PhieuChi" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5145 (class 2606 OID 17499)
--- Name: ChuongTrinhMarketing ChuongTrinhMarketing_ma_khoa_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+
+--
+
+ALTER TABLE public."PhieuLuong" DISABLE TRIGGER ALL;
+
+
+
+ALTER TABLE public."PhieuLuong" ENABLE TRIGGER ALL;
+
+--
+
+--
+
+ALTER TABLE public."PhieuThu" DISABLE TRIGGER ALL;
+
+INSERT INTO public."PhieuThu" (ma_phieu_thu, so_tien, ngay_thu, noi_dung, ma_hoc_vien, ma_nhan_su, ma_khuyen_mai, ma_cam_ket) VALUES (1, 1500000.000000000000000000000000000000, '2026-04-10 00:00:00', 'Thu học phí khóa IELTS cơ bản - Tháng 04/2026', 1, 1, NULL, NULL);
+INSERT INTO public."PhieuThu" (ma_phieu_thu, so_tien, ngay_thu, noi_dung, ma_hoc_vien, ma_nhan_su, ma_khuyen_mai, ma_cam_ket) VALUES (2, 2000000.000000000000000000000000000000, '2026-04-10 23:32:08.962', 'Học phí khóa Giao tiếp cấp tốc', 2, 1, NULL, NULL);
+INSERT INTO public."PhieuThu" (ma_phieu_thu, so_tien, ngay_thu, noi_dung, ma_hoc_vien, ma_nhan_su, ma_khuyen_mai, ma_cam_ket) VALUES (3, 2000000.000000000000000000000000000000, '2026-04-15 00:00:00', 'Thu học phí khóa TOEIC nâng cao', 1, 1, NULL, NULL);
+
+
+ALTER TABLE public."PhieuThu" ENABLE TRIGGER ALL;
+
 --
 
 ALTER TABLE ONLY public."ChuongTrinhMarketing"
@@ -2440,97 +2390,84 @@ ALTER TABLE ONLY public."ChuongTrinhMarketing"
 --
 -- TOC entry 5131 (class 2606 OID 17248)
 -- Name: CongNo CongNo_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."CongNo"
-    ADD CONSTRAINT "CongNo_ma_hoc_vien_fkey" FOREIGN KEY (ma_hoc_vien) REFERENCES public."HocVien"(ma_hoc_vien) ON UPDATE CASCADE ON DELETE RESTRICT;
-
 
 --
--- TOC entry 5120 (class 2606 OID 17198)
--- Name: HoSoBangCap HoSoBangCap_ma_bang_cap_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."HoSoBangCap"
-    ADD CONSTRAINT "HoSoBangCap_ma_bang_cap_fkey" FOREIGN KEY (ma_bang_cap) REFERENCES public."BangCap"(ma_bang_cap) ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE public."PhieuThuong" DISABLE TRIGGER ALL;
 
 
---
--- TOC entry 5121 (class 2606 OID 17193)
--- Name: HoSoBangCap HoSoBangCap_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."HoSoBangCap"
-    ADD CONSTRAINT "HoSoBangCap_ma_nhan_su_fkey" FOREIGN KEY (ma_nhan_su) REFERENCES public."NhanSu"(ma_nhan_su) ON UPDATE CASCADE ON DELETE RESTRICT;
-
+ALTER TABLE public."PhieuThuong" ENABLE TRIGGER ALL;
 
 --
--- TOC entry 5122 (class 2606 OID 17203)
--- Name: HopDongLaoDong HopDongLaoDong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."HopDongLaoDong"
-    ADD CONSTRAINT "HopDongLaoDong_ma_nhan_su_fkey" FOREIGN KEY (ma_nhan_su) REFERENCES public."NhanSu"(ma_nhan_su) ON UPDATE CASCADE ON DELETE RESTRICT;
-
 
 --
--- TOC entry 5139 (class 2606 OID 17288)
--- Name: KeHoachGiangDay KeHoachGiangDay_ma_khoa_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+
+ALTER TABLE public."ThamGiaLop" DISABLE TRIGGER ALL;
+
+
+
+ALTER TABLE public."ThamGiaLop" ENABLE TRIGGER ALL;
+
 --
 
-ALTER TABLE ONLY public."KeHoachGiangDay"
-    ADD CONSTRAINT "KeHoachGiangDay_ma_khoa_hoc_fkey" FOREIGN KEY (ma_khoa_hoc) REFERENCES public."KhoaHoc"(ma_khoa_hoc) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE public."ThamGiaNgoaiKhoa" DISABLE TRIGGER ALL;
+
+
+
+ALTER TABLE public."ThamGiaNgoaiKhoa" ENABLE TRIGGER ALL;
+
+--
+
+
+SELECT pg_catalog.setval('public."BangCap_ma_bang_cap_seq"', 1, false);
 
 
 --
--- TOC entry 5140 (class 2606 OID 17293)
--- Name: KeHoachGiangDay KeHoachGiangDay_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."KeHoachGiangDay"
-    ADD CONSTRAINT "KeHoachGiangDay_ma_nhan_su_fkey" FOREIGN KEY (ma_nhan_su) REFERENCES public."NhanSu"(ma_nhan_su) ON UPDATE CASCADE ON DELETE RESTRICT;
-
 
 --
--- TOC entry 5132 (class 2606 OID 17253)
--- Name: KhoaHoc KhoaHoc_ma_chuong_trinh_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."KhoaHoc"
-    ADD CONSTRAINT "KhoaHoc_ma_chuong_trinh_fkey" FOREIGN KEY (ma_chuong_trinh) REFERENCES public."ChuongTrinhHoc"(ma_chuong_trinh) ON UPDATE CASCADE ON DELETE RESTRICT;
+SELECT pg_catalog.setval('public."BangLuong_ma_bang_luong_seq"', 1, false);
 
 
 --
--- TOC entry 5133 (class 2606 OID 17268)
--- Name: LopHoc LopHoc_ma_khoa_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."LopHoc"
-    ADD CONSTRAINT "LopHoc_ma_khoa_hoc_fkey" FOREIGN KEY (ma_khoa_hoc) REFERENCES public."KhoaHoc"(ma_khoa_hoc) ON UPDATE CASCADE ON DELETE RESTRICT;
-
 
 --
--- TOC entry 5134 (class 2606 OID 17258)
--- Name: LopHoc LopHoc_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."LopHoc"
-    ADD CONSTRAINT "LopHoc_ma_nhan_su_fkey" FOREIGN KEY (ma_nhan_su) REFERENCES public."NhanSu"(ma_nhan_su) ON UPDATE CASCADE ON DELETE RESTRICT;
+SELECT pg_catalog.setval('public."CamKet_ma_cam_ket_seq"', 10, true);
 
 
 --
--- TOC entry 5135 (class 2606 OID 17263)
--- Name: LopHoc LopHoc_ma_phong_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+
 --
 
-ALTER TABLE ONLY public."LopHoc"
-    ADD CONSTRAINT "LopHoc_ma_phong_hoc_fkey" FOREIGN KEY (ma_phong_hoc) REFERENCES public."PhongHoc"(ma_phong_hoc) ON UPDATE CASCADE ON DELETE RESTRICT;
+SELECT pg_catalog.setval('public."ChucVu_ma_chuc_vu_seq"', 1, false);
 
 
 --
--- TOC entry 5118 (class 2606 OID 17494)
--- Name: NhanSu NhanSu_ma_chuc_vu_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+
 --
+
+SELECT pg_catalog.setval('public."ChuongTrinhHoc_ma_chuong_trinh_seq"', 1, false);
+
+
+--
+
+--
+
+SELECT pg_catalog.setval('public."ChuongTrinhKhuyenMai_ma_khuyen_mai_seq"', 1, false);
+
+
+--
+
+--
+
+SELECT pg_catalog.setval('public."ChuongTrinhMarketing_ma_chuong_trinh_marketing_seq"', 1, false);
+
+
+--
+
 
 ALTER TABLE ONLY public."NhanSu"
     ADD CONSTRAINT "NhanSu_ma_chuc_vu_fkey" FOREIGN KEY (ma_chuc_vu) REFERENCES public."ChucVu"(ma_chuc_vu) ON UPDATE CASCADE ON DELETE RESTRICT;
@@ -2539,34 +2476,27 @@ ALTER TABLE ONLY public."NhanSu"
 --
 -- TOC entry 5119 (class 2606 OID 17188)
 -- Name: NhanSu NhanSu_ma_phong_ban_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."NhanSu"
-    ADD CONSTRAINT "NhanSu_ma_phong_ban_fkey" FOREIGN KEY (ma_phong_ban) REFERENCES public."PhongBan"(ma_phong_ban) ON UPDATE CASCADE ON DELETE RESTRICT;
-
 
 --
--- TOC entry 5143 (class 2606 OID 17318)
--- Name: PhanCongHoatDong PhanCongHoatDong_ma_hoat_dong_ngoai_khoa_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."PhanCongHoatDong"
-    ADD CONSTRAINT "PhanCongHoatDong_ma_hoat_dong_ngoai_khoa_fkey" FOREIGN KEY (ma_hoat_dong_ngoai_khoa) REFERENCES public."HoatDongNgoaiKhoa"(ma_hoat_dong_ngoai_khoa) ON UPDATE CASCADE ON DELETE RESTRICT;
+SELECT pg_catalog.setval('public."CongNo_ma_cong_no_seq"', 1, false);
 
 
 --
--- TOC entry 5144 (class 2606 OID 17313)
--- Name: PhanCongHoatDong PhanCongHoatDong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+
 --
 
-ALTER TABLE ONLY public."PhanCongHoatDong"
-    ADD CONSTRAINT "PhanCongHoatDong_ma_nhan_su_fkey" FOREIGN KEY (ma_nhan_su) REFERENCES public."NhanSu"(ma_nhan_su) ON UPDATE CASCADE ON DELETE RESTRICT;
+SELECT pg_catalog.setval('public."HoSoBangCap_ma_ho_so_bang_cap_seq"', 1, false);
 
 
 --
--- TOC entry 5146 (class 2606 OID 17504)
--- Name: PhanCongMarketing PhanCongMarketing_ma_chuong_trinh_marketing_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+
+
+SELECT pg_catalog.setval('public."HoatDongNgoaiKhoa_ma_hoat_dong_ngoai_khoa_seq"', 1, false);
+
+
 --
+
 
 ALTER TABLE ONLY public."PhanCongMarketing"
     ADD CONSTRAINT "PhanCongMarketing_ma_chuong_trinh_marketing_fkey" FOREIGN KEY (ma_chuong_trinh_marketing) REFERENCES public."ChuongTrinhMarketing"(ma_chuong_trinh_marketing) ON UPDATE CASCADE ON DELETE RESTRICT;
@@ -2584,139 +2514,146 @@ ALTER TABLE ONLY public."PhanCongMarketing"
 --
 -- TOC entry 5116 (class 2606 OID 17183)
 -- Name: PhanQuyen PhanQuyen_ma_quyen_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."PhanQuyen"
-    ADD CONSTRAINT "PhanQuyen_ma_quyen_fkey" FOREIGN KEY (ma_quyen) REFERENCES public."Quyen"(ma_quyen) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
---
--- TOC entry 5117 (class 2606 OID 17178)
--- Name: PhanQuyen PhanQuyen_ma_tai_khoan_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."PhanQuyen"
-    ADD CONSTRAINT "PhanQuyen_ma_tai_khoan_fkey" FOREIGN KEY (ma_tai_khoan) REFERENCES public."TaiKhoan"(ma_tai_khoan) ON UPDATE CASCADE ON DELETE RESTRICT;
+SELECT pg_catalog.setval('public."HocVien_ma_hoc_vien_seq"', 1, false);
 
 
 --
--- TOC entry 5130 (class 2606 OID 17243)
--- Name: PhieuChi PhieuChi_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."PhieuChi"
-    ADD CONSTRAINT "PhieuChi_ma_nhan_su_fkey" FOREIGN KEY (ma_nhan_su) REFERENCES public."NhanSu"(ma_nhan_su) ON UPDATE CASCADE ON DELETE RESTRICT;
-
 
 --
--- TOC entry 5123 (class 2606 OID 17213)
--- Name: PhieuLuong PhieuLuong_ma_bang_luong_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."PhieuLuong"
-    ADD CONSTRAINT "PhieuLuong_ma_bang_luong_fkey" FOREIGN KEY (ma_bang_luong) REFERENCES public."BangLuong"(ma_bang_luong) ON UPDATE CASCADE ON DELETE RESTRICT;
+SELECT pg_catalog.setval('public."HopDongLaoDong_ma_hop_dong_seq"', 1, false);
 
 
 --
--- TOC entry 5124 (class 2606 OID 17208)
--- Name: PhieuLuong PhieuLuong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."PhieuLuong"
-    ADD CONSTRAINT "PhieuLuong_ma_nhan_su_fkey" FOREIGN KEY (ma_nhan_su) REFERENCES public."NhanSu"(ma_nhan_su) ON UPDATE CASCADE ON DELETE RESTRICT;
-
 
 --
--- TOC entry 5126 (class 2606 OID 17238)
--- Name: PhieuThu PhieuThu_ma_cam_ket_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."PhieuThu"
-    ADD CONSTRAINT "PhieuThu_ma_cam_ket_fkey" FOREIGN KEY (ma_cam_ket) REFERENCES public."CamKet"(ma_cam_ket) ON UPDATE CASCADE ON DELETE SET NULL;
+SELECT pg_catalog.setval('public."KeHoachGiangDay_ma_ke_hoach_seq"', 1, false);
 
 
 --
--- TOC entry 5127 (class 2606 OID 17223)
--- Name: PhieuThu PhieuThu_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."PhieuThu"
-    ADD CONSTRAINT "PhieuThu_ma_hoc_vien_fkey" FOREIGN KEY (ma_hoc_vien) REFERENCES public."HocVien"(ma_hoc_vien) ON UPDATE CASCADE ON DELETE RESTRICT;
-
 
 --
--- TOC entry 5128 (class 2606 OID 17233)
--- Name: PhieuThu PhieuThu_ma_khuyen_mai_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."PhieuThu"
-    ADD CONSTRAINT "PhieuThu_ma_khuyen_mai_fkey" FOREIGN KEY (ma_khuyen_mai) REFERENCES public."ChuongTrinhKhuyenMai"(ma_khuyen_mai) ON UPDATE CASCADE ON DELETE SET NULL;
+SELECT pg_catalog.setval('public."KhoaHoc_ma_khoa_hoc_seq"', 1, false);
 
 
 --
--- TOC entry 5129 (class 2606 OID 17228)
--- Name: PhieuThu PhieuThu_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."PhieuThu"
-    ADD CONSTRAINT "PhieuThu_ma_nhan_su_fkey" FOREIGN KEY (ma_nhan_su) REFERENCES public."NhanSu"(ma_nhan_su) ON UPDATE CASCADE ON DELETE RESTRICT;
-
 
 --
--- TOC entry 5125 (class 2606 OID 17218)
--- Name: PhieuThuong PhieuThuong_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."PhieuThuong"
-    ADD CONSTRAINT "PhieuThuong_ma_nhan_su_fkey" FOREIGN KEY (ma_nhan_su) REFERENCES public."NhanSu"(ma_nhan_su) ON UPDATE CASCADE ON DELETE RESTRICT;
+SELECT pg_catalog.setval('public."LopHoc_ma_lop_hoc_seq"', 1, false);
 
 
 --
--- TOC entry 5115 (class 2606 OID 17173)
--- Name: TaiKhoan TaiKhoan_ma_nhan_su_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."TaiKhoan"
-    ADD CONSTRAINT "TaiKhoan_ma_nhan_su_fkey" FOREIGN KEY (ma_nhan_su) REFERENCES public."NhanSu"(ma_nhan_su) ON UPDATE CASCADE ON DELETE RESTRICT;
-
 
 --
--- TOC entry 5136 (class 2606 OID 17273)
--- Name: ThamGiaLop ThamGiaLop_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."ThamGiaLop"
-    ADD CONSTRAINT "ThamGiaLop_ma_hoc_vien_fkey" FOREIGN KEY (ma_hoc_vien) REFERENCES public."HocVien"(ma_hoc_vien) ON UPDATE CASCADE ON DELETE RESTRICT;
+SELECT pg_catalog.setval('public."NhanSu_ma_nhan_su_seq"', 1, false);
 
 
 --
--- TOC entry 5137 (class 2606 OID 17278)
--- Name: ThamGiaLop ThamGiaLop_ma_lop_hoc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."ThamGiaLop"
-    ADD CONSTRAINT "ThamGiaLop_ma_lop_hoc_fkey" FOREIGN KEY (ma_lop_hoc) REFERENCES public."LopHoc"(ma_lop_hoc) ON UPDATE CASCADE ON DELETE RESTRICT;
-
 
 --
--- TOC entry 5141 (class 2606 OID 17308)
--- Name: ThamGiaNgoaiKhoa ThamGiaNgoaiKhoa_ma_hoat_dong_ngoai_khoa_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
-ALTER TABLE ONLY public."ThamGiaNgoaiKhoa"
-    ADD CONSTRAINT "ThamGiaNgoaiKhoa_ma_hoat_dong_ngoai_khoa_fkey" FOREIGN KEY (ma_hoat_dong_ngoai_khoa) REFERENCES public."HoatDongNgoaiKhoa"(ma_hoat_dong_ngoai_khoa) ON UPDATE CASCADE ON DELETE RESTRICT;
+SELECT pg_catalog.setval('public."PhanCongHoatDong_ma_phan_cong_seq"', 1, false);
 
 
 --
--- TOC entry 5142 (class 2606 OID 17303)
--- Name: ThamGiaNgoaiKhoa ThamGiaNgoaiKhoa_ma_hoc_vien_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."ThamGiaNgoaiKhoa"
-    ADD CONSTRAINT "ThamGiaNgoaiKhoa_ma_hoc_vien_fkey" FOREIGN KEY (ma_hoc_vien) REFERENCES public."HocVien"(ma_hoc_vien) ON UPDATE CASCADE ON DELETE RESTRICT;
-
 
 --
+
+SELECT pg_catalog.setval('public."PhanCongMarketing_ma_phan_cong_marketing_seq"', 1, false);
+
+
+--
+
+--
+
+SELECT pg_catalog.setval('public."PhanQuyen_ma_phan_quyen_seq"', 1, false);
+
+
+--
+
+--
+
+SELECT pg_catalog.setval('public."PhieuChi_ma_phieu_chi_seq"', 1, false);
+
+
+--
+
+
+SELECT pg_catalog.setval('public."PhieuLuong_ma_phieu_luong_seq"', 1, false);
+
+
+--
+
+
+SELECT pg_catalog.setval('public."PhieuThu_ma_phieu_thu_seq"', 3, true);
+
+
+--
+
+--
+
+SELECT pg_catalog.setval('public."PhieuThuong_ma_phieu_thuong_seq"', 1, false);
+
+
+--
+
+--
+
+SELECT pg_catalog.setval('public."PhongBan_ma_phong_ban_seq"', 7, true);
+
+
+--
+
+--
+
+SELECT pg_catalog.setval('public."PhongHoc_ma_phong_hoc_seq"', 1, false);
+
+
+--
+
+-- TOC entry 5335 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: Quyen_ma_quyen_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public."Quyen_ma_quyen_seq"', 1, false);
+
+
+--
+-- TOC entry 5336 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: TaiKhoan_ma_tai_khoan_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public."TaiKhoan_ma_tai_khoan_seq"', 1, false);
+
+
+--
+-- TOC entry 5337 (class 0 OID 0)
+-- Dependencies: 259
+-- Name: ThamGiaLop_ma_tham_gia_lop_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public."ThamGiaLop_ma_tham_gia_lop_seq"', 1, false);
+
+
+--
+-- TOC entry 5338 (class 0 OID 0)
+-- Dependencies: 273
+-- Name: ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public."ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq"', 1, false);
+
+
+-- Completed on 2026-04-21 16:37:34
+
 -- TOC entry 5360 (class 0 OID 0)
 -- Dependencies: 5
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: postgres
@@ -2726,10 +2663,9 @@ REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 
 
 -- Completed on 2026-04-18 21:52:36
-
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict AB0odzibiphoG8FYSDYfjgCnLgaJAHBtsepYdPlIBNNUpdOkWA7KLGnYZbMiWFF
+
 
