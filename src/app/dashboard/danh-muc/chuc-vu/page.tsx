@@ -125,7 +125,7 @@ export default function DanhMucChucVuPage() {
             } else {
                 showAlert(
                     `Có lỗi xảy ra khi ${editingId ? 'cập nhật' : 'thêm'} chức vụ.`,
-                    'success',
+                    'error',
                 )
             }
         } catch (error) {
@@ -196,15 +196,17 @@ export default function DanhMucChucVuPage() {
 
     const closeModal = () => {
         setIsModalOpen(false)
+        handleCancelEdit()
     }
 
     const openAddModel = () => {
-        handleOpenModel()
+        setEditingId(null)
         setFormData({
             ma_chuc_vu: '',
             ten_chuc_vu: '',
             ghi_chu: '',
         })
+        setIsModalOpen(true)
     }
 
     return (
@@ -219,7 +221,7 @@ export default function DanhMucChucVuPage() {
                     <div className="mb-8 p-4 border rounded-lg w-[60%] max-h-[90vh] bg-white">
                         <div className="flex justify-between items-center p-5 border-b rounded-t-lg">
                             <h2 className="text-xl font-bold text-gray-800">
-                                {editingId ? 'Cập Nhật Bản Cam Kết' : 'Thêm Bản Cam Kết Mới'}
+                                {editingId ? 'Cập Nhật Chức Vụ' : 'Thêm Chức Vụ Mới'}
                             </h2>
                             <button
                                 onClick={closeModal}
@@ -373,7 +375,7 @@ export default function DanhMucChucVuPage() {
                             {Math.min(indexOfLastItem, data.length)}
                         </span>{' '}
                         trong tổng số <span className="font-bold text-gray-800">{data.length}</span>{' '}
-                        phiếu thu
+                        chức vụ
                     </div>
 
                     <div className="flex gap-2">
@@ -419,7 +421,7 @@ export default function DanhMucChucVuPage() {
             <ConfirmModal
                 isOpen={confirmDelete.isOpen}
                 title="Xác nhận xóa"
-                message="Bạn có chắc chắn muốn xóa phiếu thu này? Hành động này sẽ không thể khôi phục lại dữ liệu."
+                message="Bạn có chắc chắn muốn xóa chức vụ này? Hành động này sẽ không thể khôi phục lại dữ liệu."
                 onConfirm={handleConfirmDelete}
                 onClose={() => setConfirmDelete({ isOpen: false, id: null })}
                 type="danger"

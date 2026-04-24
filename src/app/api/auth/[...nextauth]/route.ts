@@ -31,7 +31,9 @@ const handler = NextAuth({
                 const user = await prisma.taiKhoan.findUnique({
                     where: { ten_dang_nhap: username },
                     include: {
-                        nhan_su: true,
+                        nhan_su: {
+                            include: { chuc_vu: true },
+                        },
                         phan_quyen: {
                             include: { quyen: true },
                         },
@@ -51,13 +53,13 @@ const handler = NextAuth({
                 if (!isPasswordValid) return null
 
                 const userRoles = user.phan_quyen.map((pq) => pq.quyen.ten_quyen)
-                const primaryRole = userRoles.length > 0 ? userRoles[0] : 'USER'
+                const positionName = (user.nhan_su as any).chuc_vu?.ten_chuc_vu || 'Nhân viên'
 
                 return {
                     id: user.ma_tai_khoan.toString(),
                     name: user.nhan_su.ho_ten,
                     email: user.email,
-                    role: primaryRole,
+                    role: positionName,
                     allRoles: userRoles,
                     ma_nhan_su: user.ma_nhan_su,
                 }
