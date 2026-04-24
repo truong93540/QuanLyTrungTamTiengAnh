@@ -114,11 +114,9 @@ export default function QuanLyCamKetPage() {
             }
         }, 200)
     }
-
     // 4. Xử lý khi gõ Mã học viên (Tìm ngược lại Tên)
     const handleIdBlur = async () => {
         if (!formData.ma_hoc_vien) return
-
         try {
             const response = await fetch(`/api/tuyen-sinh/hoc-vien?id=${formData.ma_hoc_vien}`)
             if (response.ok) {
@@ -135,7 +133,6 @@ export default function QuanLyCamKetPage() {
             console.error('Lỗi tìm ID:', error)
         }
     }
-
     // Mở Modal Thêm
     const openAddModal = () => {
         setFormData({
@@ -150,14 +147,12 @@ export default function QuanLyCamKetPage() {
         setEditingId(null)
         setStudentSuggestions([]) 
         setShowSuggestions(false)
-        setDateError('') // ĐÃ THÊM: Xóa lỗi cũ
+        setDateError('') 
         setIsModalOpen(true)
     }
-
     const openEditModal = (row: CamKet) => {
         const formattedNgayKy = new Date(row.ngay_ky).toISOString().split('T')[0]
         const formattedNgayHetHan = row.ngay_het_han ? new Date(row.ngay_het_han).toISOString().split('T')[0] : ''
-
         setFormData({
             ma_cam_ket: row.ma_cam_ket.toString(),
             ngay_ky: formattedNgayKy,
@@ -170,17 +165,15 @@ export default function QuanLyCamKetPage() {
         setEditingId(row.ma_cam_ket)
         setStudentSuggestions([]) 
         setShowSuggestions(false)
-        setDateError('') // ĐÃ THÊM: Xóa lỗi cũ
+        setDateError('') 
         setIsModalOpen(true)
     }
-
     const closeModal = () => {
         setIsModalOpen(false)
         setEditingId(null)
         setShowSuggestions(false)
         setDateError('')
     }
-
     const handleDeleteClick = async (id: number) => {
         const isConfirm = window.confirm('Bạn có chắc chắn muốn xóa bản cam kết này không? Hành động này không thể hoàn tác!')
 
@@ -208,7 +201,6 @@ export default function QuanLyCamKetPage() {
             alert('Vui lòng nhập đầy đủ các thông tin bắt buộc (Ngày ký, Nội dung, Trạng thái, Mã học viên)!')
             return
         }
-
         // Kiểm tra logic trạng thái và ngày hết hạn
         setDateError('') 
         if (formData.ngay_het_han) {
@@ -234,7 +226,6 @@ export default function QuanLyCamKetPage() {
                 ...formData,
                 ngay_het_han: formData.ngay_het_han || null 
             }
-
             const response = await fetch('/api/tuyen-sinh/cam-ket', {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
@@ -243,7 +234,6 @@ export default function QuanLyCamKetPage() {
 
             if (response.ok) {
                 const savedData = await response.json()
-
                 if (editingId) {
                     setData(data.map((item) => (item.ma_cam_ket === savedData.ma_cam_ket ? savedData : item)))
                     alert('Cập nhật bản cam kết thành công!')
@@ -266,13 +256,11 @@ export default function QuanLyCamKetPage() {
         (item.hoc_vien?.ho_ten || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.ma_hoc_vien.toString().includes(searchTerm)
     )
-
     const indexOfLastItem = currentPage * itemsPerPage
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
     const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem)
     const totalPages = Math.ceil(filteredData.length / itemsPerPage)
     const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
-
     return (
         <div className="bg-gray-50 min-h-screen p-6">
             <div className="bg-white rounded-lg shadow-md p-6">
