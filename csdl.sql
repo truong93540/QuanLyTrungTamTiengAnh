@@ -2,7 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict RXXgpMrY1d3WBUF9p5Z0KXH0kxwRg7quqbYu2wnV2UD6WO8JaM880KkJ0jEvXca
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -759,5 +758,4 @@ SELECT pg_catalog.setval('public."ThamGiaNgoaiKhoa_ma_tham_gia_ngoai_khoa_seq"',
 -- PostgreSQL database dump complete
 --
 
-\unrestrict RXXgpMrY1d3WBUF9p5Z0KXH0kxwRg7quqbYu2wnV2UD6WO8JaM880KkJ0jEvXca
 
