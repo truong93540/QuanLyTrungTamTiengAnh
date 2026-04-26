@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaUserGraduate } from 'react-icons/fa'
+import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaUserGraduate, FaEye } from 'react-icons/fa'
 interface CamKet {
     ma_cam_ket: number
     ngay_ky: string
@@ -16,6 +16,7 @@ export default function QuanLyCamKetPage() {
     const [searchTerm, setSearchTerm] = useState('')
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingId, setEditingId] = useState<number | null>(null)
+    const [isViewMode, setIsViewMode] = useState(false)
     const [formData, setFormData] = useState({
         ma_cam_ket: '',
         ngay_ky: '',
@@ -30,6 +31,7 @@ export default function QuanLyCamKetPage() {
     const [showSuggestions, setShowSuggestions] = useState(false)
     const [isSearching, setIsSearching] = useState(false)
     const [dateError, setDateError] = useState('')
+    
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 5
     // Fetch dữ liệu
@@ -133,8 +135,30 @@ export default function QuanLyCamKetPage() {
             console.error('Lỗi tìm ID:', error)
         }
     }
+    const openViewModal = (row: CamKet) => {
+        const formattedNgayKy = new Date(row.ngay_ky).toISOString().split('T')[0]
+        const formattedNgayHetHan = row.ngay_het_han ? new Date(row.ngay_het_han).toISOString().split('T')[0] : ''
+
+        setFormData({
+            ma_cam_ket: row.ma_cam_ket.toString(),
+            ngay_ky: formattedNgayKy,
+            ngay_het_han: formattedNgayHetHan,
+            noi_dung_cam_ket: row.noi_dung_cam_ket,
+            trang_thai: row.trang_thai,
+            ma_hoc_vien: row.ma_hoc_vien.toString(),
+            ten_hoc_vien: row.hoc_vien?.ho_ten || '', 
+        })
+        setIsViewMode(true) // <--- Bật chế độ chỉ xem
+        setEditingId(row.ma_cam_ket)
+        setStudentSuggestions([]) 
+        setShowSuggestions(false)
+        setDateError('')
+        setIsModalOpen(true)
+    }
+
     // Mở Modal Thêm
     const openAddModal = () => {
+        setIsViewMode(false)
         setFormData({
             ma_cam_ket: '',
             ngay_ky: '',
@@ -171,6 +195,7 @@ export default function QuanLyCamKetPage() {
     const closeModal = () => {
         setIsModalOpen(false)
         setEditingId(null)
+        setIsViewMode(false)
         setShowSuggestions(false)
         setDateError('')
     }
@@ -340,6 +365,9 @@ export default function QuanLyCamKetPage() {
                                         </td>
                                         <td className="px-4 py-4">
                                             <div className="flex justify-center gap-2">
+                                                <button onClick={() => openViewModal(row)} className="p-2 text-green-600 bg-green-100 rounded hover:bg-green-200 transition" title="Xem chi tiết">
+                                                    <FaEye />
+                                                </button>
                                                 <button onClick={() => openEditModal(row)} className="p-2 text-blue-600 bg-blue-100 rounded hover:bg-blue-200 transition" title="Sửa cam kết">
                                                     <FaEdit />
                                                 </button>
@@ -379,7 +407,7 @@ export default function QuanLyCamKetPage() {
                         {/* Modal Header */}
                         <div className="flex justify-between items-center p-5 border-b bg-gray-50 rounded-t-lg">
                             <h2 className="text-xl font-bold text-gray-800">
-                                {editingId ? 'Cập Nhật Bản Cam Kết' : 'Thêm Bản Cam Kết Mới'}
+                                {isViewMode ? 'Chi Tiết Bản Cam Kết' : editingId ? 'Cập Nhật Bản Cam Kết' : 'Thêm Bản Cam Kết Mới'}
                             </h2>
                             <button onClick={closeModal} className="text-gray-400 hover:text-red-500 transition">
                                 <FaTimes size={24} />
@@ -396,9 +424,10 @@ export default function QuanLyCamKetPage() {
                                         name="ten_hoc_vien" 
                                         value={formData.ten_hoc_vien} 
                                         onChange={handleNameChange} 
-                                        onFocus={() => studentSuggestions.length > 0 && setShowSuggestions(true)}
+                                        onFocus={() => !isViewMode || studentSuggestions.length > 0 && setShowSuggestions(true)}
                                         onBlur={handleNameBlur} 
                                         placeholder="Nhập tên học viên..." 
+                                        disabled={isViewMode}
                                         autoComplete="off"
                                         className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 font-medium"
                                     />
@@ -411,7 +440,7 @@ export default function QuanLyCamKetPage() {
                                                 studentSuggestions.map((sv) => (
                                                     <li 
                                                         key={sv.ma_hoc_vien}
-                                                        onMouseDown={() => selectStudent(sv)} // ĐÃ THÊM: Dùng onMouseDown để nhạy hơn
+                                                        onMouseDown={() => selectStudent(sv)} 
                                                         className="p-3 hover:bg-blue-100 cursor-pointer border-b border-gray-100 last:border-0"
                                                     >
                                                         <div className="font-bold text-gray-800">{sv.ho_ten}</div>
@@ -433,6 +462,7 @@ export default function QuanLyCamKetPage() {
                                         value={formData.ma_hoc_vien} 
                                         onChange={handleChange} 
                                         onBlur={handleIdBlur} 
+                                        disabled={isViewMode}
                                         placeholder="Hoặc nhập mã..." 
                                         className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 font-medium bg-gray-50"
                                     />
@@ -446,6 +476,7 @@ export default function QuanLyCamKetPage() {
                                         name="trang_thai" 
                                         value={formData.trang_thai} 
                                         onChange={handleChange} 
+                                        disabled={isViewMode}
                                         className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white text-gray-900 font-medium"
                                     >
                                         <option value="">-- Chọn trạng thái --</option>
@@ -461,13 +492,13 @@ export default function QuanLyCamKetPage() {
                                         name="ngay_ky" 
                                         value={formData.ngay_ky} 
                                         onChange={handleChange} 
+                                        disabled={isViewMode}
                                         className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 font-medium"
                                     />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                {/* ĐÃ SỬA: Cập nhật giao diện lỗi màu đỏ cho ô Ngày hết hạn */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Ngày hết hạn</label>
                                     <input 
@@ -475,6 +506,7 @@ export default function QuanLyCamKetPage() {
                                         name="ngay_het_han" 
                                         value={formData.ngay_het_han} 
                                         onChange={handleChange} 
+                                        disabled={isViewMode}
                                         className={`w-full border rounded-md p-2.5 focus:ring-2 focus:outline-none text-gray-900 font-medium ${
                                             dateError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-black focus:ring-blue-500 focus:border-blue-500'
                                         }`}
@@ -491,10 +523,7 @@ export default function QuanLyCamKetPage() {
                                         <label className="block text-xs font-medium text-gray-500 mb-1">Mã cam kết (Hệ thống cấp)</label>
                                         <input type="text" value={formData.ma_cam_ket} disabled className="w-full border border-gray-400 bg-gray-200 text-gray-800 font-semibold rounded p-2 text-sm cursor-not-allowed" />
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-gray-500 mb-1">Tên học viên đã lưu</label>
-                                        <input type="text" value={formData.ten_hoc_vien} disabled className="w-full border border-gray-400 bg-gray-200 text-gray-800 font-semibold rounded p-2 text-sm cursor-not-allowed" />
-                                    </div>
+                                    
                                 </div>
                             )}
 
@@ -504,27 +533,31 @@ export default function QuanLyCamKetPage() {
                                     name="noi_dung_cam_ket" 
                                     value={formData.noi_dung_cam_ket} 
                                     onChange={handleChange} 
+                                    disabled={isViewMode}
                                     rows={5}
                                     placeholder="Nhập chi tiết các điều khoản..."
                                     className="w-full border border-black rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none resize-none text-gray-900 font-medium"
                                 ></textarea>
                             </div>
                         </div>
-
                         {/* Modal Footer */}
                         <div className="p-5 border-t bg-gray-50 rounded-b-lg flex justify-end gap-3">
                             <button 
                                 onClick={closeModal} 
                                 className="px-5 py-2 border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-100 font-medium transition"
                             >
-                                Hủy bỏ
+                                {isViewMode ? 'Đóng' : 'Hủy bỏ'}
                             </button>
-                            <button 
-                                onClick={handleSaveCamKet} 
-                                className="flex items-center gap-2 px-5 py-2 bg-[#1d4ed8] text-white rounded-md hover:bg-blue-700 font-medium transition shadow-sm"
-                            >
-                                <FaSave /> {editingId ? 'Cập nhật' : 'Lưu cam kết'}
-                            </button>
+                            
+                            {/* NẾU KHÔNG PHẢI CHẾ ĐỘ XEM THÌ MỚI HIỆN NÚT LƯU */}
+                            {!isViewMode && (
+                                <button 
+                                    onClick={handleSaveCamKet} 
+                                    className="flex items-center gap-2 px-5 py-2 bg-[#1d4ed8] text-white rounded-md hover:bg-blue-700 font-medium transition shadow-sm"
+                                >
+                                    <FaSave /> {editingId ? 'Cập nhật' : 'Lưu cam kết'}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
