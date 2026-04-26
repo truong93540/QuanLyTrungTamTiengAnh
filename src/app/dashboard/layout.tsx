@@ -1,4 +1,5 @@
 import Sidebar from '@/components/Sidebar'
+import Topbar from '@/components/Topbar'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -7,7 +8,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Sidebar />
 
             {/* 2. Cột phải là Nội dung chính thay đổi theo URL */}
-            <main className="flex-1 p-8 overflow-auto">{children}</main>
+            <div className="flex-1 flex flex-col overflow-hidden">
+                <Topbar />
+                <main className="flex-1 p-8 overflow-auto">{children}</main>
+            </div>
         </div>
     )
 }

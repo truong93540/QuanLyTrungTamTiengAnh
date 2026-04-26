@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation' // Để highlight menu đang chọn
+import { usePathname } from 'next/navigation' // Để highlight menu đang chọn
 import {
     FaCogs,
     FaListUl,
@@ -55,9 +55,9 @@ const menuItems = [
         children: [
             { title: '4.1 Kế hoạch giảng dạy', href: '/dashboard/dao-tao/ke-hoach' },
             { title: '4.2 Chương trình học', href: '/dashboard/dao-tao/chuong-trinh' },
-            { title: '4.3 Thời khóa biểu', href: '/dashboard/dao-tao/thoi-khoa-bieu' },
-            { title: '4.4 Quản lý nhân sự', href: '/dashboard/dao-tao/nhan-su' },
-            { title: '4.5 Hồ sơ học viên', href: '/dashboard/dao-tao/hoc-vien' },
+            { title: '4.3 Quản lý nhân sự', href: '/dashboard/dao-tao/nhan-su' },
+            { title: '4.4 Hồ sơ học viên', href: '/dashboard/dao-tao/hoc-vien' },
+            { title: '4.5 Quản lý lớp học', href: '/dashboard/dao-tao/lop-hoc' },
         ],
     },
     {
@@ -152,7 +152,7 @@ export default function Sidebar() {
 
             <div className="p-4 border-t border-blue-800/50">
                 <button
-                    className="flex items-center gap-3 w-full p-3 bg-red-600/90 rounded hover:bg-red-700 transition text-sm font-medium justify-center"
+                    className="flex items-center gap-3 w-full p-3 bg-red-600/90 rounded hover:bg-red-700 transition text-sm font-medium justify-center cursor-pointer"
                     onClick={handleLogout}>
                     <FaSignOutAlt />
                     Đăng xuất (1.5)

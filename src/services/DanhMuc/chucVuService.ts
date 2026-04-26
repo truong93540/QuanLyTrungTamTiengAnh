@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 interface ChucVuFilter {
     ma_chuc_vu?: string | null
@@ -12,20 +13,19 @@ interface ChucVuData {
 }
 
 export const layDanhSachChucVu = async (filters: ChucVuFilter) => {
-    const { ma_chuc_vu, ten_chuc_vu, ghi_chu } = filters
+    const { ten_chuc_vu } = filters
 
-    const whereClause: {
-        ma_chuc_vu?: number
-        ten_chuc_vu?: string
-        ghi_chu?: string
-    } = {}
+    const whereClause: Prisma.ChucVuWhereInput = {}
 
-    if (ma_chuc_vu) whereClause.ma_chuc_vu = Number(ma_chuc_vu)
-    if (ten_chuc_vu) whereClause.ten_chuc_vu = ten_chuc_vu
-    if (ghi_chu) whereClause.ghi_chu = ghi_chu
+    if (ten_chuc_vu)
+        whereClause.ten_chuc_vu = {
+            contains: ten_chuc_vu,
+            mode: 'insensitive',
+        }
 
     return await prisma.chucVu.findMany({
         where: whereClause,
+        orderBy: { ma_chuc_vu: 'asc' },
     })
 }
 
@@ -49,6 +49,14 @@ export const capNhatChucVu = async (ma_chuc_vu: number, data: ChucVuData) => {
 }
 
 export const xoaChucVu = async (ma_chuc_vu: number) => {
+    const countNhanSu = await prisma.nhanSu.count({
+        where: { ma_chuc_vu: ma_chuc_vu },
+    })
+
+    if (countNhanSu > 0) {
+        throw new Error(`CONFLICT_RELATION`)
+    }
+
     return await prisma.chucVu.delete({
         where: { ma_chuc_vu: ma_chuc_vu },
     })
