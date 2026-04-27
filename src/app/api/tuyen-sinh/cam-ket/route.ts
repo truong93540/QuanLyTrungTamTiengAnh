@@ -9,7 +9,6 @@ import {
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url)
-        
         // ĐÃ SỬA: Lược bỏ ngay_het_han và noi_dung_cam_ket cho khớp với CamKetFilter trong Service
         const filters = {
             ma_cam_ket: searchParams.get('ma_cam_ket'),
@@ -18,7 +17,6 @@ export async function GET(request: Request) {
             ma_hoc_vien: searchParams.get('ma_hoc_vien'),
             ten_hoc_vien: searchParams.get('ten_hoc_vien'),
         }
-
         const danhSach = await layDanhSachCamKet(filters)
         return NextResponse.json(danhSach)
     } catch (error) {
@@ -62,7 +60,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Lỗi khi thêm vào cơ sở dữ liệu' }, { status: 500 })
     }
 }
-
 export async function PUT(request: Request) {
     try {
         const body = await request.json()

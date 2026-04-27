@@ -148,7 +148,7 @@ export default function QuanLyCamKetPage() {
             ma_hoc_vien: row.ma_hoc_vien.toString(),
             ten_hoc_vien: row.hoc_vien?.ho_ten || '', 
         })
-        setIsViewMode(true) // <--- Bật chế độ chỉ xem
+        setIsViewMode(true) 
         setEditingId(row.ma_cam_ket)
         setStudentSuggestions([]) 
         setShowSuggestions(false)
