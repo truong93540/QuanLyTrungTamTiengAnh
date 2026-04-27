@@ -43,8 +43,6 @@ export const layDanhSachCamKet = async (filters: CamKetFilter) => {
         orderBy: { ma_cam_ket: 'asc' }, 
     })
 }
-
-
 export const taoCamKetMoi = async (data: CamKetData) => {
     return await prisma.camKet.create({
         data: {
@@ -59,8 +57,6 @@ export const taoCamKetMoi = async (data: CamKetData) => {
         },
     })
 }
-
-
 export const capNhatCamKet = async (ma_cam_ket: number, data: Partial<CamKetData>) => {
     return await prisma.camKet.update({
         where: { ma_cam_ket: ma_cam_ket },
