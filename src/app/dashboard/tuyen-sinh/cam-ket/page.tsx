@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaUserGraduate, FaEye } from 'react-icons/fa'
+import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaUserGraduate, FaEye, FaCheckCircle } from 'react-icons/fa'
+
 interface CamKet {
     ma_cam_ket: number
     ngay_ky: string
@@ -10,6 +11,7 @@ interface CamKet {
     ma_hoc_vien: number
     hoc_vien?: { ho_ten: string }
 }
+
 export default function QuanLyCamKetPage() {
     const [data, setData] = useState<CamKet[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -26,14 +28,26 @@ export default function QuanLyCamKetPage() {
         ma_hoc_vien: '',
         ten_hoc_vien: '', 
     })
+    
     // State cho tính năng Autocomplete và Báo lỗi
     const [studentSuggestions, setStudentSuggestions] = useState<any[]>([])
     const [showSuggestions, setShowSuggestions] = useState(false)
     const [isSearching, setIsSearching] = useState(false)
     const [dateError, setDateError] = useState('')
-    
+    const [formError, setFormError] = useState('')
+
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 5
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+    const [deletingId, setDeletingId] = useState<number | null>(null)
+    const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        setToast({ message, type })
+        setTimeout(() => {
+            setToast(null)
+        }, 3000)
+    }
+
     // Fetch dữ liệu
     useEffect(() => {
         const fetchData = async () => {
@@ -51,13 +65,14 @@ export default function QuanLyCamKetPage() {
         }
         fetchData()
     }, [])
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
         if (e.target.name === 'ngay_het_han' || e.target.name === 'trang_thai') {
             setDateError('')
         }
     } 
-    // 1. Xử lý khi gõ Tên học viên
+
     const handleNameChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const nameValue = e.target.value
         setFormData({ ...formData, ten_hoc_vien: nameValue, ma_hoc_vien: '' }) 
@@ -80,7 +95,7 @@ export default function QuanLyCamKetPage() {
             setIsSearching(false)
         }
     }
-    // 2. Xử lý khi click chọn 1 học viên từ danh sách gợi ý
+
     const selectStudent = (student: any) => {
         setFormData({ 
             ...formData, 
@@ -90,7 +105,6 @@ export default function QuanLyCamKetPage() {
         setShowSuggestions(false)
     }
 
-    // 3. Xử lý khi rời chuột khỏi ô Tên học viên (Tự động điền mã nếu có 1 người khớp)
     const handleNameBlur = () => {
         setTimeout(async () => {
             setShowSuggestions(false) 
@@ -116,7 +130,7 @@ export default function QuanLyCamKetPage() {
             }
         }, 200)
     }
-    // 4. Xử lý khi gõ Mã học viên (Tìm ngược lại Tên)
+
     const handleIdBlur = async () => {
         if (!formData.ma_hoc_vien) return
         try {
@@ -125,7 +139,6 @@ export default function QuanLyCamKetPage() {
                 const data = await response.json()
                 const student = Array.isArray(data) ? data[0] : data
                 if (student) {
-                    
                     setFormData(prev => ({ ...prev, ten_hoc_vien: student.ho_ten }))
                 } else {
                     setFormData(prev => ({ ...prev, ten_hoc_vien: 'Không tìm thấy học viên' }))
@@ -135,6 +148,7 @@ export default function QuanLyCamKetPage() {
             console.error('Lỗi tìm ID:', error)
         }
     }
+
     const openViewModal = (row: CamKet) => {
         const formattedNgayKy = new Date(row.ngay_ky).toISOString().split('T')[0]
         const formattedNgayHetHan = row.ngay_het_han ? new Date(row.ngay_het_han).toISOString().split('T')[0] : ''
@@ -153,10 +167,10 @@ export default function QuanLyCamKetPage() {
         setStudentSuggestions([]) 
         setShowSuggestions(false)
         setDateError('')
+        setFormError('')
         setIsModalOpen(true)
     }
 
-    // Mở Modal Thêm
     const openAddModal = () => {
         setIsViewMode(false)
         setFormData({
@@ -172,8 +186,10 @@ export default function QuanLyCamKetPage() {
         setStudentSuggestions([]) 
         setShowSuggestions(false)
         setDateError('') 
+        setFormError('')
         setIsModalOpen(true)
     }
+
     const openEditModal = (row: CamKet) => {
         const formattedNgayKy = new Date(row.ngay_ky).toISOString().split('T')[0]
         const formattedNgayHetHan = row.ngay_het_han ? new Date(row.ngay_het_han).toISOString().split('T')[0] : ''
@@ -192,6 +208,7 @@ export default function QuanLyCamKetPage() {
         setDateError('') 
         setIsModalOpen(true)
     }
+
     const closeModal = () => {
         setIsModalOpen(false)
         setEditingId(null)
@@ -199,35 +216,49 @@ export default function QuanLyCamKetPage() {
         setShowSuggestions(false)
         setDateError('')
     }
-    const handleDeleteClick = async (id: number) => {
-        const isConfirm = window.confirm('Bạn có chắc chắn muốn xóa bản cam kết này không? Hành động này không thể hoàn tác!')
 
-        if (isConfirm) {
-            try {
-                const response = await fetch(`/api/tuyen-sinh/cam-ket?id=${id}`, {
-                    method: 'DELETE',
-                })
+    const openDeleteModal = (id: number) => {
+        setDeletingId(id)
+        setIsDeleteModalOpen(true)
+    }
 
-                if (response.ok) {
-                    setData(data.filter((item) => item.ma_cam_ket !== id))
-                    alert('Đã xóa bản cam kết thành công!')
-                } else {
-                    alert('Có lỗi xảy ra khi xóa.')
-                }
-            } catch (error) {
-                console.error('Lỗi xóa:', error)
-                alert('Không thể kết nối đến máy chủ.')
+    const closeDeleteModal = () => {
+        setIsDeleteModalOpen(false)
+        setDeletingId(null)
+    }
+
+    const confirmDelete = async () => {
+        if (!deletingId) return
+
+        try {
+            const response = await fetch(`/api/tuyen-sinh/cam-ket?id=${deletingId}`, {
+                method: 'DELETE',
+            })
+
+            if (response.ok) {
+                setData(data.filter((item) => item.ma_cam_ket !== deletingId))
+                closeDeleteModal()
+                showToast('Đã xóa bản cam kết thành công!', 'success')
+            } else {
+                closeDeleteModal()
+                showToast('Có lỗi xảy ra khi xóa.', 'error')
             }
+        } catch (error) {
+            console.error('Lỗi xóa:', error)
+            closeDeleteModal()
+            showToast('Không thể kết nối đến máy chủ.', 'error')
         }
     }
 
     const handleSaveCamKet = async () => {
+        setFormError('') 
+        setDateError('') 
+
         if (!formData.ngay_ky || !formData.noi_dung_cam_ket || !formData.trang_thai || !formData.ma_hoc_vien) {
-            alert('Vui lòng nhập đầy đủ các thông tin bắt buộc (Ngày ký, Nội dung, Trạng thái, Mã học viên)!')
+            setFormError('Vui lòng nhập đầy đủ các thông tin bắt buộc!')
             return
         }
-        // Kiểm tra logic trạng thái và ngày hết hạn
-        setDateError('') 
+
         if (formData.ngay_het_han) {
             const today = new Date()
             today.setHours(0, 0, 0, 0)
@@ -261,19 +292,19 @@ export default function QuanLyCamKetPage() {
                 const savedData = await response.json()
                 if (editingId) {
                     setData(data.map((item) => (item.ma_cam_ket === savedData.ma_cam_ket ? savedData : item)))
-                    alert('Cập nhật bản cam kết thành công!')
+                    showToast('Cập nhật bản cam kết thành công!', 'success')
                 } else {
                     setData([...data, savedData])
-                    alert('Thêm bản cam kết thành công!')
+                    showToast('Thêm bản cam kết thành công!', 'success')
                 }
 
                 closeModal()
             } else {
-                alert(`Có lỗi xảy ra khi ${editingId ? 'cập nhật' : 'thêm'} bản cam kết.`)
+                showToast(`Có lỗi xảy ra khi ${editingId ? 'cập nhật' : 'thêm'} bản cam kết.`, 'error')
             }
         } catch (error) {
             console.error('Lỗi:', error)
-            alert('Không thể kết nối đến máy chủ.')
+            showToast('Không thể kết nối đến máy chủ.', 'error')
         }
     }
 
@@ -286,8 +317,9 @@ export default function QuanLyCamKetPage() {
     const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem)
     const totalPages = Math.ceil(filteredData.length / itemsPerPage)
     const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
+
     return (
-        <div className="bg-gray-50 min-h-screen p-6">
+        <div className="bg-gray-50 min-h-screen p-6 relative">
             <div className="bg-white rounded-lg shadow-md p-6">
                 
                 <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
@@ -371,7 +403,7 @@ export default function QuanLyCamKetPage() {
                                                 <button onClick={() => openEditModal(row)} className="p-2 text-blue-600 bg-blue-100 rounded hover:bg-blue-200 transition" title="Sửa cam kết">
                                                     <FaEdit />
                                                 </button>
-                                                <button onClick={() => handleDeleteClick(row.ma_cam_ket)} className="p-2 text-red-600 bg-red-100 rounded hover:bg-red-200 transition" title="Xóa cam kết">
+                                                <button onClick={() => openDeleteModal(row.ma_cam_ket)} className="p-2 text-red-600 bg-red-100 rounded hover:bg-red-200 transition" title="Xóa cam kết">
                                                     <FaTrash />
                                                 </button>
                                             </div>
@@ -400,7 +432,7 @@ export default function QuanLyCamKetPage() {
                 )}
             </div>
 
-     
+            {/* Modal Thêm/Sửa/Xem */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-lg w-full max-w-2xl shadow-2xl animate-fade-in-up flex flex-col max-h-[90vh]">
@@ -416,7 +448,6 @@ export default function QuanLyCamKetPage() {
 
                         <div className="p-6 space-y-5 overflow-y-auto">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                
                                 <div className="relative">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Tên học viên <span className="text-red-500">*</span></label>
                                     <input 
@@ -523,7 +554,6 @@ export default function QuanLyCamKetPage() {
                                         <label className="block text-xs font-medium text-gray-500 mb-1">Mã cam kết (Hệ thống cấp)</label>
                                         <input type="text" value={formData.ma_cam_ket} disabled className="w-full border border-gray-400 bg-gray-200 text-gray-800 font-semibold rounded p-2 text-sm cursor-not-allowed" />
                                     </div>
-                                    
                                 </div>
                             )}
 
@@ -540,25 +570,85 @@ export default function QuanLyCamKetPage() {
                                 ></textarea>
                             </div>
                         </div>
+
                         {/* Modal Footer */}
-                        <div className="p-5 border-t bg-gray-50 rounded-b-lg flex justify-end gap-3">
-                            <button 
-                                onClick={closeModal} 
-                                className="px-5 py-2 border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-100 font-medium transition"
-                            >
-                                {isViewMode ? 'Đóng' : 'Hủy bỏ'}
-                            </button>
+                        <div className="p-5 border-t bg-gray-50 rounded-b-lg flex flex-col">
+                            {formError && (
+                                <div className="mb-4 p-3 bg-red-50 border border-red-100 text-red-600 rounded-md text-sm">
+                                    {formError}
+                                </div>
+                            )}
                             
-                            {/* NẾU KHÔNG PHẢI CHẾ ĐỘ XEM THÌ MỚI HIỆN NÚT LƯU */}
-                            {!isViewMode && (
+                            <div className="flex justify-end gap-3">
                                 <button 
-                                    onClick={handleSaveCamKet} 
-                                    className="flex items-center gap-2 px-5 py-2 bg-[#1d4ed8] text-white rounded-md hover:bg-blue-700 font-medium transition shadow-sm"
+                                    onClick={closeModal} 
+                                    className="px-5 py-2 border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-100 font-medium transition"
                                 >
-                                    <FaSave /> {editingId ? 'Cập nhật' : 'Lưu cam kết'}
+                                    {isViewMode ? 'Đóng' : 'Hủy bỏ'}
                                 </button>
+                            
+                                {!isViewMode && (
+                                    <button 
+                                        onClick={handleSaveCamKet} 
+                                        className="flex items-center gap-2 px-5 py-2 bg-[#1d4ed8] text-white rounded-md hover:bg-blue-700 font-medium transition shadow-sm"
+                                    >
+                                        <FaSave /> {editingId ? 'Cập nhật' : 'Lưu cam kết'}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {isDeleteModalOpen && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in-up">
+                        <button onClick={closeDeleteModal} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                            <FaTimes size={20} />
+                        </button>
+                        <div className="flex items-center mb-4">
+                            <div className="flex-shrink-0 flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mr-4">
+                                <span className="text-red-600 font-bold text-2xl">!</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800">Xác nhận xóa</h3>
+                        </div>
+                        <p className="text-gray-600 mb-6 ml-16 text-base">
+                            Bạn có chắc chắn muốn xóa bản cam kết này? Hành động này sẽ không thể khôi phục lại dữ liệu.
+                        </p>
+                        <div className="flex justify-end gap-3 mt-2">
+                            <button onClick={closeDeleteModal} className="px-5 py-2.5 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 font-medium transition-colors">
+                                Hủy bỏ
+                            </button>
+                            <button onClick={confirmDelete} className="px-5 py-2.5 bg-red-600 text-white rounded-md hover:bg-red-700 font-medium transition-colors shadow-sm">
+                                Xác nhận xóa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {toast && (
+                <div className="fixed top-5 right-5 z-[70] animate-fade-in-down transition-all duration-300">
+                    <div className={`flex items-center min-w-[300px] p-4 bg-white rounded shadow-lg border-l-4 ${
+                        toast.type === 'success' ? 'border-green-500' : 'border-red-500'
+                    }`}>
+                        <div className="flex-shrink-0 mr-3">
+                            {toast.type === 'success' ? (
+                                <FaCheckCircle className="text-green-500 text-2xl" />
+                            ) : (
+                                <div className="bg-red-100 rounded-full p-1">
+                                    <FaTimes className="text-red-500 text-lg" />
+                                </div>
                             )}
                         </div>
+                        <div className="flex-1 text-gray-800 font-medium">
+                            {toast.message}
+                        </div>
+                        <button 
+                            onClick={() => setToast(null)} 
+                            className="ml-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+                        >
+                            <FaTimes />
+                        </button>
                     </div>
                 </div>
             )}
