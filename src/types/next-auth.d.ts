@@ -5,14 +5,26 @@ declare module 'next-auth' {
         user: {
             id: string
             role: string
-            ma_nhan_su: number
+            ma_nhan_vien?: number | null
+            ma_giao_vien?: number | null
             allRoles: string[]
         } & DefaultSession['user']
     }
 
     interface User {
         role: string
-        ma_nhan_su: number
+        ma_nhan_vien?: number | null
+        ma_giao_vien?: number | null
+        allRoles: string[]
+    }
+}
+
+declare module 'next-auth/jwt' {
+    // Mở rộng kiểu JWT Token
+    interface JWT {
+        role: string
+        ma_nhan_vien?: number | null
+        ma_giao_vien?: number | null
         allRoles: string[]
     }
 }
