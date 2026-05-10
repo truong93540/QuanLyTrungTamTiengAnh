@@ -312,6 +312,7 @@ model KhoaHoc {
   marketing    ChuongTrinhMarketing[]
   bai_kiem_tra BaiKiemTra[]
   phieu_thu    PhieuThu[]
+  cam_ket      CamKet[]
 }
 
 model LopHoc {
@@ -384,8 +385,10 @@ model CamKet {
   so_buoi_di_muon       Int?
   so_lan_thieu_bai_tap  Int?
   ma_hoc_vien           Int
+  ma_khoa_hoc           Int
 
   hoc_vien HocVien @relation(fields: [ma_hoc_vien], references: [ma_hoc_vien])
+  khoa_hoc KhoaHoc @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
 }
 
 model KeHoachGiangDay {
