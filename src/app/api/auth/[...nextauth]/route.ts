@@ -12,6 +12,7 @@ declare module 'next-auth' {
             email?: string | null
             image?: string | null
             role: string
+            ten_phong_ban?: string | null
             ma_nhan_vien?: number | null
             ma_giao_vien?: number | null
             allRoles: string[]
@@ -22,6 +23,7 @@ declare module 'next-auth' {
 // 2. Mở rộng type User nội bộ
 interface ExtendedUser extends User {
     role: string
+    ten_phong_ban?: string | null
     ma_nhan_vien?: number | null
     ma_giao_vien?: number | null
     allRoles: string[]
@@ -50,10 +52,10 @@ const handler = NextAuth({
                     where: { ten_dang_nhap: username },
                     include: {
                         nhan_vien: {
-                            include: { chuc_vu: true },
+                            include: { chuc_vu: true, phong_ban: true },
                         },
                         giao_vien: {
-                            include: { chuc_vu: true },
+                            include: { chuc_vu: true, phong_ban: true },
                         },
                         phan_quyen: {
                             include: { quyen: true },
@@ -89,15 +91,17 @@ const handler = NextAuth({
 
                 const userRoles = user.phan_quyen.map((pq) => pq.quyen.ten_quyen)
                 const positionName = person.chuc_vu?.ten_chuc_vu || 'Nhân viên'
+                const departmentName = person.phong_ban?.ten_phong_ban || null
 
                 return {
                     id: user.ma_tai_khoan.toString(),
                     name: person.ho_ten,
                     email: user.email,
                     role: positionName,
+                    ten_phong_ban: departmentName,
                     allRoles: userRoles,
-                    ma_nhan_vien: user.ma_nhan_vien, // Sẽ có giá trị hoặc null
-                    ma_giao_vien: user.ma_giao_vien, // Sẽ có giá trị hoặc null
+                    ma_nhan_vien: user.ma_nhan_vien,
+                    ma_giao_vien: user.ma_giao_vien,
                 }
             },
         }),
@@ -107,6 +111,7 @@ const handler = NextAuth({
             if (user) {
                 const u = user as ExtendedUser
                 token.role = u.role
+                token.ten_phong_ban = u.ten_phong_ban
                 token.ma_nhan_vien = u.ma_nhan_vien
                 token.ma_giao_vien = u.ma_giao_vien
                 token.allRoles = u.allRoles
@@ -116,6 +121,7 @@ const handler = NextAuth({
         async session({ session, token }) {
             if (token && session.user) {
                 session.user.role = token.role as string
+                session.user.ten_phong_ban = token.ten_phong_ban as string | null
                 session.user.ma_nhan_vien = token.ma_nhan_vien as number | null
                 session.user.ma_giao_vien = token.ma_giao_vien as number | null
                 session.user.allRoles = token.allRoles as string[]
