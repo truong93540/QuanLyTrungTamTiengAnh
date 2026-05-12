@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { layDanhSachKhoaHoc } from '@/services/DaoTao/khoaHocService'
+import { layDanhSachKhoaHoc } from '@/services/TaiChinh/khoaHocService'
 
 export async function GET() {
     try {
