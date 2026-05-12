@@ -1,0 +1,134 @@
+import { User, NextAuthOptions } from 'next-auth'
+import CredentialsProvider from 'next-auth/providers/credentials'
+import bcrypt from 'bcrypt'
+import { prisma } from '@/lib/prisma'
+
+declare module 'next-auth' {
+    interface Session {
+        user: {
+            id: string
+            name?: string | null
+            email?: string | null
+            image?: string | null
+            role: string
+            ten_phong_ban?: string | null
+            ma_nhan_su?: number | null
+            ma_giao_vien?: number | null
+            allRoles: string[]
+        }
+    }
+}
+
+interface ExtendedUser extends User {
+    role: string
+    ten_phong_ban?: string | null
+    ma_nhan_su?: number | null
+    ma_giao_vien?: number | null
+    allRoles: string[]
+}
+
+export const authOptions: NextAuthOptions = {
+    providers: [
+        CredentialsProvider({
+            name: 'Tài khoản nội bộ',
+            credentials: {
+                username: { label: 'Tên đăng nhập', type: 'text' },
+                password: { label: 'Mật khẩu', type: 'password' },
+            },
+
+            async authorize(credentials): Promise<ExtendedUser | null> {
+                if (!credentials || !credentials.username || !credentials.password) {
+                    console.log('❌ Thiếu thông tin đăng nhập')
+                    return null
+                }
+
+                const { username, password } = credentials
+                console.log('📍 Đang check login cho:', username)
+
+                const user = await prisma.taiKhoan.findUnique({
+                    where: { ten_dang_nhap: username },
+                    include: {
+                        nhan_su: {
+                            include: { chuc_vu: true, phong_ban: true },
+                        },
+                        giao_vien: {
+                            include: { chuc_vu: true, phong_ban: true },
+                        },
+                        phan_quyen: {
+                            include: { quyen: true },
+                        },
+                    },
+                })
+
+                if (!user) {
+                    console.log('❌ Không tìm thấy User trong DB!')
+                    return null
+                }
+
+                if (user.trang_thai === 'Bị khóa') {
+                    console.log('❌ Tài khoản đang bị khóa!')
+                    return null
+                }
+
+                const isPasswordValid =
+                    (await bcrypt.compare(password, user.mat_khau)) || password === user.mat_khau
+
+                if (!isPasswordValid) {
+                    console.log('❌ Sai mật khẩu!')
+                    return null
+                }
+
+                const person = user.nhan_su || user.giao_vien
+
+                if (!person) {
+                    console.log('❌ Tài khoản chưa được liên kết với Nhân sự hoặc Giáo viên nào!')
+                    return null
+                }
+
+                const userRoles = user.phan_quyen.map((pq) => pq.quyen.ten_quyen)
+                const positionName =
+                    (person as { chuc_vu?: { ten_chuc_vu: string } }).chuc_vu?.ten_chuc_vu ||
+                    'Nhân sự'
+                const departmentName =
+                    (person as { phong_ban?: { ten_phong_ban: string } }).phong_ban
+                        ?.ten_phong_ban || null
+
+                return {
+                    id: user.ma_tai_khoan.toString(),
+                    name: (person as { ho_ten: string }).ho_ten,
+                    email: (person as { email?: string | null }).email || null,
+                    role: positionName,
+                    ten_phong_ban: departmentName,
+                    allRoles: userRoles,
+                    ma_nhan_su: (user as unknown as { ma_nhan_su: number | null }).ma_nhan_su,
+                    ma_giao_vien: user.ma_giao_vien,
+                }
+            },
+        }),
+    ],
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                const u = user as ExtendedUser
+                token.role = u.role
+                token.ten_phong_ban = u.ten_phong_ban
+                token.ma_nhan_su = u.ma_nhan_su
+                token.ma_giao_vien = u.ma_giao_vien
+                token.allRoles = u.allRoles
+            }
+            return token
+        },
+        async session({ session, token }) {
+            if (token && session.user) {
+                session.user.role = token.role as string
+                session.user.ten_phong_ban = token.ten_phong_ban as string | null
+                session.user.ma_nhan_su = token.ma_nhan_su as number | null
+                session.user.ma_giao_vien = token.ma_giao_vien as number | null
+                session.user.allRoles = token.allRoles as string[]
+            }
+            return session
+        },
+    },
+    pages: { signIn: '/login' },
+    secret: process.env.NEXTAUTH_SECRET,
+}

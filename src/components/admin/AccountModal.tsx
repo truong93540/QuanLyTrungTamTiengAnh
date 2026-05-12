@@ -101,8 +101,8 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
                 .filter((q) => quyenIds.includes(q.ma_quyen))
                 .map((q) => q.ten_quyen)
 
-            // Kiểm tra từng role
-            if (rolePermissions['admin'].every((p) => quyenNames.includes(p))) {
+            // Kiểm tra Admin: nếu có đủ tất cả các quyền thì là Admin
+            if (quyenList.length > 0 && quyenIds.length >= quyenList.length) {
                 return 'admin'
             }
             if (rolePermissions['ke-toan'].every((p) => quyenNames.includes(p))) {
@@ -128,10 +128,10 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
 
     // Hàm cập nhật quyền mặc định và thêm
     const updateDefaultAndAdditionalPermissions = useCallback(
-        (selectedIds: number[]) => {
+        (selectedIds: number[], currentRole: RoleType = role) => {
             if (quyenList.length === 0) return // Chưa load được danh sách quyền
 
-            if (role === 'admin') {
+            if (currentRole === 'admin') {
                 const allQuyenIds = quyenList.map((q) => q.ma_quyen)
                 setDefaultQuyenIds(allQuyenIds)
                 setAdditionalQuyenIds([])
@@ -139,7 +139,7 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
                 return
             }
 
-            const defaultPermissions = rolePermissions[role] as string[]
+            const defaultPermissions = rolePermissions[currentRole] as string[]
             const defaultIds = quyenList
                 .filter((q) => defaultPermissions.includes(q.ten_quyen))
                 .map((q) => q.ma_quyen)
@@ -153,13 +153,7 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
         [quyenList, role, rolePermissions],
     )
 
-    // Cập nhật quyền khi thay đổi role (chỉ khi user thay đổi role trong form)
-    useEffect(() => {
-        if (!isEditMode && quyenList.length > 0) {
-            // Reset về quyền mặc định khi thay đổi role
-            updateDefaultAndAdditionalPermissions([])
-        }
-    }, [role, quyenList, isEditMode, updateDefaultAndAdditionalPermissions])
+
 
     const fetchQuyenList = async () => {
         try {
@@ -175,7 +169,7 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
 
     const checkMaNhanSu = async () => {
         if (!formData.ma_id) return
-        if (isEditMode) return
+        if (isEditMode) return // Sửa thì không check lại mã nhân sự
 
         setIsFetchingNhanSu(true)
         setNhanSuName('')
@@ -195,10 +189,10 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
             const data = await res.json()
 
             if (!res.ok) {
-                setNhanSuError(data.message || 'Mã không hợp lệ')
+                setNhanSuError(data.message || 'Mã nhân sự không hợp lệ')
             } else if (data.hasAccount) {
                 setNhanSuName(data.data.ho_ten)
-                setNhanSuError('Người này đã có tài khoản')
+                setNhanSuError('Nhân sự này đã có tài khoản')
             } else {
                 setNhanSuName(data.data.ho_ten)
             }
@@ -254,11 +248,9 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
             setSelectedQuyenIds(currentRoles)
             updateDefaultAndAdditionalPermissions(currentRoles)
         } else if (!isEditMode && quyenList.length > 0) {
-            // Khởi tạo quyền mặc định cho create mode
             updateDefaultAndAdditionalPermissions([])
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isEditMode, account, quyenList]) // Thêm quyenList để đảm bảo logic chạy khi có data
+    }, [isEditMode, account, quyenList])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -354,11 +346,14 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
                                             onChange={(e) => {
                                                 const newRole = e.target.value as RoleType
                                                 setRole(newRole)
-                                                setNhanSuName('')
-                                                setNhanSuError('')
-                                                setFormData({ ...formData, ma_id: '' })
+                                                if (!isEditMode) {
+                                                    setNhanSuName('')
+                                                    setNhanSuError('')
+                                                    setFormData({ ...formData, ma_id: '' })
+                                                }
+                                                // Luôn cập nhật template quyền khi đổi role
+                                                updateDefaultAndAdditionalPermissions([], newRole)
                                             }}
-                                            disabled={isEditMode}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-gray-900 disabled:bg-gray-100 disabled:text-gray-500">
                                             <option value="ke-toan">Nhân viên phòng kế toán</option>
                                             <option value="dao-tao">Nhân viên phòng đào tạo</option>
