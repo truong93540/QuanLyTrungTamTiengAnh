@@ -350,7 +350,6 @@ model HocVien {
   email            String?   @unique
   dia_chi          String?
   dau_ra_chung_chi String?
-  trang_thai       String?
 
   cam_ket             CamKet[]
   phieu_thu           PhieuThu[]
@@ -387,8 +386,6 @@ model CamKet {
   so_lan_thieu_bai_tap  Int?
   ma_hoc_vien           Int
   ma_khoa_hoc           Int
-  bi_vi_pham            Boolean   @default(false)
-  ly_do_vi_pham         String?   @db.Text
 
   hoc_vien HocVien @relation(fields: [ma_hoc_vien], references: [ma_hoc_vien])
   khoa_hoc KhoaHoc @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])

@@ -12,14 +12,13 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
     const isEditMode = !!account
 
     const [formData, setFormData] = useState({
-        ma_id: '',
+        ma_nhan_su: '',
         ten_dang_nhap: '',
         email: '',
         mat_khau: '',
         trang_thai: 'Hoạt động',
     })
 
-    const [loai, setLoai] = useState<'nhan-vien' | 'giao-vien'>('nhan-vien')
     const [nhanSuName, setNhanSuName] = useState('')
     const [nhanSuError, setNhanSuError] = useState('')
     const [isFetchingNhanSu, setIsFetchingNhanSu] = useState(false)
@@ -36,13 +35,12 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
 
         if (isEditMode && account) {
             setFormData({
-                ma_id: (account.ma_nhan_vien || account.ma_giao_vien || '').toString(),
+                ma_nhan_su: account.ma_nhan_su.toString(),
                 ten_dang_nhap: account.ten_dang_nhap,
                 email: account.email,
-                mat_khau: '',
+                mat_khau: '', // Để trống mật khẩu khi sửa
                 trang_thai: account.trang_thai || 'Hoạt động',
             })
-            setLoai(account.ma_giao_vien ? 'giao-vien' : 'nhan-vien')
             setNhanSuName(account.ho_ten)
             setSelectedQuyenIds(account.quyen_ids || [])
         }
@@ -61,22 +59,22 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
     }
 
     const checkMaNhanSu = async () => {
-        if (!formData.ma_id) return
-        if (isEditMode) return
+        if (!formData.ma_nhan_su) return
+        if (isEditMode) return // Sửa thì không check lại mã nhân sự
 
         setIsFetchingNhanSu(true)
         setNhanSuName('')
         setNhanSuError('')
 
         try {
-            const res = await fetch(`/api/admin/nhan-su?ma_id=${formData.ma_id}&loai=${loai}`)
+            const res = await fetch(`/api/admin/nhan-su?ma_nhan_su=${formData.ma_nhan_su}`)
             const data = await res.json()
 
             if (!res.ok) {
-                setNhanSuError(data.message || 'Mã không hợp lệ')
+                setNhanSuError(data.message || 'Mã nhân sự không hợp lệ')
             } else if (data.hasAccount) {
                 setNhanSuName(data.data.ho_ten)
-                setNhanSuError('Người này đã có tài khoản')
+                setNhanSuError('Nhân sự này đã có tài khoản')
             } else {
                 setNhanSuName(data.data.ho_ten)
             }
@@ -101,7 +99,7 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
         e.preventDefault()
         setErrorMsg('')
 
-        if (!isEditMode && (!formData.ten_dang_nhap || !formData.mat_khau || !formData.email || !formData.ma_id)) {
+        if (!isEditMode && (!formData.ten_dang_nhap || !formData.mat_khau || !formData.email || !formData.ma_nhan_su)) {
             setErrorMsg('Vui lòng điền đầy đủ các trường bắt buộc')
             return
         }
@@ -122,7 +120,6 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
 
             const payload = {
                 ...formData,
-                loai,
                 quyen_ids: selectedQuyenIds,
             }
 
@@ -176,51 +173,33 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
                                 Thông tin tài khoản
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Loại nhân sự <span className="text-red-500">*</span>
-                                        </label>
-                                        <select
-                                            value={loai}
-                                            onChange={(e) => {
-                                                setLoai(e.target.value as 'nhan-vien' | 'giao-vien')
-                                                setNhanSuName('')
-                                                setNhanSuError('')
-                                                setFormData({ ...formData, ma_id: '' })
-                                            }}
-                                            disabled={isEditMode}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-gray-900 disabled:bg-gray-100 disabled:text-gray-500">
-                                            <option value="nhan-vien">Nhân viên</option>
-                                            <option value="giao-vien">Giáo viên</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Mã {loai === 'nhan-vien' ? 'nhân viên' : 'giáo viên'} <span className="text-red-500">*</span>
-                                        </label>
+                                <div className="col-span-1 md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Mã nhân sự <span className="text-red-500">*</span>
+                                    </label>
+                                    <div className="flex gap-2">
                                         <input
                                             type="text"
-                                            value={formData.ma_id}
+                                            value={formData.ma_nhan_su}
                                             onChange={(e) =>
-                                                setFormData({ ...formData, ma_id: e.target.value })
+                                                setFormData({ ...formData, ma_nhan_su: e.target.value })
                                             }
                                             onBlur={checkMaNhanSu}
                                             disabled={isEditMode}
-                                            placeholder={`Nhập mã ${loai === 'nhan-vien' ? 'nhân viên' : 'giáo viên'}...`}
+                                            placeholder="Nhập mã nhân sự..."
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500 text-gray-900 bg-white"
                                         />
                                     </div>
+                                    {isFetchingNhanSu ? (
+                                        <p className="text-xs text-blue-500 mt-1">Đang kiểm tra...</p>
+                                    ) : nhanSuError ? (
+                                        <p className="text-xs text-red-500 mt-1">{nhanSuError}</p>
+                                    ) : nhanSuName ? (
+                                        <p className="text-sm text-green-600 mt-1 font-medium">
+                                            Họ tên: {nhanSuName}
+                                        </p>
+                                    ) : null}
                                 </div>
-                                {isFetchingNhanSu ? (
-                                    <p className="text-xs text-blue-500">Đang kiểm tra...</p>
-                                ) : nhanSuError ? (
-                                    <p className="text-xs text-red-500">{nhanSuError}</p>
-                                ) : nhanSuName ? (
-                                    <p className="text-sm text-green-600 font-medium">
-                                        Họ tên: {nhanSuName}
-                                    </p>
-                                ) : null}
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
