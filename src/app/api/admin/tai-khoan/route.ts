@@ -7,11 +7,21 @@ export async function GET() {
     try {
         const taiKhoans = await prisma.taiKhoan.findMany({
             include: {
-                nhan_vien: {
-                    select: { ho_ten: true, ma_nhan_vien: true, ma_phong_ban: true, ma_chuc_vu: true },
+                nhan_su: {
+                    select: {
+                        ho_ten: true,
+                        ma_nhan_su: true,
+                        ma_phong_ban: true,
+                        ma_chuc_vu: true,
+                    },
                 },
                 giao_vien: {
-                    select: { ho_ten: true, ma_giao_vien: true, ma_phong_ban: true, ma_chuc_vu: true },
+                    select: {
+                        ho_ten: true,
+                        ma_giao_vien: true,
+                        ma_phong_ban: true,
+                        ma_chuc_vu: true,
+                    },
                 },
                 phan_quyen: {
                     include: {
@@ -24,16 +34,16 @@ export async function GET() {
 
         // Format lại dữ liệu cho dễ dùng ở frontend
         const formattedData = taiKhoans.map((tk) => {
-            const nhanSu = tk.nhan_vien || tk.giao_vien
-            const loai = tk.nhan_vien ? 'Nhân viên' : tk.giao_vien ? 'Giáo viên' : 'Không xác định'
+            const nhanSu = tk.nhan_su || tk.giao_vien
+            const loai = tk.nhan_su ? 'Nhân sự' : tk.giao_vien ? 'Giáo viên' : 'Không xác định'
             return {
                 ma_tai_khoan: tk.ma_tai_khoan,
                 ten_dang_nhap: tk.ten_dang_nhap,
                 email: tk.email,
                 trang_thai: tk.trang_thai,
-                ma_nhan_vien: tk.ma_nhan_vien,
+                ma_nhan_su: (tk as unknown as { ma_nhan_su: number | null }).ma_nhan_su,
                 ma_giao_vien: tk.ma_giao_vien,
-                ho_ten: nhanSu?.ho_ten || 'Không xác định',
+                ho_ten: (nhanSu as { ho_ten: string } | null)?.ho_ten || 'Không xác định',
                 loai,
                 quyen: tk.phan_quyen.map((pq) => pq.quyen.ten_quyen),
                 quyen_ids: tk.phan_quyen.map((pq) => pq.quyen.ma_quyen),
@@ -58,23 +68,26 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: 'Thiếu thông tin bắt buộc' }, { status: 400 })
         }
 
-        if (loai !== 'nhan-vien' && loai !== 'giao-vien') {
+        if (loai !== 'nhan-su' && loai !== 'giao-vien') {
             return NextResponse.json({ message: 'Loại nhân sự không hợp lệ' }, { status: 400 })
         }
 
         const idNumber = Number(ma_id)
 
         // Kiểm tra nhân sự tồn tại và chưa có tài khoản
-        if (loai === 'nhan-vien') {
-            const nhanVien = await prisma.nhanVien.findUnique({
-                where: { ma_nhan_vien: idNumber },
+        if (loai === 'nhan-su') {
+            const nhanSu = await (prisma as any).nhanSu.findUnique({
+                where: { ma_nhan_su: idNumber },
                 include: { tai_khoan: true },
             })
-            if (!nhanVien) {
-                return NextResponse.json({ message: 'Mã nhân viên không tồn tại' }, { status: 404 })
+            if (!nhanSu) {
+                return NextResponse.json({ message: 'Mã nhân sự không tồn tại' }, { status: 404 })
             }
-            if (nhanVien.tai_khoan) {
-                return NextResponse.json({ message: 'Nhân viên này đã được cấp tài khoản' }, { status: 400 })
+            if (nhanSu.tai_khoan) {
+                return NextResponse.json(
+                    { message: 'Nhân sự này đã được cấp tài khoản' },
+                    { status: 400 },
+                )
             }
         } else {
             const giaoVien = await prisma.giaoVien.findUnique({
@@ -85,7 +98,10 @@ export async function POST(req: Request) {
                 return NextResponse.json({ message: 'Mã giáo viên không tồn tại' }, { status: 404 })
             }
             if (giaoVien.tai_khoan) {
-                return NextResponse.json({ message: 'Giáo viên này đã được cấp tài khoản' }, { status: 400 })
+                return NextResponse.json(
+                    { message: 'Giáo viên này đã được cấp tài khoản' },
+                    { status: 400 },
+                )
             }
         }
 
@@ -111,9 +127,7 @@ export async function POST(req: Request) {
                     ten_dang_nhap,
                     mat_khau: hashedPassword,
                     email,
-                    ...(loai === 'nhan-vien'
-                        ? { ma_nhan_vien: idNumber }
-                        : { ma_giao_vien: idNumber }),
+                    ...(loai === 'nhan-su' ? { ma_nhan_su: idNumber } : { ma_giao_vien: idNumber }),
                     trang_thai: trang_thai || 'Hoạt động',
                 },
             })
@@ -134,11 +148,10 @@ export async function POST(req: Request) {
 
         return NextResponse.json(
             { message: 'Tạo tài khoản thành công', data: result },
-            { status: 201 }
+            { status: 201 },
         )
     } catch (error) {
         console.error('Lỗi tạo tài khoản:', error)
         return NextResponse.json({ message: 'Lỗi server khi tạo tài khoản' }, { status: 500 })
     }
 }
-

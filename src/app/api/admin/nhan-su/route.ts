@@ -16,23 +16,23 @@ export async function GET(req: Request) {
             return NextResponse.json({ message: 'Mã ID không hợp lệ' }, { status: 400 })
         }
 
-        if (loai === 'nhan-vien') {
-            const nhanVien = await prisma.nhanVien.findUnique({
-                where: { ma_nhan_vien: id },
+        if (loai === 'nhan-su') {
+            const nhanSu = await (prisma as any).nhanSu.findUnique({
+                where: { ma_nhan_su: id },
                 select: {
-                    ma_nhan_vien: true,
+                    ma_nhan_su: true,
                     ho_ten: true,
                     tai_khoan: { select: { ten_dang_nhap: true } },
                 },
             })
 
-            if (!nhanVien) {
-                return NextResponse.json({ message: 'Không tìm thấy nhân viên' }, { status: 404 })
+            if (!nhanSu) {
+                return NextResponse.json({ message: 'Không tìm thấy nhân sự' }, { status: 404 })
             }
 
             return NextResponse.json({
-                data: { ho_ten: nhanVien.ho_ten },
-                hasAccount: !!nhanVien.tai_khoan,
+                data: { ho_ten: nhanSu.ho_ten },
+                hasAccount: !!nhanSu.tai_khoan,
             })
         }
 
@@ -56,7 +56,10 @@ export async function GET(req: Request) {
             })
         }
 
-        return NextResponse.json({ message: 'Loại nhân sự không hợp lệ (dùng nhan-vien hoặc giao-vien)' }, { status: 400 })
+        return NextResponse.json(
+            { message: 'Loại nhân sự không hợp lệ (dùng nhan-su hoặc giao-vien)' },
+            { status: 400 },
+        )
     } catch (error) {
         console.error('Lỗi khi tìm nhân sự:', error)
         return NextResponse.json({ message: 'Lỗi server' }, { status: 500 })

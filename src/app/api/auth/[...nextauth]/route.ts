@@ -13,7 +13,7 @@ declare module 'next-auth' {
             image?: string | null
             role: string
             ten_phong_ban?: string | null
-            ma_nhan_vien?: number | null
+            ma_nhan_su?: number | null
             ma_giao_vien?: number | null
             allRoles: string[]
         }
@@ -24,7 +24,7 @@ declare module 'next-auth' {
 interface ExtendedUser extends User {
     role: string
     ten_phong_ban?: string | null
-    ma_nhan_vien?: number | null
+    ma_nhan_su?: number | null
     ma_giao_vien?: number | null
     allRoles: string[]
 }
@@ -47,11 +47,11 @@ const handler = NextAuth({
                 const { username, password } = credentials
                 console.log('📍 Đang check login cho:', username)
 
-                // 3. SỬA ĐỔI QUAN TRỌNG: Include cả nhan_vien và giao_vien
+                // 3. SỬA ĐỔI QUAN TRỌNG: Include cả nhan_su và giao_vien
                 const user = await prisma.taiKhoan.findUnique({
                     where: { ten_dang_nhap: username },
                     include: {
-                        nhan_vien: {
+                        nhan_su: {
                             include: { chuc_vu: true, phong_ban: true },
                         },
                         giao_vien: {
@@ -81,26 +81,30 @@ const handler = NextAuth({
                     return null
                 }
 
-                // 4. KIỂM TRA TÀI KHOẢN LÀ CỦA NHÂN VIÊN HAY GIÁO VIÊN
-                const person = user.nhan_vien || user.giao_vien
+                // 4. KIỂM TRA TÀI KHOẢN LÀ CỦA NHÂN SỰ HAY GIÁO VIÊN
+                const person = user.nhan_su || user.giao_vien
 
                 if (!person) {
-                    console.log('❌ Tài khoản chưa được liên kết với Nhân viên hoặc Giáo viên nào!')
+                    console.log('❌ Tài khoản chưa được liên kết với Nhân sự hoặc Giáo viên nào!')
                     return null
                 }
 
                 const userRoles = user.phan_quyen.map((pq) => pq.quyen.ten_quyen)
-                const positionName = person.chuc_vu?.ten_chuc_vu || 'Nhân viên'
-                const departmentName = person.phong_ban?.ten_phong_ban || null
+                const positionName =
+                    (person as { chuc_vu?: { ten_chuc_vu: string } }).chuc_vu?.ten_chuc_vu ||
+                    'Nhân sự'
+                const departmentName =
+                    (person as { phong_ban?: { ten_phong_ban: string } }).phong_ban
+                        ?.ten_phong_ban || null
 
                 return {
                     id: user.ma_tai_khoan.toString(),
-                    name: person.ho_ten,
+                    name: (person as { ho_ten: string }).ho_ten,
                     email: user.email,
                     role: positionName,
                     ten_phong_ban: departmentName,
                     allRoles: userRoles,
-                    ma_nhan_vien: user.ma_nhan_vien,
+                    ma_nhan_su: (user as unknown as { ma_nhan_su: number | null }).ma_nhan_su,
                     ma_giao_vien: user.ma_giao_vien,
                 }
             },
@@ -112,7 +116,7 @@ const handler = NextAuth({
                 const u = user as ExtendedUser
                 token.role = u.role
                 token.ten_phong_ban = u.ten_phong_ban
-                token.ma_nhan_vien = u.ma_nhan_vien
+                token.ma_nhan_su = u.ma_nhan_su
                 token.ma_giao_vien = u.ma_giao_vien
                 token.allRoles = u.allRoles
             }
@@ -122,7 +126,7 @@ const handler = NextAuth({
             if (token && session.user) {
                 session.user.role = token.role as string
                 session.user.ten_phong_ban = token.ten_phong_ban as string | null
-                session.user.ma_nhan_vien = token.ma_nhan_vien as number | null
+                session.user.ma_nhan_su = token.ma_nhan_su as number | null
                 session.user.ma_giao_vien = token.ma_giao_vien as number | null
                 session.user.allRoles = token.allRoles as string[]
             }
