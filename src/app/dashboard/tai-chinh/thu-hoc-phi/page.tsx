@@ -3,7 +3,7 @@
 import Alert from '@/components/Alert'
 import ConfirmModal from '@/components/ConfirmModal'
 import { useState, useEffect, useRef } from 'react'
-import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaFileContract } from 'react-icons/fa'
+import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash } from 'react-icons/fa'
 
 interface PhieuThu {
     ma_phieu_thu: number
@@ -12,7 +12,8 @@ interface PhieuThu {
     noi_dung: string
     ma_hoc_vien: number
     ma_nhan_su: number
-    ma_cam_ket?: number
+    ma_khoa_hoc: number
+    ma_khuyen_mai?: number | null
     hoc_vien?: { ho_ten: string }
     nhan_su?: { ho_ten: string }
 }
@@ -27,37 +28,36 @@ interface HocVien {
     ho_ten: string
 }
 
-interface CamKet {
-    ma_cam_ket: number
-    ma_hoc_vien: number
-    ngay_ky: string
-    noi_dung_cam_ket: string
+interface KhoaHoc {
+    ma_khoa_hoc: number
+    ten_khoa_hoc: string
+    hoc_phi: number
 }
+
+interface KhuyenMai {
+    ma_khuyen_mai: number
+    ten_chuong_trinh: string
+    phan_tram_giam: number
+}
+
+
 
 export default function PhieuThuHocPhiPage() {
     const [data, setData] = useState<PhieuThu[]>([])
     const [nhanSuList, setNhanSuList] = useState<NhanSu[]>([])
     const [hocVienList, setHocVienList] = useState<HocVien[]>([])
-    const [camKetList, setCamKetList] = useState<CamKet[]>([])
-    const [viewCamKetModal, setViewCamKetModal] = useState<{ isOpen: boolean; noiDung: string | null }>({
-        isOpen: false,
-        noiDung: null,
-    })
+    const [khoaHocList, setKhoaHocList] = useState<KhoaHoc[]>([])
+    const [khuyenMaiList, setKhuyenMaiList] = useState<KhuyenMai[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [editingId, setEditingId] = useState<number | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isNhanSuDropdownOpen, setIsNhanSuDropdownOpen] = useState(false)
     const nhanSuDropdownRef = useRef<HTMLDivElement>(null)
-    const [isCamKetDropdownOpen, setIsCamKetDropdownOpen] = useState(false)
-    const camKetDropdownRef = useRef<HTMLDivElement>(null)
-    const [isAddingCamKet, setIsAddingCamKet] = useState(false)
-    const [isSubmittingCamKet, setIsSubmittingCamKet] = useState(false)
-    const [newCamKetData, setNewCamKetData] = useState({
-        ngay_ky: new Date().toISOString().split('T')[0],
-        ngay_het_han: '',
-        noi_dung_cam_ket: ''
-    })
+    const [isKhoaHocDropdownOpen, setIsKhoaHocDropdownOpen] = useState(false)
+    const khoaHocDropdownRef = useRef<HTMLDivElement>(null)
+    const [isKhuyenMaiDropdownOpen, setIsKhuyenMaiDropdownOpen] = useState(false)
+    const khuyenMaiDropdownRef = useRef<HTMLDivElement>(null)
     const [alert, setAlert] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
     const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; id: number | null }>({
         isOpen: false,
@@ -72,7 +72,8 @@ export default function PhieuThuHocPhiPage() {
         ma_nhan_su: '',
         noi_dung: '',
         ten_hoc_vien: '',
-        ma_cam_ket: '',
+        ma_khoa_hoc: '',
+        ma_khuyen_mai: '',
     })
     const [formError, setFormError] = useState<string | null>(null)
 
@@ -89,11 +90,12 @@ export default function PhieuThuHocPhiPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [phieuThuRes, nhanSuRes, hocVienRes, camKetRes] = await Promise.all([
+                const [phieuThuRes, nhanSuRes, hocVienRes, khoaHocRes, khuyenMaiRes] = await Promise.all([
                     fetch('/api/tai-chinh/phieu-thu'),
-                    fetch('/api/dao-tao/nhan-su'),
+                    fetch('/api/tai-chinh/nhan-vien'),
                     fetch('/api/dao-tao/hoc-vien'),
-                    fetch('/api/tuyen-sinh/cam-ket')
+                    fetch('/api/tai-chinh/khoa-hoc'),
+                    fetch('/api/tai-chinh/khuyen-mai'),
                 ])
                 if (phieuThuRes.ok) {
                     const result = await phieuThuRes.json()
@@ -107,9 +109,13 @@ export default function PhieuThuHocPhiPage() {
                     const resultHv = await hocVienRes.json()
                     setHocVienList(resultHv)
                 }
-                if (camKetRes.ok) {
-                    const resultCk = await camKetRes.json()
-                    setCamKetList(resultCk)
+                if (khoaHocRes.ok) {
+                    const resultKh = await khoaHocRes.json()
+                    setKhoaHocList(resultKh)
+                }
+                if (khuyenMaiRes.ok) {
+                    const resultKm = await khuyenMaiRes.json()
+                    setKhuyenMaiList(resultKm)
                 }
             } catch (error) {
                 console.error('Lỗi fetch API:', error)
@@ -119,6 +125,30 @@ export default function PhieuThuHocPhiPage() {
         }
         fetchData()
     }, [])
+
+    useEffect(() => {
+        if (!formData.ma_khoa_hoc) return
+
+        const khoaHoc = khoaHocList.find(kh => kh.ma_khoa_hoc.toString() === formData.ma_khoa_hoc)
+        if (!khoaHoc) return
+
+        let finalPrice = Number(khoaHoc.hoc_phi)
+
+        if (formData.ma_khuyen_mai) {
+            const khuyenMai = khuyenMaiList.find(km => km.ma_khuyen_mai.toString() === formData.ma_khuyen_mai)
+            if (khuyenMai && khuyenMai.phan_tram_giam) {
+                finalPrice = finalPrice * (1 - khuyenMai.phan_tram_giam / 100)
+            }
+        }
+
+        setFormData(prev => {
+            // Chỉ cập nhật nếu khác biệt để tránh re-render vô hạn
+            if (prev.so_tien !== finalPrice.toString()) {
+                return { ...prev, so_tien: finalPrice.toString() }
+            }
+            return prev
+        })
+    }, [formData.ma_khoa_hoc, formData.ma_khuyen_mai, khoaHocList, khuyenMaiList])
 
     useEffect(() => {
         if (formData.ten_hoc_vien === '') {
@@ -143,8 +173,11 @@ export default function PhieuThuHocPhiPage() {
             if (nhanSuDropdownRef.current && !nhanSuDropdownRef.current.contains(event.target as Node)) {
                 setIsNhanSuDropdownOpen(false)
             }
-            if (camKetDropdownRef.current && !camKetDropdownRef.current.contains(event.target as Node)) {
-                setIsCamKetDropdownOpen(false)
+            if (khoaHocDropdownRef.current && !khoaHocDropdownRef.current.contains(event.target as Node)) {
+                setIsKhoaHocDropdownOpen(false)
+            }
+            if (khuyenMaiDropdownRef.current && !khuyenMaiDropdownRef.current.contains(event.target as Node)) {
+                setIsKhuyenMaiDropdownOpen(false)
             }
         }
         document.addEventListener("mousedown", handleClickOutside)
@@ -170,16 +203,11 @@ export default function PhieuThuHocPhiPage() {
             ma_nhan_su: '',
             noi_dung: '',
             ten_hoc_vien: '',
-            ma_cam_ket: '',
+            ma_khoa_hoc: '',
+            ma_khuyen_mai: '',
         })
         setFormError(null)
         setEditingId(null)
-        setIsAddingCamKet(false)
-        setNewCamKetData({
-            ngay_ky: new Date().toISOString().split('T')[0],
-            ngay_het_han: '',
-            noi_dung_cam_ket: ''
-        })
     }
 
     const handleDeleteClick = (id: number) => {
@@ -207,47 +235,7 @@ export default function PhieuThuHocPhiPage() {
         }
     }
 
-    const handleSaveNewCamKet = async () => {
-        if (!newCamKetData.noi_dung_cam_ket.trim()) {
-            setFormError('Vui lòng nhập nội dung cam kết')
-            return
-        }
-        setIsSubmittingCamKet(true)
-        setFormError(null)
-        try {
-            const payload = {
-                ma_hoc_vien: Number(formData.ma_hoc_vien),
-                ngay_ky: newCamKetData.ngay_ky,
-                trang_thai: 'Đang hiệu lực',
-                noi_dung_cam_ket: newCamKetData.noi_dung_cam_ket,
-                ngay_het_han: newCamKetData.ngay_het_han ? newCamKetData.ngay_het_han : null
-            }
-            const response = await fetch('/api/tuyen-sinh/cam-ket', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            if (response.ok) {
-                const result = await response.json()
-                setCamKetList([result, ...camKetList])
-                setFormData({ ...formData, ma_cam_ket: result.ma_cam_ket.toString() })
-                setIsAddingCamKet(false)
-                setNewCamKetData({
-                    ngay_ky: new Date().toISOString().split('T')[0],
-                    ngay_het_han: '',
-                    noi_dung_cam_ket: ''
-                })
-                showAlert('Thêm cam kết mới thành công', 'success')
-            } else {
-                const errorData = await response.json().catch(() => null)
-                setFormError(errorData?.error || 'Lỗi khi tạo cam kết')
-            }
-        } catch (error) {
-            setFormError('Lỗi kết nối máy chủ')
-        } finally {
-            setIsSubmittingCamKet(false)
-        }
-    }
+
 
     const handleSavePhieuThu = async () => {
         if (isSubmitting) return
@@ -256,7 +244,7 @@ export default function PhieuThuHocPhiPage() {
             !formData.ngay_thu ||
             !formData.ma_hoc_vien ||
             !formData.ma_nhan_su ||
-            !formData.ma_cam_ket
+            !formData.ma_khoa_hoc
         ) {
             setFormError('Vui lòng nhập đầy đủ thông tin!')
             return
@@ -273,15 +261,10 @@ export default function PhieuThuHocPhiPage() {
         try {
             const method = editingId ? 'PUT' : 'POST'
             
-            const payload = {
-                ...formData,
-                ma_cam_ket: formData.ma_cam_ket ? Number(formData.ma_cam_ket) : null,
-            }
-
             const response = await fetch('/api/tai-chinh/phieu-thu', {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
+                body: JSON.stringify(formData),
             })
 
             if (response.ok) {
@@ -336,12 +319,7 @@ export default function PhieuThuHocPhiPage() {
         }
     }
 
-    const handleViewCamKet = (ma_cam_ket: number) => {
-        const camKet = camKetList.find(ck => ck.ma_cam_ket === ma_cam_ket)
-        if (camKet) {
-            setViewCamKetModal({ isOpen: true, noiDung: camKet.noi_dung_cam_ket })
-        }
-    }
+
 
     const closeModal = () => {
         setIsModalOpen(false)
@@ -349,12 +327,6 @@ export default function PhieuThuHocPhiPage() {
     }
     const openModalForAdd = () => {
         setIsModalOpen(true)
-        setIsAddingCamKet(false)
-        setNewCamKetData({
-            ngay_ky: new Date().toISOString().split('T')[0],
-            ngay_het_han: '',
-            noi_dung_cam_ket: ''
-        })
         setFormData({
             ma_phieu_thu: '',
             so_tien: '',
@@ -363,16 +335,11 @@ export default function PhieuThuHocPhiPage() {
             noi_dung: '',
             ma_nhan_su: '',
             ten_hoc_vien: '',
-            ma_cam_ket: '',
+            ma_khoa_hoc: '',
+            ma_khuyen_mai: '',
         })
     }
-    const openModalForEdit = (row: PhieuThu) => {
-        setIsAddingCamKet(false)
-        setNewCamKetData({
-            ngay_ky: new Date().toISOString().split('T')[0],
-            ngay_het_han: '',
-            noi_dung_cam_ket: ''
-        })
+    const openModalForEdit = (row: any) => {
         const formattedDate = new Date(row.ngay_thu).toISOString().split('T')[0]
         setFormData({
             ma_phieu_thu: row.ma_phieu_thu.toString(),
@@ -382,7 +349,8 @@ export default function PhieuThuHocPhiPage() {
             ma_nhan_su: row.ma_nhan_su.toString(),
             noi_dung: row.noi_dung,
             ten_hoc_vien: row.hoc_vien?.ho_ten || '',
-            ma_cam_ket: row.ma_cam_ket ? row.ma_cam_ket.toString() : '',
+            ma_khoa_hoc: row.ma_khoa_hoc?.toString() || '',
+            ma_khuyen_mai: row.ma_khuyen_mai?.toString() || '',
         })
         setEditingId(row.ma_phieu_thu)
         setIsModalOpen(true)
@@ -411,8 +379,8 @@ export default function PhieuThuHocPhiPage() {
                             </button>
                         </div>
                         <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 text-gray-700">
-                                <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-x-12 gap-y-6 text-gray-700">
+                                <div className="space-y-4 md:col-span-2">
                                 {editingId && (
                                     <div className="flex items-center">
                                         <label className="w-1/4 text-sm font-medium text-gray-700">
@@ -439,8 +407,9 @@ export default function PhieuThuHocPhiPage() {
                                             type="number"
                                             name="so_tien"
                                             value={formData.so_tien}
-                                            onChange={handleChange}
-                                            className="w-full border border-gray-300 rounded p-2 pr-12 focus:outline-blue-500"
+                                            readOnly
+                                            disabled
+                                            className="w-full border border-gray-200 bg-gray-100 text-gray-700 rounded p-2 pr-12 font-medium cursor-not-allowed"
                                         />
                                         <span className="absolute right-3 top-2 text-gray-500 font-medium">
                                             VNĐ
@@ -480,127 +449,103 @@ export default function PhieuThuHocPhiPage() {
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex items-start">
-                                    <label className="w-1/4 text-sm font-medium text-gray-700 pt-2">
-                                        Cam kết áp dụng:
+                                
+                            </div>
+
+                            <div className="space-y-4 flex flex-col md:col-span-3">
+                                <div className="flex items-center">
+                                    <label className="w-1/3 text-sm font-medium text-gray-700">
+                                        Khóa học:
                                     </label>
-                                    <div className="w-3/4">
-                                        <div className="relative w-full" ref={camKetDropdownRef}>
+                                    <div className="w-2/3 relative" ref={khoaHocDropdownRef}>
+                                        <div
+                                            className="w-full border border-gray-300 rounded p-2 bg-white flex justify-between items-center cursor-pointer hover:border-blue-500"
+                                            onClick={() => setIsKhoaHocDropdownOpen(!isKhoaHocDropdownOpen)}
+                                        >
+                                            <span className="truncate text-sm">
+                                                {formData.ma_khoa_hoc 
+                                                    ? khoaHocList.find(kh => kh.ma_khoa_hoc.toString() === formData.ma_khoa_hoc)?.ten_khoa_hoc || '-- Chọn khóa học --'
+                                                    : '-- Chọn khóa học --'}
+                                            </span>
+                                            <span className="text-gray-400 text-xs">▼</span>
+                                        </div>
+                                        {isKhoaHocDropdownOpen && (
+                                            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
+                                                <div
+                                                    className="p-2 text-sm cursor-pointer hover:bg-blue-50 text-gray-500"
+                                                    onClick={() => {
+                                                        setFormData({ ...formData, ma_khoa_hoc: '' })
+                                                        setFormError(null)
+                                                        setIsKhoaHocDropdownOpen(false)
+                                                    }}
+                                                >
+                                                    -- Chọn khóa học --
+                                                </div>
+                                                {khoaHocList.map(kh => (
+                                                    <div
+                                                        key={kh.ma_khoa_hoc}
+                                                        className={`p-2 text-sm cursor-pointer hover:bg-blue-50 ${formData.ma_khoa_hoc === kh.ma_khoa_hoc.toString() ? 'bg-blue-100 font-medium text-blue-700' : 'text-gray-700'}`}
+                                                        onClick={() => {
+                                                            setFormData({ ...formData, ma_khoa_hoc: kh.ma_khoa_hoc.toString() })
+                                                            setFormError(null)
+                                                            setIsKhoaHocDropdownOpen(false)
+                                                        }}
+                                                    >
+                                                        {kh.ten_khoa_hoc}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {khuyenMaiList.length > 0 && (
+                                    <div className="flex items-center">
+                                        <label className="w-1/3 text-sm font-medium text-gray-700">
+                                            Khuyến mãi áp dụng:
+                                        </label>
+                                        <div className="w-2/3 relative" ref={khuyenMaiDropdownRef}>
                                             <div
-                                                className={`w-full border rounded p-2 flex justify-between items-center ${!formData.ma_hoc_vien || camKetList.filter(ck => ck.ma_hoc_vien.toString() === formData.ma_hoc_vien).length === 0 ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-300 bg-white cursor-pointer hover:border-blue-500'}`}
-                                                onClick={() => {
-                                                    if (!(!formData.ma_hoc_vien || camKetList.filter(ck => ck.ma_hoc_vien.toString() === formData.ma_hoc_vien).length === 0)) {
-                                                        setIsCamKetDropdownOpen(!isCamKetDropdownOpen);
-                                                    }
-                                                }}
+                                                className="w-full border border-gray-300 rounded p-2 bg-white flex justify-between items-center cursor-pointer hover:border-blue-500"
+                                                onClick={() => setIsKhuyenMaiDropdownOpen(!isKhuyenMaiDropdownOpen)}
                                             >
-                                                <span className="truncate">
-                                                    {!formData.ma_hoc_vien 
-                                                        ? '-- Nhập mã học viên trước --' 
-                                                        : camKetList.filter(ck => ck.ma_hoc_vien.toString() === formData.ma_hoc_vien).length === 0
-                                                            ? 'Học viên này chưa có cam kết'
-                                                            : formData.ma_cam_ket && camKetList.find(ck => ck.ma_cam_ket.toString() === formData.ma_cam_ket)
-                                                                ? `Cam kết ${formData.ma_cam_ket} - ${new Date(camKetList.find(ck => ck.ma_cam_ket.toString() === formData.ma_cam_ket)!.ngay_ky).toLocaleDateString('vi-VN')}`
-                                                                : '-- Chọn cam kết --'}
+                                                <span className="truncate text-sm">
+                                                    {formData.ma_khuyen_mai 
+                                                        ? khuyenMaiList.find(km => km.ma_khuyen_mai.toString() === formData.ma_khuyen_mai)?.ten_chuong_trinh + ` (Giảm ${khuyenMaiList.find(km => km.ma_khuyen_mai.toString() === formData.ma_khuyen_mai)?.phan_tram_giam}%)` || '-- Không áp dụng khuyến mãi --'
+                                                        : '-- Không áp dụng khuyến mãi --'}
                                                 </span>
                                                 <span className="text-gray-400 text-xs">▼</span>
                                             </div>
-                                            {isCamKetDropdownOpen && formData.ma_hoc_vien && camKetList.filter(ck => ck.ma_hoc_vien.toString() === formData.ma_hoc_vien).length > 0 && (
-                                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-40 overflow-y-auto custom-scrollbar">
-                                                    {camKetList
-                                                        .filter(ck => ck.ma_hoc_vien.toString() === formData.ma_hoc_vien)
-                                                        .sort((a, b) => b.ma_cam_ket - a.ma_cam_ket)
-                                                        .map(ck => (
+                                            {isKhuyenMaiDropdownOpen && (
+                                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
+                                                    <div
+                                                        className="p-2 text-sm cursor-pointer hover:bg-blue-50 text-gray-500"
+                                                        onClick={() => {
+                                                            setFormData({ ...formData, ma_khuyen_mai: '' })
+                                                            setFormError(null)
+                                                            setIsKhuyenMaiDropdownOpen(false)
+                                                        }}
+                                                    >
+                                                        -- Không áp dụng khuyến mãi --
+                                                    </div>
+                                                    {khuyenMaiList.map(km => (
                                                         <div
-                                                            key={ck.ma_cam_ket}
-                                                            className={`p-2 text-sm cursor-pointer hover:bg-blue-50 ${formData.ma_cam_ket === ck.ma_cam_ket.toString() ? 'bg-blue-100 font-medium text-blue-700' : 'text-gray-700'}`}
+                                                            key={km.ma_khuyen_mai}
+                                                            className={`p-2 text-sm cursor-pointer hover:bg-blue-50 ${formData.ma_khuyen_mai === km.ma_khuyen_mai.toString() ? 'bg-blue-100 font-medium text-blue-700' : 'text-gray-700'}`}
                                                             onClick={() => {
-                                                                setFormData({ ...formData, ma_cam_ket: ck.ma_cam_ket.toString() });
-                                                                setFormError(null);
-                                                                setIsCamKetDropdownOpen(false);
+                                                                setFormData({ ...formData, ma_khuyen_mai: km.ma_khuyen_mai.toString() })
+                                                                setFormError(null)
+                                                                setIsKhuyenMaiDropdownOpen(false)
                                                             }}
                                                         >
-                                                            Cam kết {ck.ma_cam_ket} - {new Date(ck.ngay_ky).toLocaleDateString('vi-VN')}
+                                                            {km.ten_chuong_trinh} (Giảm {km.phan_tram_giam}%)
                                                         </div>
                                                     ))}
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="flex justify-between items-center mt-2 flex-wrap gap-2">
-                                            {formData.ma_cam_ket && !isAddingCamKet && (
-                                                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800 w-full mb-2">
-                                                    <strong>Nội dung cam kết:</strong> {camKetList.find(ck => ck.ma_cam_ket.toString() === formData.ma_cam_ket)?.noi_dung_cam_ket || 'Không có nội dung'}
-                                                </div>
-                                            )}
-                                            {formData.ma_hoc_vien && !isAddingCamKet && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setIsAddingCamKet(true)}
-                                                    className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 w-full justify-end cursor-pointer"
-                                                >
-                                                    <FaPlus className="text-xs" /> Thêm cam kết mới
-                                                </button>
-                                            )}
-                                        </div>
-
-                                        {isAddingCamKet && (
-                                            <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                                <h4 className="font-semibold text-blue-800 mb-3 text-sm">Tạo cam kết mới</h4>
-                                                <div className="space-y-3">
-                                                    <div className="grid grid-cols-2 gap-3">
-                                                        <div>
-                                                            <label className="block text-xs font-medium text-gray-700 mb-1">Ngày ký</label>
-                                                            <input 
-                                                                type="date" 
-                                                                value={newCamKetData.ngay_ky}
-                                                                onChange={(e) => setNewCamKetData({...newCamKetData, ngay_ky: e.target.value})}
-                                                                className="w-full border border-gray-300 rounded p-1.5 text-sm focus:outline-blue-500 bg-white"
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <label className="block text-xs font-medium text-gray-700 mb-1 truncate" title="Ngày hết hạn (Tuỳ chọn)">Ngày hết hạn</label>
-                                                            <input 
-                                                                type="date" 
-                                                                value={newCamKetData.ngay_het_han}
-                                                                onChange={(e) => setNewCamKetData({...newCamKetData, ngay_het_han: e.target.value})}
-                                                                className="w-full border border-gray-300 rounded p-1.5 text-sm focus:outline-blue-500 bg-white"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Nội dung cam kết <span className="text-red-500">*</span></label>
-                                                        <textarea 
-                                                            value={newCamKetData.noi_dung_cam_ket}
-                                                            onChange={(e) => setNewCamKetData({...newCamKetData, noi_dung_cam_ket: e.target.value})}
-                                                            placeholder="Nhập nội dung cam kết..."
-                                                            className="w-full border border-gray-300 rounded p-2 text-sm min-h-[80px] focus:outline-blue-500 bg-white"
-                                                        ></textarea>
-                                                    </div>
-                                                    <div className="flex justify-end gap-2 pt-1">
-                                                        <button 
-                                                            type="button"
-                                                            onClick={() => setIsAddingCamKet(false)}
-                                                            className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-100 bg-white cursor-pointer"
-                                                        >
-                                                            Hủy
-                                                        </button>
-                                                        <button 
-                                                            type="button"
-                                                            disabled={isSubmittingCamKet}
-                                                            onClick={handleSaveNewCamKet}
-                                                            className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
-                                                        >
-                                                            {isSubmittingCamKet ? 'Đang lưu...' : 'Lưu cam kết'}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
                                     </div>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4 flex flex-col">
+                                )}
                                 <div className="flex items-center">
                                     <label className="w-1/3 text-sm font-medium text-gray-700">
                                         Người lập phiếu:
@@ -657,9 +602,9 @@ export default function PhieuThuHocPhiPage() {
                                         rows={4}
                                         className="w-2/3 border border-gray-300 rounded p-2 focus:outline-blue-500 resize-none"></textarea>
                                 </div>
-                            </div>
-                            </div>
-                        </div>
+                            </div>   
+                        </div>       
+                    </div>           
 
                         {formError && (
                             <div className="mx-6 mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shrink-0">
@@ -683,6 +628,7 @@ export default function PhieuThuHocPhiPage() {
                     </div>
                 </div>
             )}
+
             {/* end model */}
 
             <div className="flex justify-between items-end gap-4 mb-8 border-b pb-6">
@@ -760,15 +706,7 @@ export default function PhieuThuHocPhiPage() {
                                         {row.noi_dung}
                                     </td>
                                     <td className="border border-gray-300 p-1">
-                                        <div className="flex justify-center">
-                                            {row.ma_cam_ket && (
-                                                <button
-                                                    onClick={() => handleViewCamKet(row.ma_cam_ket!)}
-                                                    className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-green-100 hover:text-green-600 transition cursor-pointer mr-1"
-                                                    title="Xem nội dung cam kết">
-                                                    <FaFileContract />
-                                                </button>
-                                            )}
+                                        <div className="flex justify-center gap-1">
                                             <button
                                                 onClick={() => openModalForEdit(row)}
                                                 className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-yellow-100 hover:text-yellow-600 transition cursor-pointer"
@@ -777,7 +715,7 @@ export default function PhieuThuHocPhiPage() {
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteClick(row.ma_phieu_thu)}
-                                                className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-red-100 hover:text-red-600 transition ml-1 cursor-pointer"
+                                                className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-red-100 hover:text-red-600 transition cursor-pointer"
                                                 title="Xóa phiếu thu">
                                                 <FaTrash />
                                             </button>
@@ -843,33 +781,7 @@ export default function PhieuThuHocPhiPage() {
                 />
             )}
 
-            {/* Modal Xem Cam Kết */}
-            {viewCamKetModal.isOpen && (
-                <div className="fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-50 transition-opacity">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-auto shadow-lg">
-                        <div className="flex justify-between items-center mb-4 border-b pb-2">
-                            <h2 className="text-xl font-bold text-gray-800">
-                                Nội dung cam kết
-                            </h2>
-                            <button
-                                onClick={() => setViewCamKetModal({ isOpen: false, noiDung: null })}
-                                className="text-gray-400 hover:text-red-500 cursor-pointer transition">
-                                <FaTimes size={24} />
-                            </button>
-                        </div>
-                        <div className="text-gray-700 min-h-[100px] whitespace-pre-wrap p-3 bg-gray-50 border rounded border-gray-200">
-                            {viewCamKetModal.noiDung}
-                        </div>
-                        <div className="mt-6 flex justify-end">
-                            <button
-                                onClick={() => setViewCamKetModal({ isOpen: false, noiDung: null })}
-                                className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition cursor-pointer shadow-sm">
-                                Đóng
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+
 
             <ConfirmModal
                 isOpen={confirmDelete.isOpen}

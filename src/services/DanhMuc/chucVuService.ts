@@ -4,12 +4,12 @@ import { Prisma } from '@prisma/client'
 interface ChucVuFilter {
     ma_chuc_vu?: string | null
     ten_chuc_vu?: string | null
-    ghi_chu?: string | null
+    mo_ta?: string | null
 }
 
 interface ChucVuData {
     ten_chuc_vu: string
-    ghi_chu?: string
+    mo_ta?: string
 }
 
 export const layDanhSachChucVu = async (filters: ChucVuFilter) => {
@@ -33,7 +33,7 @@ export const taoChucVuMoi = async (data: ChucVuData) => {
     return await prisma.chucVu.create({
         data: {
             ten_chuc_vu: data.ten_chuc_vu,
-            ghi_chu: data.ghi_chu,
+            mo_ta: data.mo_ta,
         },
     })
 }
@@ -43,17 +43,18 @@ export const capNhatChucVu = async (ma_chuc_vu: number, data: ChucVuData) => {
         where: { ma_chuc_vu: ma_chuc_vu },
         data: {
             ten_chuc_vu: data.ten_chuc_vu,
-            ghi_chu: data.ghi_chu,
+            mo_ta: data.mo_ta,
         },
     })
 }
 
 export const xoaChucVu = async (ma_chuc_vu: number) => {
-    const countNhanSu = await prisma.nhanSu.count({
-        where: { ma_chuc_vu: ma_chuc_vu },
-    })
+    const [countNhanVien, countGiaoVien] = await Promise.all([
+        prisma.nhanSu.count({ where: { ma_chuc_vu } }),
+        prisma.giaoVien.count({ where: { ma_chuc_vu } }),
+    ])
 
-    if (countNhanSu > 0) {
+    if (countNhanVien > 0 || countGiaoVien > 0) {
         throw new Error(`CONFLICT_RELATION`)
     }
 

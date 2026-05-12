@@ -23,14 +23,13 @@ model TaiKhoan {
   ma_tai_khoan  Int     @id @default(autoincrement())
   ten_dang_nhap String  @unique
   mat_khau      String
-  email         String  @unique
   trang_thai    String?
 
   // Quan hệ 1:1 với Nhân viên hoặc Giáo viên
-  ma_nhan_vien Int? @unique
+  ma_nhan_su   Int? @unique
   ma_giao_vien Int? @unique
 
-  nhan_vien  NhanVien?   @relation(fields: [ma_nhan_vien], references: [ma_nhan_vien])
+  nhan_su    NhanSu?     @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
   giao_vien  GiaoVien?   @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
   phan_quyen PhanQuyen[]
 }
@@ -56,7 +55,7 @@ model PhongBan {
   mo_ta          String?
   ngay_thanh_lap DateTime?
 
-  nhan_vien NhanVien[]
+  nhan_su   NhanSu[]
   giao_vien GiaoVien[]
 }
 
@@ -65,16 +64,17 @@ model ChucVu {
   ten_chuc_vu String  @unique
   mo_ta       String? @db.Text
 
-  nhan_vien NhanVien[]
+  nhan_su   NhanSu[]
   giao_vien GiaoVien[]
 }
 
-model NhanVien {
-  ma_nhan_vien  Int       @id @default(autoincrement())
+model NhanSu {
+  ma_nhan_su    Int       @id @default(autoincrement())
   ho_ten        String
   ngay_sinh     DateTime?
   gioi_tinh     String?
   so_dien_thoai String?
+  email         String?
   dia_chi       String?
   ma_chuc_vu    Int
   ma_phong_ban  Int
@@ -120,13 +120,13 @@ model GiaoVien {
 
 model HoSoBangCap {
   ma_ho_so_bang_cap Int       @id @default(autoincrement())
-  ma_nhan_vien      Int?
+  ma_nhan_su        Int?
   ma_giao_vien      Int?
   ma_bang_cap       Int
   ngay_cap          DateTime?
   noi_cap           String?
 
-  nhan_vien NhanVien? @relation(fields: [ma_nhan_vien], references: [ma_nhan_vien])
+  nhan_su   NhanSu?   @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
   giao_vien GiaoVien? @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
   bang_cap  BangCap   @relation(fields: [ma_bang_cap], references: [ma_bang_cap])
 }
@@ -139,7 +139,7 @@ model BangCap {
 
 model HopDongLaoDong {
   ma_hop_dong   Int       @id @default(autoincrement())
-  ma_nhan_vien  Int?
+  ma_nhan_su    Int?
   ma_giao_vien  Int?
   so_hop_dong   String    @unique
   ngay_ky       DateTime?
@@ -148,7 +148,7 @@ model HopDongLaoDong {
   tg_nghi       String?
   update_at     DateTime  @updatedAt
 
-  nhan_vien NhanVien? @relation(fields: [ma_nhan_vien], references: [ma_nhan_vien])
+  nhan_su   NhanSu?   @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
   giao_vien GiaoVien? @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
 }
 
@@ -170,7 +170,7 @@ model BangChamCong {
 model ChiTietChamCong {
   ma_chi_tiet_cham_cong Int       @id @default(autoincrement())
   ma_bang_cham_cong     Int
-  ma_nhan_vien          Int?
+  ma_nhan_su            Int?
   ma_giao_vien          Int?
   ngay                  DateTime  @db.Date
   gio_vao               DateTime?
@@ -180,7 +180,7 @@ model ChiTietChamCong {
   vi_pham               String?
 
   bang_cham_cong BangChamCong @relation(fields: [ma_bang_cham_cong], references: [ma_bang_cham_cong])
-  nhan_vien      NhanVien?    @relation(fields: [ma_nhan_vien], references: [ma_nhan_vien])
+  nhan_su        NhanSu?      @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
   giao_vien      GiaoVien?    @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
 }
 
@@ -196,7 +196,7 @@ model BangLuong {
 
 model PhieuLuong {
   ma_phieu_luong    Int      @id @default(autoincrement())
-  ma_nhan_vien      Int?
+  ma_nhan_su        Int?
   ma_giao_vien      Int?
   ma_bang_luong     Int
   ma_bang_cham_cong Int
@@ -213,7 +213,7 @@ model PhieuLuong {
   ghi_chu           String?
   trang_thai        String?
 
-  nhan_vien      NhanVien?    @relation(fields: [ma_nhan_vien], references: [ma_nhan_vien])
+  nhan_su        NhanSu?      @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
   giao_vien      GiaoVien?    @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
   bang_luong     BangLuong    @relation(fields: [ma_bang_luong], references: [ma_bang_luong])
   bang_cham_cong BangChamCong @relation(fields: [ma_bang_cham_cong], references: [ma_bang_cham_cong])
@@ -223,13 +223,13 @@ model PhieuLuong {
 
 model PhieuThuong {
   ma_phieu_thuong Int     @id @default(autoincrement())
-  ma_nhan_vien    Int?
+  ma_nhan_su      Int?
   ma_phieu_luong  Int?
   loai_thuong     String
   so_tien         Decimal @db.Decimal(15, 2)
   noi_dung        String?
 
-  nhan_vien   NhanVien?   @relation(fields: [ma_nhan_vien], references: [ma_nhan_vien])
+  nhan_su     NhanSu?     @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
   phieu_luong PhieuLuong? @relation(fields: [ma_phieu_luong], references: [ma_phieu_luong])
 }
 
@@ -243,12 +243,12 @@ model PhieuThu {
   ngay_thu      DateTime @default(now())
   noi_dung      String?
   ma_hoc_vien   Int
-  ma_nhan_vien  Int // Người lập phiếu
+  ma_nhan_su    Int // Người lập phiếu
   ma_khuyen_mai Int?
   ma_khoa_hoc   Int
 
   hoc_vien   HocVien               @relation(fields: [ma_hoc_vien], references: [ma_hoc_vien])
-  nhan_vien  NhanVien              @relation(fields: [ma_nhan_vien], references: [ma_nhan_vien])
+  nhan_su    NhanSu                @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
   khuyen_mai ChuongTrinhKhuyenMai? @relation(fields: [ma_khuyen_mai], references: [ma_khuyen_mai])
   khoa_hoc   KhoaHoc               @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
 }
@@ -265,9 +265,9 @@ model PhieuChi {
   // Khóa ngoại Nullable để linh hoạt theo loại phiếu
   ma_bang_luong             Int? @unique
   ma_chuong_trinh_marketing Int?
-  ma_nhan_vien              Int // Người lập phiếu
+  ma_nhan_su                Int // Người lập phiếu
 
-  nhan_vien        NhanVien              @relation(fields: [ma_nhan_vien], references: [ma_nhan_vien])
+  nhan_su          NhanSu                @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
   bang_luong       BangLuong?            @relation(fields: [ma_bang_luong], references: [ma_bang_luong])
   chuong_trinh_mkt ChuongTrinhMarketing? @relation(fields: [ma_chuong_trinh_marketing], references: [ma_chuong_trinh_marketing])
 }
@@ -449,11 +449,11 @@ model ChuongTrinhMarketing {
 model PhanCongMarketing {
   ma_phan_cong_marketing    Int     @id @default(autoincrement())
   ma_chuong_trinh_marketing Int
-  ma_nhan_vien              Int
+  ma_nhan_su                Int
   vai_tro                   String?
 
   chuong_trinh ChuongTrinhMarketing @relation(fields: [ma_chuong_trinh_marketing], references: [ma_chuong_trinh_marketing])
-  nhan_vien    NhanVien             @relation(fields: [ma_nhan_vien], references: [ma_nhan_vien])
+  nhan_su      NhanSu               @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
 }
 
 model HoatDongNgoaiKhoa {

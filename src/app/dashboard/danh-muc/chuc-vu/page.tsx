@@ -8,7 +8,7 @@ import { FaEdit, FaPlus, FaSave, FaSearch, FaTimes, FaTrash } from 'react-icons/
 interface ChucVu {
     ma_chuc_vu: number
     ten_chuc_vu: string
-    ghi_chu?: string
+    mo_ta?: string
 }
 
 export default function DanhMucChucVuPage() {
@@ -35,7 +35,7 @@ export default function DanhMucChucVuPage() {
     const [formData, setFormData] = useState({
         ma_chuc_vu: '',
         ten_chuc_vu: '',
-        ghi_chu: '',
+        mo_ta: '',
     })
 
     useEffect(() => {
@@ -85,7 +85,7 @@ export default function DanhMucChucVuPage() {
         setFormData({
             ma_chuc_vu: '',
             ten_chuc_vu: '',
-            ghi_chu: '',
+            mo_ta: '',
         })
         setEditingId(null)
     }
@@ -138,7 +138,7 @@ export default function DanhMucChucVuPage() {
         setFormData({
             ma_chuc_vu: row.ma_chuc_vu.toString(),
             ten_chuc_vu: row.ten_chuc_vu,
-            ghi_chu: row.ghi_chu || '',
+            mo_ta: row.mo_ta || '',
         })
         setEditingId(row.ma_chuc_vu)
         setIsModalOpen(true)
@@ -204,7 +204,7 @@ export default function DanhMucChucVuPage() {
         setFormData({
             ma_chuc_vu: '',
             ten_chuc_vu: '',
-            ghi_chu: '',
+            mo_ta: '',
         })
         setIsModalOpen(true)
     }
@@ -268,8 +268,8 @@ export default function DanhMucChucVuPage() {
                                 Ghi chú:
                             </label>
                             <textarea
-                                name="ghi_chu"
-                                value={formData.ghi_chu}
+                                name="mo_ta"
+                                value={formData.mo_ta}
                                 onChange={handleChange}
                                 placeholder="VD: Chức vụ này dành cho trợ giảng..."
                                 className="w-full border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800"
@@ -344,7 +344,7 @@ export default function DanhMucChucVuPage() {
                                         {row.ten_chuc_vu}
                                     </td>
                                     <td className="border border-gray-300 p-3 text-left font-medium">
-                                        {row.ghi_chu}
+                                        {row.mo_ta}
                                     </td>
                                     <td className="border border-gray-300 p-3">
                                         <div className="flex justify-center">

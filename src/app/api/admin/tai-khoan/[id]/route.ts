@@ -16,7 +16,7 @@ export async function PUT(
         }
 
         const body = await req.json()
-        const { ten_dang_nhap, mat_khau, email, trang_thai, quyen_ids } = body
+        const { ten_dang_nhap, mat_khau, trang_thai, quyen_ids } = body
 
         // Kiểm tra xem tài khoản có tồn tại không
         const existingAccount = await prisma.taiKhoan.findUnique({
@@ -37,19 +37,9 @@ export async function PUT(
             }
         }
 
-        if (email && email !== existingAccount.email) {
-            const duplicateEmail = await prisma.taiKhoan.findUnique({
-                where: { email },
-            })
-            if (duplicateEmail) {
-                return NextResponse.json({ message: 'Email đã tồn tại' }, { status: 400 })
-            }
-        }
-
         // Dữ liệu update cơ bản
         const updateData: any = {
             ten_dang_nhap: ten_dang_nhap || existingAccount.ten_dang_nhap,
-            email: email || existingAccount.email,
             trang_thai: trang_thai !== undefined ? trang_thai : existingAccount.trang_thai,
         }
 
