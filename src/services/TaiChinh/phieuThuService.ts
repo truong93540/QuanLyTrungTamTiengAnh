@@ -15,8 +15,9 @@ interface PhieuThuData {
     ngay_thu: string | Date
     noi_dung: string
     ma_hoc_vien: string | number
-    ma_nhan_su: string | number
-    ma_cam_ket?: string | number | null
+    ma_nhan_su: string | number // Giữ nguyên tên biến từ client để tránh sửa quá nhiều
+    ma_khoa_hoc: string | number
+    ma_khuyen_mai?: string | number | null
 }
 
 export class PhieuThuValidationError extends Error {}
@@ -29,7 +30,7 @@ const validatePhieuThuReferences = async (ma_hoc_vien: number, ma_nhan_su: numbe
 
     const nhanSu = await prisma.nhanSu.findUnique({ where: { ma_nhan_su } })
     if (!nhanSu) {
-        throw new PhieuThuValidationError('Mã nhân sự lập phiếu không tồn tại.')
+        throw new PhieuThuValidationError('Mã nhân viên lập phiếu không tồn tại.')
     }
 }
 
@@ -47,36 +48,45 @@ export const layDanhSachPhieuThu = async (filters: PhieuThuFilter) => {
         }
     }
 
-    return await prisma.phieuThu.findMany({
+    const result = await prisma.phieuThu.findMany({
         where: whereClause,
         include: {
             hoc_vien: true,
             nhan_su: true,
+            khoa_hoc: true,
+            khuyen_mai: true,
         },
         orderBy: { ngay_thu: 'desc' },
     })
+
+    return result
 }
 
 export const taoPhieuThuMoi = async (data: PhieuThuData) => {
     const maHocVien = Number(data.ma_hoc_vien)
-    const maNhanSu = Number(data.ma_nhan_su)
+    const maNhanSu = Number(data.ma_nhan_su) // Lấy từ field ma_nhan_su của frontend
 
     await validatePhieuThuReferences(maHocVien, maNhanSu)
 
-    return await prisma.phieuThu.create({
+    const newPhieuThu = await prisma.phieuThu.create({
         data: {
             so_tien: Number(data.so_tien),
             ngay_thu: new Date(data.ngay_thu),
             noi_dung: data.noi_dung,
             ma_hoc_vien: maHocVien,
             ma_nhan_su: maNhanSu,
-            ma_cam_ket: data.ma_cam_ket ? Number(data.ma_cam_ket) : null,
+            ma_khoa_hoc: Number(data.ma_khoa_hoc),
+            ma_khuyen_mai: data.ma_khuyen_mai ? Number(data.ma_khuyen_mai) : null,
         },
         include: {
             hoc_vien: { select: { ho_ten: true } },
             nhan_su: { select: { ho_ten: true } },
+            khoa_hoc: { select: { ten_khoa_hoc: true, hoc_phi: true } },
+            khuyen_mai: { select: { ten_chuong_trinh: true, phan_tram_giam: true } },
         },
     })
+
+    return newPhieuThu
 }
 
 export const capNhatPhieuThu = async (ma_phieu_thu: number, data: PhieuThuData) => {
@@ -85,7 +95,7 @@ export const capNhatPhieuThu = async (ma_phieu_thu: number, data: PhieuThuData) 
 
     await validatePhieuThuReferences(maHocVien, maNhanSu)
 
-    return await prisma.phieuThu.update({
+    const updatedPhieuThu = await prisma.phieuThu.update({
         where: { ma_phieu_thu: ma_phieu_thu },
         data: {
             so_tien: Number(data.so_tien),
@@ -93,13 +103,18 @@ export const capNhatPhieuThu = async (ma_phieu_thu: number, data: PhieuThuData) 
             noi_dung: data.noi_dung,
             ma_hoc_vien: maHocVien,
             ma_nhan_su: maNhanSu,
-            ma_cam_ket: data.ma_cam_ket ? Number(data.ma_cam_ket) : null,
+            ma_khoa_hoc: Number(data.ma_khoa_hoc),
+            ma_khuyen_mai: data.ma_khuyen_mai ? Number(data.ma_khuyen_mai) : null,
         },
         include: {
             hoc_vien: { select: { ho_ten: true } },
             nhan_su: { select: { ho_ten: true } },
+            khoa_hoc: { select: { ten_khoa_hoc: true, hoc_phi: true } },
+            khuyen_mai: { select: { ten_chuong_trinh: true, phan_tram_giam: true } },
         },
     })
+
+    return updatedPhieuThu
 }
 
 export const xoaPhieuThu = async (ma_phieu_thu: number) => {
@@ -107,3 +122,4 @@ export const xoaPhieuThu = async (ma_phieu_thu: number) => {
         where: { ma_phieu_thu: ma_phieu_thu },
     })
 }
+

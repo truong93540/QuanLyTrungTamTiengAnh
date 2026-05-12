@@ -8,7 +8,7 @@ import { FaEdit, FaPlus, FaSave, FaSearch, FaTimes, FaTrash } from 'react-icons/
 interface ChucVu {
     ma_chuc_vu: number
     ten_chuc_vu: string
-    ghi_chu?: string
+    mo_ta?: string
 }
 
 export default function DanhMucChucVuPage() {
@@ -35,7 +35,7 @@ export default function DanhMucChucVuPage() {
     const [formData, setFormData] = useState({
         ma_chuc_vu: '',
         ten_chuc_vu: '',
-        ghi_chu: '',
+        mo_ta: '',
     })
 
     useEffect(() => {
@@ -85,7 +85,7 @@ export default function DanhMucChucVuPage() {
         setFormData({
             ma_chuc_vu: '',
             ten_chuc_vu: '',
-            ghi_chu: '',
+            mo_ta: '',
         })
         setEditingId(null)
     }
@@ -125,7 +125,7 @@ export default function DanhMucChucVuPage() {
             } else {
                 showAlert(
                     `Có lỗi xảy ra khi ${editingId ? 'cập nhật' : 'thêm'} chức vụ.`,
-                    'success',
+                    'error',
                 )
             }
         } catch (error) {
@@ -138,7 +138,7 @@ export default function DanhMucChucVuPage() {
         setFormData({
             ma_chuc_vu: row.ma_chuc_vu.toString(),
             ten_chuc_vu: row.ten_chuc_vu,
-            ghi_chu: row.ghi_chu || '',
+            mo_ta: row.mo_ta || '',
         })
         setEditingId(row.ma_chuc_vu)
         setIsModalOpen(true)
@@ -196,15 +196,17 @@ export default function DanhMucChucVuPage() {
 
     const closeModal = () => {
         setIsModalOpen(false)
+        handleCancelEdit()
     }
 
     const openAddModel = () => {
-        handleOpenModel()
+        setEditingId(null)
         setFormData({
             ma_chuc_vu: '',
             ten_chuc_vu: '',
-            ghi_chu: '',
+            mo_ta: '',
         })
+        setIsModalOpen(true)
     }
 
     return (
@@ -219,7 +221,7 @@ export default function DanhMucChucVuPage() {
                     <div className="mb-8 p-4 border rounded-lg w-[60%] max-h-[90vh] bg-white">
                         <div className="flex justify-between items-center p-5 border-b rounded-t-lg">
                             <h2 className="text-xl font-bold text-gray-800">
-                                {editingId ? 'Cập Nhật Bản Cam Kết' : 'Thêm Bản Cam Kết Mới'}
+                                {editingId ? 'Cập Nhật Chức Vụ' : 'Thêm Chức Vụ Mới'}
                             </h2>
                             <button
                                 onClick={closeModal}
@@ -266,8 +268,8 @@ export default function DanhMucChucVuPage() {
                                 Ghi chú:
                             </label>
                             <textarea
-                                name="ghi_chu"
-                                value={formData.ghi_chu}
+                                name="mo_ta"
+                                value={formData.mo_ta}
                                 onChange={handleChange}
                                 placeholder="VD: Chức vụ này dành cho trợ giảng..."
                                 className="w-full border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800"
@@ -342,7 +344,7 @@ export default function DanhMucChucVuPage() {
                                         {row.ten_chuc_vu}
                                     </td>
                                     <td className="border border-gray-300 p-3 text-left font-medium">
-                                        {row.ghi_chu}
+                                        {row.mo_ta}
                                     </td>
                                     <td className="border border-gray-300 p-3">
                                         <div className="flex justify-center">
@@ -373,7 +375,7 @@ export default function DanhMucChucVuPage() {
                             {Math.min(indexOfLastItem, data.length)}
                         </span>{' '}
                         trong tổng số <span className="font-bold text-gray-800">{data.length}</span>{' '}
-                        phiếu thu
+                        chức vụ
                     </div>
 
                     <div className="flex gap-2">
@@ -419,7 +421,7 @@ export default function DanhMucChucVuPage() {
             <ConfirmModal
                 isOpen={confirmDelete.isOpen}
                 title="Xác nhận xóa"
-                message="Bạn có chắc chắn muốn xóa phiếu thu này? Hành động này sẽ không thể khôi phục lại dữ liệu."
+                message="Bạn có chắc chắn muốn xóa chức vụ này? Hành động này sẽ không thể khôi phục lại dữ liệu."
                 onConfirm={handleConfirmDelete}
                 onClose={() => setConfirmDelete({ isOpen: false, id: null })}
                 type="danger"
