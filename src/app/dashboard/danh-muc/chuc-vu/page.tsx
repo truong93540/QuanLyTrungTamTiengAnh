@@ -8,7 +8,7 @@ import { FaEdit, FaPlus, FaSave, FaSearch, FaTimes, FaTrash } from 'react-icons/
 interface ChucVu {
     ma_chuc_vu: number
     ten_chuc_vu: string
-    ghi_chu?: string
+    mo_ta?: string
 }
 
 export default function DanhMucChucVuPage() {
@@ -32,10 +32,14 @@ export default function DanhMucChucVuPage() {
 
     const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
 
-    const [formData, setFormData] = useState({
+    // State riêng cho ô tìm kiếm
+    const [searchTerm, setSearchTerm] = useState('')
+
+    // State riêng cho modal (thêm/sửa)
+    const [modalForm, setModalForm] = useState({
         ma_chuc_vu: '',
         ten_chuc_vu: '',
-        ghi_chu: '',
+        mo_ta: '',
     })
 
     useEffect(() => {
@@ -56,7 +60,7 @@ export default function DanhMucChucVuPage() {
     }, [])
 
     useEffect(() => {
-        if (formData.ten_chuc_vu === '') {
+        if (searchTerm === '') {
             const fetchAllData = async () => {
                 try {
                     const response = await fetch('/api/danh-muc/chuc-vu')
@@ -71,27 +75,27 @@ export default function DanhMucChucVuPage() {
             }
             fetchAllData()
         }
-    }, [formData.ten_chuc_vu])
+    }, [searchTerm])
 
     const showAlert = (message: string, type: 'success' | 'error') => {
         setAlert({ message, type })
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value })
+        setModalForm({ ...modalForm, [e.target.name]: e.target.value })
     }
 
     const handleCancelEdit = () => {
-        setFormData({
+        setModalForm({
             ma_chuc_vu: '',
             ten_chuc_vu: '',
-            ghi_chu: '',
+            mo_ta: '',
         })
         setEditingId(null)
     }
 
     const handleSaveChucVu = async () => {
-        if (!formData.ten_chuc_vu.trim()) {
+        if (!modalForm.ten_chuc_vu.trim()) {
             showAlert('Vui lòng nhập đầy đủ thông tin bắt buộc!', 'error')
             return
         }
@@ -102,7 +106,7 @@ export default function DanhMucChucVuPage() {
             const response = await fetch('/api/danh-muc/chuc-vu', {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(modalForm),
             })
 
             if (response.ok) {
@@ -135,14 +139,14 @@ export default function DanhMucChucVuPage() {
     }
 
     const handleEditClick = (row: ChucVu) => {
-        setFormData({
+        setModalForm({
             ma_chuc_vu: row.ma_chuc_vu.toString(),
             ten_chuc_vu: row.ten_chuc_vu,
-            ghi_chu: row.ghi_chu || '',
+            mo_ta: row.mo_ta || '',
         })
         setEditingId(row.ma_chuc_vu)
         setIsModalOpen(true)
-        window.scrollTo({ top: 0, behavior: 'smooth' }) // Tự động cuộn lên form
+        window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 
     const handleDeleteClick = (id: number) => {
@@ -175,7 +179,7 @@ export default function DanhMucChucVuPage() {
         setIsLoading(true)
         try {
             const params = new URLSearchParams()
-            if (formData.ten_chuc_vu) params.append('ten_chuc_vu', formData.ten_chuc_vu)
+            if (searchTerm) params.append('ten_chuc_vu', searchTerm)
 
             const response = await fetch(`/api/danh-muc/chuc-vu?${params.toString()}`)
             if (response.ok) {
@@ -201,10 +205,10 @@ export default function DanhMucChucVuPage() {
 
     const openAddModel = () => {
         setEditingId(null)
-        setFormData({
+        setModalForm({
             ma_chuc_vu: '',
             ten_chuc_vu: '',
-            ghi_chu: '',
+            mo_ta: '',
         })
         setIsModalOpen(true)
     }
@@ -238,7 +242,7 @@ export default function DanhMucChucVuPage() {
                                     <input
                                         type="number"
                                         name="ma_chuc_vu"
-                                        value={formData.ma_chuc_vu}
+                                        value={modalForm.ma_chuc_vu}
                                         placeholder={
                                             editingId ? 'Đang sửa đổi...' : 'Nhập mã chức vụ...'
                                         }
@@ -256,7 +260,7 @@ export default function DanhMucChucVuPage() {
                                 <input
                                     type="text"
                                     name="ten_chuc_vu"
-                                    value={formData.ten_chuc_vu}
+                                    value={modalForm.ten_chuc_vu}
                                     onChange={handleChange}
                                     placeholder="VD: Trợ giảng..."
                                     className="w-full border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800"
@@ -265,11 +269,11 @@ export default function DanhMucChucVuPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Ghi chú:
+                                Mô tả:
                             </label>
                             <textarea
-                                name="ghi_chu"
-                                value={formData.ghi_chu}
+                                name="mo_ta"
+                                value={modalForm.mo_ta}
                                 onChange={handleChange}
                                 placeholder="VD: Chức vụ này dành cho trợ giảng..."
                                 className="w-full border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800"
@@ -298,9 +302,8 @@ export default function DanhMucChucVuPage() {
                     <div className="flex gap-2">
                         <input
                             type="text"
-                            name="ten_chuc_vu"
-                            value={formData.ten_chuc_vu}
-                            onChange={handleChange}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                             placeholder="VD: Trợ giảng..."
                             className="border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800"
@@ -332,7 +335,7 @@ export default function DanhMucChucVuPage() {
                                 <th className="border border-gray-300 p-3 text-left">
                                     Tên chức vụ
                                 </th>
-                                <th className="border border-gray-300 p-3 text-left">Ghi chú</th>
+                                <th className="border border-gray-300 p-3 text-left">Mô tả</th>
                                 <th className="border border-gray-300 p-3 w-32">Hành động</th>
                             </tr>
                         </thead>
@@ -344,7 +347,7 @@ export default function DanhMucChucVuPage() {
                                         {row.ten_chuc_vu}
                                     </td>
                                     <td className="border border-gray-300 p-3 text-left font-medium">
-                                        {row.ghi_chu}
+                                        {row.mo_ta}
                                     </td>
                                     <td className="border border-gray-300 p-3">
                                         <div className="flex justify-center">
