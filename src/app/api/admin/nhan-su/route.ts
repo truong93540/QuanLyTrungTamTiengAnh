@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import type { Prisma } from '@prisma/client'
 
 export async function GET(req: Request) {
     try {
@@ -18,12 +17,7 @@ export async function GET(req: Request) {
         }
 
         if (loai === 'nhan-su') {
-            const prismaWithNhanSu = prisma as unknown as {
-                nhanSu: {
-                    findUnique: <T extends Prisma.NhanSuFindUniqueArgs>(args: T) => Promise<Prisma.NhanSuGetPayload<T> | null>
-                }
-            }
-            const nhanSu = await prismaWithNhanSu.nhanSu.findUnique({
+            const nhanSu = await prisma.nhanSu.findUnique({
                 where: { ma_nhan_su: id },
                 select: {
                     ma_nhan_su: true,
@@ -36,9 +30,20 @@ export async function GET(req: Request) {
                 return NextResponse.json({ message: 'Không tìm thấy nhân sự' }, { status: 404 })
             }
 
+            if (nhanSu.tai_khoan) {
+                return NextResponse.json(
+                    {
+                        message: 'Nhân sự này đã có tài khoản',
+                        data: { ho_ten: nhanSu.ho_ten },
+                        hasAccount: true,
+                    },
+                    { status: 200 }
+                )
+            }
+
             return NextResponse.json({
                 data: { ho_ten: nhanSu.ho_ten },
-                hasAccount: !!nhanSu.tai_khoan,
+                hasAccount: false,
             })
         }
 
@@ -56,9 +61,20 @@ export async function GET(req: Request) {
                 return NextResponse.json({ message: 'Không tìm thấy giáo viên' }, { status: 404 })
             }
 
+            if (giaoVien.tai_khoan) {
+                return NextResponse.json(
+                    {
+                        message: 'Giáo viên này đã có tài khoản',
+                        data: { ho_ten: giaoVien.ho_ten },
+                        hasAccount: true,
+                    },
+                    { status: 200 }
+                )
+            }
+
             return NextResponse.json({
                 data: { ho_ten: giaoVien.ho_ten },
-                hasAccount: !!giaoVien.tai_khoan,
+                hasAccount: false,
             })
         }
 
