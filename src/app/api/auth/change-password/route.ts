@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt'
 export async function POST(req: Request) {
     try {
         const session = await getServerSession()
-        if (!session?.user?.email) {
+        if (!session?.user?.ma_nhan_su && !session?.user?.ma_giao_vien) {
             return NextResponse.json({ message: 'Chưa đăng nhập' }, { status: 401 })
         }
 
@@ -18,8 +18,13 @@ export async function POST(req: Request) {
         }
 
         // Tìm user trong DB
-        const user = await prisma.taiKhoan.findUnique({
-            where: { email: session.user.email }
+        const user = await prisma.taiKhoan.findFirst({
+            where: {
+                OR: [
+                    { ma_nhan_su: session.user.ma_nhan_su || -1 },
+                    { ma_giao_vien: session.user.ma_giao_vien || -1 }
+                ]
+            }
         })
 
         if (!user) {

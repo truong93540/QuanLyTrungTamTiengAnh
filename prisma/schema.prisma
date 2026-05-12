@@ -23,7 +23,6 @@ model TaiKhoan {
   ma_tai_khoan  Int     @id @default(autoincrement())
   ten_dang_nhap String  @unique
   mat_khau      String
-  email         String  @unique
   trang_thai    String?
 
   // Quan hệ 1:1 với Nhân viên hoặc Giáo viên

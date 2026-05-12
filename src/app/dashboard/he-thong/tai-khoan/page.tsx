@@ -94,10 +94,8 @@ export default function QuanLyTaiKhoan() {
                         <thead className="bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
                             <tr>
                                 <th className="p-2 border border-gray-100 text-center">Mã NS</th>
-                                <th className="p-2 border border-gray-100 text-center">Loại</th>
                                 <th className="p-2 border border-gray-100">Tên nhân sự</th>
                                 <th className="p-2 border border-gray-100">Tên đăng nhập</th>
-                                <th className="p-2 border border-gray-100">Email</th>
                                 <th className="p-2 border border-gray-100 max-w-[300px]">Các quyền hiện tại</th>
                                 <th className="p-2 border border-gray-100">Trạng thái</th>
                                 <th className="p-2 border border-gray-100 text-center">Hành động</th>
@@ -106,28 +104,23 @@ export default function QuanLyTaiKhoan() {
                         <tbody className="divide-y divide-gray-100">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={8} className="p-4 text-center text-gray-500 border border-gray-100">
+                                    <td colSpan={6} className="p-4 text-center text-gray-500 border border-gray-100">
                                         Đang tải dữ liệu...
                                     </td>
                                 </tr>
                             ) : accounts.length === 0 ? (
                                 <tr>
-                                    <td colSpan={8} className="p-4 text-center text-gray-500 border border-gray-100">
+                                    <td colSpan={6} className="p-4 text-center text-gray-500 border border-gray-100">
                                         Chưa có tài khoản nào trong hệ thống.
                                     </td>
                                 </tr>
                             ) : (
                                 accounts.map((acc) => (
                                     <tr key={acc.ma_tai_khoan} className="hover:bg-blue-50/50 transition">
-                                        <td className="p-2 border border-gray-100 font-medium text-gray-900 text-center">
-                                            {acc.ma_nhan_vien ?? acc.ma_giao_vien ?? '—'}
-                                        </td>
-                                        <td className="p-2 border border-gray-100 text-center">
-                                            {acc.loai === 'Giáo viên' ? (
-                                                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-700">GV</span>
-                                            ) : (
-                                                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700">NV</span>
-                                            )}
+                                        <td className="p-2 border border-gray-100 font-medium text-gray-900 text-center whitespace-nowrap">
+                                            {acc.loai === 'Giáo viên'
+                                                ? `GV-${acc.ma_giao_vien || ''}`
+                                                : `NS-${acc.ma_nhan_su ?? acc.ma_nhan_vien ?? ''}`}
                                         </td>
                                         <td className="p-2 border border-gray-100 font-medium text-gray-900">
                                             {acc.ho_ten}
@@ -135,7 +128,6 @@ export default function QuanLyTaiKhoan() {
                                         <td className="p-2 border border-gray-100">
                                             {acc.ten_dang_nhap}
                                         </td>
-                                        <td className="p-2 border border-gray-100">{acc.email}</td>
                                         <td className="p-2 border border-gray-100 min-w-[280px]">
                                             <div className="flex flex-wrap gap-1 max-w-[300px]">
                                                 {acc.quyen && acc.quyen.length > 0 ? (

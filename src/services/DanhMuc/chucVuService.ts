@@ -50,7 +50,7 @@ export const capNhatChucVu = async (ma_chuc_vu: number, data: ChucVuData) => {
 
 export const xoaChucVu = async (ma_chuc_vu: number) => {
     const [countNhanVien, countGiaoVien] = await Promise.all([
-        prisma.nhanVien.count({ where: { ma_chuc_vu } }),
+        prisma.nhanSu.count({ where: { ma_chuc_vu } }),
         prisma.giaoVien.count({ where: { ma_chuc_vu } }),
     ])
 

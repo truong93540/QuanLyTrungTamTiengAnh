@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@prisma/client'
 
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url)
         const ma_id = searchParams.get('ma_id')
-        const loai = searchParams.get('loai') // 'nhan-vien' hoặc 'giao-vien'
+        const loai = searchParams.get('loai') // 'nhan-su' hoặc 'giao-vien'
 
         if (!ma_id || !loai) {
             return NextResponse.json({ message: 'Thiếu mã ID hoặc loại nhân sự' }, { status: 400 })
@@ -17,7 +18,12 @@ export async function GET(req: Request) {
         }
 
         if (loai === 'nhan-su') {
-            const nhanSu = await (prisma as any).nhanSu.findUnique({
+            const prismaWithNhanSu = prisma as unknown as {
+                nhanSu: {
+                    findUnique: <T extends Prisma.NhanSuFindUniqueArgs>(args: T) => Promise<Prisma.NhanSuGetPayload<T> | null>
+                }
+            }
+            const nhanSu = await prismaWithNhanSu.nhanSu.findUnique({
                 where: { ma_nhan_su: id },
                 select: {
                     ma_nhan_su: true,

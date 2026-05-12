@@ -100,7 +100,7 @@ const handler = NextAuth({
                 return {
                     id: user.ma_tai_khoan.toString(),
                     name: (person as { ho_ten: string }).ho_ten,
-                    email: user.email,
+                    email: (person as { email?: string | null }).email || null,
                     role: positionName,
                     ten_phong_ban: departmentName,
                     allRoles: userRoles,

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@prisma/client'
 import bcrypt from 'bcrypt'
 
 // Lấy danh sách toàn bộ tài khoản kèm quyền
@@ -39,7 +40,6 @@ export async function GET() {
             return {
                 ma_tai_khoan: tk.ma_tai_khoan,
                 ten_dang_nhap: tk.ten_dang_nhap,
-                email: tk.email,
                 trang_thai: tk.trang_thai,
                 ma_nhan_su: (tk as unknown as { ma_nhan_su: number | null }).ma_nhan_su,
                 ma_giao_vien: tk.ma_giao_vien,
@@ -61,35 +61,23 @@ export async function GET() {
 export async function POST(req: Request) {
     try {
         const body = await req.json()
-        const { ten_dang_nhap, mat_khau, email, ma_id, loai, trang_thai, quyen_ids } = body
+        const { ten_dang_nhap, mat_khau, ma_id, role, trang_thai, quyen_ids } = body
+
+        console.log('API received:', { ten_dang_nhap, ma_id, role, quyen_ids }) // Debug log
 
         // Validate cơ bản
-        if (!ten_dang_nhap || !mat_khau || !email || !ma_id || !loai) {
+        if (!ten_dang_nhap || !mat_khau || !ma_id || !role) {
             return NextResponse.json({ message: 'Thiếu thông tin bắt buộc' }, { status: 400 })
         }
 
-        if (loai !== 'nhan-su' && loai !== 'giao-vien') {
-            return NextResponse.json({ message: 'Loại nhân sự không hợp lệ' }, { status: 400 })
+        if (role !== 'ke-toan' && role !== 'dao-tao' && role !== 'sale-marketing' && role !== 'giao-vien' && role !== 'tro-giang' && role !== 'admin') {
+            return NextResponse.json({ message: 'Phân quyền không hợp lệ' }, { status: 400 })
         }
 
         const idNumber = Number(ma_id)
 
         // Kiểm tra nhân sự tồn tại và chưa có tài khoản
-        if (loai === 'nhan-su') {
-            const nhanSu = await (prisma as any).nhanSu.findUnique({
-                where: { ma_nhan_su: idNumber },
-                include: { tai_khoan: true },
-            })
-            if (!nhanSu) {
-                return NextResponse.json({ message: 'Mã nhân sự không tồn tại' }, { status: 404 })
-            }
-            if (nhanSu.tai_khoan) {
-                return NextResponse.json(
-                    { message: 'Nhân sự này đã được cấp tài khoản' },
-                    { status: 400 },
-                )
-            }
-        } else {
+        if (role === 'giao-vien') {
             const giaoVien = await prisma.giaoVien.findUnique({
                 where: { ma_giao_vien: idNumber },
                 include: { tai_khoan: true },
@@ -103,17 +91,32 @@ export async function POST(req: Request) {
                     { status: 400 },
                 )
             }
+        } else {
+            // Các role khác đều dùng nhân sự
+            const prismaWithNhanSu = prisma as unknown as {
+                nhanSu: {
+                    findUnique: <T extends Prisma.NhanSuFindUniqueArgs>(args: T) => Promise<Prisma.NhanSuGetPayload<T> | null>
+                }
+            }
+            const nhanSu = await prismaWithNhanSu.nhanSu.findUnique({
+                where: { ma_nhan_su: idNumber },
+                include: { tai_khoan: true },
+            })
+            if (!nhanSu) {
+                return NextResponse.json({ message: 'Mã nhân sự không tồn tại' }, { status: 404 })
+            }
+            if (nhanSu.tai_khoan) {
+                return NextResponse.json(
+                    { message: 'Nhân sự này đã được cấp tài khoản' },
+                    { status: 400 },
+                )
+            }
         }
 
-        // Kiểm tra trùng username / email
+        // Kiểm tra trùng username
         const existingUsername = await prisma.taiKhoan.findUnique({ where: { ten_dang_nhap } })
         if (existingUsername) {
             return NextResponse.json({ message: 'Tên đăng nhập đã tồn tại' }, { status: 400 })
-        }
-
-        const existingEmail = await prisma.taiKhoan.findUnique({ where: { email } })
-        if (existingEmail) {
-            return NextResponse.json({ message: 'Email đã tồn tại' }, { status: 400 })
         }
 
         // Mã hóa mật khẩu
@@ -126,8 +129,7 @@ export async function POST(req: Request) {
                 data: {
                     ten_dang_nhap,
                     mat_khau: hashedPassword,
-                    email,
-                    ...(loai === 'nhan-su' ? { ma_nhan_su: idNumber } : { ma_giao_vien: idNumber }),
+                    ...(role === 'giao-vien' ? { ma_giao_vien: idNumber } : { ma_nhan_su: idNumber }),
                     trang_thai: trang_thai || 'Hoạt động',
                 },
             })

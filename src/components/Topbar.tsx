@@ -7,21 +7,21 @@ import { FaUserCircle, FaKey, FaChevronDown } from 'react-icons/fa'
 
 /**
  * Tạo chuỗi chức danh hiển thị trên topbar.
- * - "Nhân viên thử việc"   → "Thử việc [Phòng X]"
- * - "Nhân viên chính thức" → "Nhân viên [Phòng X]"
+ * - "Nhân sự thử việc"   → "Thử sự [Phòng X]"
+ * - "Nhân sự chính thức" → "Nhân sự [Phòng X]"
  * - "Quản lý"              → "Quản lý [Phòng X]"
  * - "Trưởng phòng"         → "Trưởng phòng [Phòng X]"
  * - Các chức vụ khác       → tên chức vụ thuần (không kèm phòng)
  */
 function getChucDanh(chucVu: string, tenPhongBan?: string | null): string {
-    const CV_CO_PHONG = ['Nhân viên thử việc', 'Nhân viên chính thức', 'Quản lý', 'Trưởng phòng']
+    const CV_CO_PHONG = ['Nhân sự thử việc', 'Nhân sự chính thức', 'Quản lý', 'Trưởng phòng']
 
     if (!CV_CO_PHONG.includes(chucVu) || !tenPhongBan) {
         return chucVu
     }
 
-    if (chucVu === 'Nhân viên thử việc') return `Thử việc ${tenPhongBan}`
-    if (chucVu === 'Nhân viên chính thức') return `Nhân viên ${tenPhongBan}`
+    if (chucVu === 'Nhân sự thử việc') return `Thử việc ${tenPhongBan}`
+    if (chucVu === 'Nhân sự chính thức') return `Nhân viên ${tenPhongBan}`
 
     // Quản lý / Trưởng phòng
     return `${chucVu} ${tenPhongBan}`
@@ -45,8 +45,7 @@ export default function Topbar() {
                 <div className="relative">
                     <button
                         onClick={() => setIsOpen(!isOpen)}
-                        className="flex items-center gap-3 hover:bg-gray-50 p-1.5 rounded-lg transition cursor-pointer group"
-                    >
+                        className="flex items-center gap-3 hover:bg-gray-50 p-1.5 rounded-lg transition cursor-pointer group">
                         <div className="text-right hidden sm:block">
                             <div className="text-sm font-bold text-gray-800">
                                 {session.user.name || 'Người dùng'}
@@ -66,7 +65,9 @@ export default function Topbar() {
                     {/* Dropdown Menu */}
                     {isOpen && (
                         <>
-                            <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)}></div>
+                            <div
+                                className="fixed inset-0 z-10"
+                                onClick={() => setIsOpen(false)}></div>
                             <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-20 animate-in fade-in zoom-in duration-200 origin-top-right">
                                 <div className="px-4 py-2 border-b border-gray-50 mb-1">
                                     <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">
@@ -76,8 +77,7 @@ export default function Topbar() {
                                 <Link
                                     href="/dashboard/ca-nhan/doi-mat-khau"
                                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors mx-2 rounded-lg"
-                                    onClick={() => setIsOpen(false)}
-                                >
+                                    onClick={() => setIsOpen(false)}>
                                     <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
                                         <FaKey size={14} />
                                     </div>

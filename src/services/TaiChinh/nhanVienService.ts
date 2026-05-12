@@ -1,12 +1,9 @@
 import { prisma } from '@/lib/prisma'
 
 export const layDanhSachNhanVienTaiChinh = async () => {
-    const danhSach = await prisma.nhanVien.findMany({
-        orderBy: { ma_nhan_vien: 'asc' },
+    const danhSach = await prisma.nhanSu.findMany({
+        orderBy: { ma_nhan_su: 'asc' },
     })
 
-    return danhSach.map(nv => ({
-        ...nv,
-        ma_nhan_su: nv.ma_nhan_vien
-    }))
+    return danhSach
 }
