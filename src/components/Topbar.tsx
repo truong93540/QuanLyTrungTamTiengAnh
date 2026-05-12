@@ -1,31 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { FaUserCircle, FaKey, FaChevronDown } from 'react-icons/fa'
-
-/**
- * Tạo chuỗi chức danh hiển thị trên topbar.
- * - "Nhân viên thử việc"   → "Thử việc [Phòng X]"
- * - "Nhân viên chính thức" → "Nhân viên [Phòng X]"
- * - "Quản lý"              → "Quản lý [Phòng X]"
- * - "Trưởng phòng"         → "Trưởng phòng [Phòng X]"
- * - Các chức vụ khác       → tên chức vụ thuần (không kèm phòng)
- */
-function getChucDanh(chucVu: string, tenPhongBan?: string | null): string {
-    const CV_CO_PHONG = ['Nhân viên thử việc', 'Nhân viên chính thức', 'Quản lý', 'Trưởng phòng']
-
-    if (!CV_CO_PHONG.includes(chucVu) || !tenPhongBan) {
-        return chucVu
-    }
-
-    if (chucVu === 'Nhân viên thử việc') return `Thử việc ${tenPhongBan}`
-    if (chucVu === 'Nhân viên chính thức') return `Nhân viên ${tenPhongBan}`
-
-    // Quản lý / Trưởng phòng
-    return `${chucVu} ${tenPhongBan}`
-}
 
 export default function Topbar() {
     const { data: session, status } = useSession()
@@ -43,24 +21,20 @@ export default function Topbar() {
                 </div>
             ) : session?.user ? (
                 <div className="relative">
-                    <button
+                    <button 
                         onClick={() => setIsOpen(!isOpen)}
                         className="flex items-center gap-3 hover:bg-gray-50 p-1.5 rounded-lg transition cursor-pointer group"
                     >
                         <div className="text-right hidden sm:block">
-                            <div className="text-sm font-bold text-gray-800">
-                                {session.user.name || 'Người dùng'}
-                            </div>
+                            <div className="text-sm font-bold text-gray-800">{session.user.name || 'Người dùng'}</div>
                             <div className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full inline-block mt-0.5 uppercase tracking-wide border border-blue-100">
-                                {getChucDanh(session.user.role, session.user.ten_phong_ban)}
+                                {session.user.role || 'Nhân sự'}
                             </div>
                         </div>
                         <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 border border-gray-200 shadow-sm overflow-hidden group-hover:border-blue-300 transition-colors">
                             <FaUserCircle size={32} />
                         </div>
-                        <FaChevronDown
-                            className={`text-[10px] text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-                        />
+                        <FaChevronDown className={`text-[10px] text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     {/* Dropdown Menu */}
@@ -69,11 +43,9 @@ export default function Topbar() {
                             <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)}></div>
                             <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-20 animate-in fade-in zoom-in duration-200 origin-top-right">
                                 <div className="px-4 py-2 border-b border-gray-50 mb-1">
-                                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">
-                                        Tài khoản cá nhân
-                                    </p>
+                                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Tài khoản cá nhân</p>
                                 </div>
-                                <Link
+                                <Link 
                                     href="/dashboard/ca-nhan/doi-mat-khau"
                                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors mx-2 rounded-lg"
                                     onClick={() => setIsOpen(false)}

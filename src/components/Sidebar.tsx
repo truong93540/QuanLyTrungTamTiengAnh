@@ -38,19 +38,23 @@ const menuItems = [
                 href: '/dashboard/danh-muc/phong-ban',
                 role: 'Danh mục phòng ban',
             },
-
             {
-                title: '2.2 DM Chức vụ',
+                title: '2.2 DM Khóa học',
+                href: '/dashboard/danh-muc/khoa-hoc',
+                role: 'Danh mục khóa học',
+            },
+            {
+                title: '2.3 DM Chức vụ',
                 href: '/dashboard/danh-muc/chuc-vu',
                 role: 'Danh mục chức vụ',
             },
             {
-                title: '2.3 DM Chương trình học',
+                title: '2.4 DM Chương trình học',
                 href: '/dashboard/danh-muc/chuong-trinh',
                 role: 'Danh mục chương trình học',
             },
             {
-                title: '2.4 DM Phòng học',
+                title: '2.5 DM Phòng học',
                 href: '/dashboard/danh-muc/phong-hoc',
                 role: 'Danh mục phòng học',
             },
@@ -104,8 +108,8 @@ const menuItems = [
             {
                 title: '4.3 Quản lý nhân sự',
                 href: '/dashboard/dao-tao/nhan-su',
-                role: 'Quản lý nhân sự',
-            },
+                role: 'Quản lý hợp đồng lao động',
+            }, // Map tạm sang HĐLĐ
             {
                 title: '4.4 Hồ sơ học viên',
                 href: '/dashboard/dao-tao/hoc-vien',
@@ -133,9 +137,9 @@ const menuItems = [
                 role: 'Quản lý bảng lương',
             },
             {
-                title: '5.3 Quản lý phiếu chi',
+                title: '5.3 Phiếu chi hoạt động',
                 href: '/dashboard/tai-chinh/phieu-chi',
-                role: 'Quản lý phiếu chi',
+                role: 'Phiếu chi hoạt động',
             },
             {
                 title: '5.4 Quản lý thưởng',
@@ -146,11 +150,6 @@ const menuItems = [
                 title: '5.5 Quản lý công nợ',
                 href: '/dashboard/tai-chinh/cong-no',
                 role: 'Quản lý công nợ',
-            },
-            {
-                title: '5.6 Quản lý chấm công',
-                href: '/dashboard/tai-chinh/cham-cong',
-                role: 'Quản lý chấm công',
             },
         ],
     },
