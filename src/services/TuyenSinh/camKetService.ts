@@ -12,6 +12,7 @@ interface CamKetData {
     noi_dung_cam_ket: string
     trang_thai: string
     ma_hoc_vien: number
+    ma_khoa_hoc: number
 }
 export const layDanhSachCamKet = async (filters: CamKetFilter) => {
  
@@ -51,9 +52,10 @@ export const taoCamKetMoi = async (data: CamKetData) => {
             noi_dung_cam_ket: data.noi_dung_cam_ket,
             trang_thai: data.trang_thai,
             ma_hoc_vien: data.ma_hoc_vien,
+            ma_khoa_hoc: data.ma_khoa_hoc,
         },
         include: {
-            hoc_vien: { select: { ho_ten: true } },
+            hoc_vien: { select: { ho_ten: true } },khoa_hoc: { select: { ten_khoa_hoc: true }}
         },
     })
 }
