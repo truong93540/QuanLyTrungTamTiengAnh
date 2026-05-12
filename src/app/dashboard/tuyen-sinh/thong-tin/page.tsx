@@ -158,21 +158,18 @@ export default function QuanLyKhoaHocPage() {
 
     // --- HÀM LƯU DỮ LIỆU (POST/PUT) ---
     const handleSaveKhoaHoc = async () => {
-        // Validation cơ bản
         if (!formData.ten_khoa_hoc || !formData.thoi_luong || !formData.hoc_phi || !formData.trinh_do || !formData.ma_chuong_trinh) {
             setFormError('Vui lòng nhập đầy đủ các trường có dấu (*)')
             return
         }
-
         try {
             const method = editingId ? 'PUT' : 'POST'
             const payload = {
                 ...formData,
                 ma_khoa_hoc: editingId || undefined,
-                hoc_phi: Number(formData.hoc_phi), // Ép kiểu số
-                ma_chuong_trinh: Number(formData.ma_chuong_trinh) // Ép kiểu số
+                hoc_phi: Number(formData.hoc_phi), 
+                ma_chuong_trinh: Number(formData.ma_chuong_trinh) 
             }
-
             const response = await fetch('/api/tuyen-sinh/khoa-hoc', {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
@@ -181,8 +178,6 @@ export default function QuanLyKhoaHocPage() {
 
             if (response.ok) {
                 const savedData = await response.json()
-                
-                // Cập nhật giao diện mượt mà (Optimistic UI)
                 if (editingId) {
                     setData(data.map(item => item.ma_khoa_hoc === savedData.ma_khoa_hoc ? savedData : item))
                     showToast('Cập nhật khóa học thành công!', 'success')
@@ -263,7 +258,7 @@ export default function QuanLyKhoaHocPage() {
                                         <td className="px-4 py-4 text-center font-bold text-gray-500">{row.ma_khoa_hoc}</td>
                                         <td className="px-4 py-4">
                                             <div className="font-bold text-[#1d4ed8]">{row.ten_khoa_hoc}</div>
-                                            <div className="text-xs text-gray-500 mt-1 italic">Thuộc CT: {row.chuong_trinh?.ten_chuong_trinh || 'N/A'}</div>
+                                            <div className="text-xs text-gray-500 mt-1 italic">Chương Trình: {row.chuong_trinh?.ten_chuong_trinh || 'N/A'}</div>
                                         </td>
                                         <td className="px-4 py-4 text-center whitespace-nowrap">{row.thoi_luong}</td>
                                         <td className="px-4 py-4 text-right font-semibold text-orange-600">
@@ -370,7 +365,7 @@ export default function QuanLyKhoaHocPage() {
                                 </div>
                                 <div>
                                     <label className="block text-sm text-gray-700 mb-1">Thời lượng <span className="text-red-500">*</span></label>
-                                    <input type="text" name="thoi_luong" placeholder="VD: 3 tháng, 40 buổi..." value={formData.thoi_luong} onChange={handleChange} disabled={isViewMode} className="w-full border border-gray-400 rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 text-gray-900 disabled:bg-gray-100 disabled:opacity-100 disabled:text-gray-900" />
+                                    <input type="text" name="thoi_luong" value={formData.thoi_luong} onChange={handleChange} disabled={isViewMode} className="w-full border border-gray-400 rounded-md p-2.5 focus:ring-2 focus:ring-blue-500 text-gray-900 disabled:bg-gray-100 disabled:opacity-100 disabled:text-gray-900" />
                                 </div>
                             </div>
 
