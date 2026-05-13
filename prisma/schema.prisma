@@ -323,7 +323,7 @@ model LopHoc {
   si_so_toi_da    Int?
   ngay_khai_giang DateTime?
   ngay_ket_thuc   DateTime?
-  lich_hoc        Json?     // Ví dụ: [{"thu": 2, "ca": 1, }]
+  lich_hoc        Json?     // Ví dụ: [{"thu": 2, "ca": 1}, {"thu": 3, "ca": 2}]
   ma_phong_hoc    Int
   ma_khoa_hoc     Int
 
