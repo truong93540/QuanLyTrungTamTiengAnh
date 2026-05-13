@@ -93,6 +93,8 @@ model NhanSu {
   phan_cong_marketing PhanCongMarketing[]
 }
 
+
+
 model GiaoVien {
   ma_giao_vien  Int       @id @default(autoincrement())
   ho_ten        String
@@ -112,10 +114,10 @@ model GiaoVien {
   phieu_luong  PhieuLuong[]
   ho_so_bang   HoSoBangCap[]
   cham_cong    ChiTietChamCong[]
-  lop_hoc      LopHoc[]
   ke_hoach_day KeHoachGiangDay[]
   phan_cong_hd PhanCongHoatDong[]
   buoi_hoc     BuoiHoc[]
+  phan_cong_giang_day PhanCongGiangDay[]
 }
 
 model HoSoBangCap {
@@ -321,16 +323,28 @@ model LopHoc {
   si_so_toi_da    Int?
   ngay_khai_giang DateTime?
   ngay_ket_thuc   DateTime?
+  lich_hoc        Json?     // Ví dụ: [{"thu": 2, "ca": 1, }]
   ma_phong_hoc    Int
   ma_khoa_hoc     Int
-  ma_giao_vien    Int
 
   phong_hoc PhongHoc @relation(fields: [ma_phong_hoc], references: [ma_phong_hoc])
   khoa_hoc  KhoaHoc  @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
-  giao_vien GiaoVien @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
 
   tham_gia ThamGiaLop[]
   buoi_hoc BuoiHoc[]
+  phan_cong_giang_day PhanCongGiangDay[]
+}
+
+model PhanCongGiangDay {
+  ma_phan_cong_giang_day  Int       @id @default(autoincrement())
+  ma_lop_hoc        Int
+  ma_giao_vien      Int
+
+  lop_hoc           LopHoc    @relation(fields: [ma_lop_hoc], references: [ma_lop_hoc])
+  giao_vien         GiaoVien  @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
+
+  // Đảm bảo không bị phân công trùng 1 người vào cùng 1 lớp 2 lần
+  @@unique([ma_lop_hoc, ma_giao_vien]) 
 }
 
 model PhongHoc {
