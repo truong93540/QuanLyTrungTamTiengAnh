@@ -350,6 +350,7 @@ model HocVien {
   email            String?   @unique
   dia_chi          String?
   dau_ra_chung_chi String?
+  trang_thai       String?   @default("Đang học")
 
   cam_ket             CamKet[]
   phieu_thu           PhieuThu[]
