@@ -91,6 +91,7 @@ model NhanSu {
   ho_so_bang          HoSoBangCap[]
   cham_cong           ChiTietChamCong[]
   phan_cong_marketing PhanCongMarketing[]
+  phieu_cham_cong     PhieuChamCong[]
 }
 
 
@@ -118,6 +119,7 @@ model GiaoVien {
   phan_cong_hd PhanCongHoatDong[]
   buoi_hoc     BuoiHoc[]
   phan_cong_giang_day PhanCongGiangDay[]
+  phieu_cham_cong     PhieuChamCong[]
 }
 
 model HoSoBangCap {
@@ -144,10 +146,14 @@ model HopDongLaoDong {
   ma_nhan_su    Int?
   ma_giao_vien  Int?
   so_hop_dong   String    @unique
+  luong_co_ban       Decimal?  @db.Decimal(15, 2)
+  phan_tram_hoa_hong Float?    @default(0)
+  chi_tiet_phu_cap   Json?  // [ { ten: "Đi lại", soTien: 500000 }, { ten: "Chuyên cần", soTien: 300000 } ]
+  dong_bao_hiem      Boolean?  @default(false)
   ngay_ky       DateTime?
   ten_cong_viec String?
   tg_thu_viec   String?
-  tg_nghi       String?
+  tg_het_hop_dong    DateTime?
   update_at     DateTime  @updatedAt
 
   nhan_su   NhanSu?   @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
@@ -161,29 +167,96 @@ model HopDongLaoDong {
 model BangChamCong {
   ma_bang_cham_cong Int      @id @default(autoincrement())
   ky_cham_cong      String // VD: "T05-2026"
-  ngay_bat_dau      DateTime
-  ngay_ket_thuc     DateTime
   trang_thai        String?
 
-  chi_tiet    ChiTietChamCong[]
-  phieu_luong PhieuLuong[]
+  danh_sach_phieu   PhieuChamCong[]
+}
+
+model PhieuChamCong {
+  ma_phieu_cham_cong Int      @id @default(autoincrement())
+  ma_bang_cham_cong  Int
+  ma_nhan_su         Int?
+  ma_giao_vien       Int?
+
+  ho_ten             String?  
+
+  // 1. Nhóm 31 ngày công (ngay_1 đến ngay_31)
+  ngay_1  Float? @default(0)
+  ngay_2  Float? @default(0)
+  ngay_3  Float? @default(0)
+  ngay_4  Float? @default(0)
+  ngay_5  Float? @default(0)
+  ngay_6  Float? @default(0)
+  ngay_7  Float? @default(0)
+  ngay_8  Float? @default(0)
+  ngay_9  Float? @default(0)
+  ngay_10 Float? @default(0)
+  ngay_11 Float? @default(0)
+  ngay_12 Float? @default(0)
+  ngay_13 Float? @default(0)
+  ngay_14 Float? @default(0)
+  ngay_15 Float? @default(0)
+  ngay_16 Float? @default(0)
+  ngay_17 Float? @default(0)
+  ngay_18 Float? @default(0)
+  ngay_19 Float? @default(0)
+  ngay_20 Float? @default(0)
+  ngay_21 Float? @default(0)
+  ngay_22 Float? @default(0)
+  ngay_23 Float? @default(0)
+  ngay_24 Float? @default(0)
+  ngay_25 Float? @default(0)
+  ngay_26 Float? @default(0)
+  ngay_27 Float? @default(0)
+  ngay_28 Float? @default(0)
+  ngay_29 Float? @default(0)
+  ngay_30 Float? @default(0)
+  ngay_31 Float? @default(0)
+
+  // 2. Nhóm tổng hợp dữ liệu (Aggregation)
+  tong_so_gio_lam_viec             Float? @default(0)
+  so_lan_di_muon                   Int?   @default(0)
+  so_lan_ve_som                    Int?   @default(0)
+  so_gio_lam_viec_thuong           Float? @default(0)
+  so_gio_tang_ca_ngay_thuong       Float? @default(0)
+  so_gio_lam_viec_thuong_ngay_nghi  Float? @default(0)
+  so_gio_tang_ca_ngay_nghi         Float? @default(0)
+
+  // 3. Quan hệ
+  bang_cham_cong     BangChamCong @relation(fields: [ma_bang_cham_cong], references: [ma_bang_cham_cong])
+  nhan_su            NhanSu?      @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
+  giao_vien          GiaoVien?    @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
+  
+  phieu_luong        PhieuLuong?
+  chi_tiet_cham_cong ChiTietChamCong[]
 }
 
 model ChiTietChamCong {
   ma_chi_tiet_cham_cong Int       @id @default(autoincrement())
-  ma_bang_cham_cong     Int
+  ma_phieu_cham_cong    Int       
+  
+  // Giữ nguyên 2 trường này theo chuẩn UI của bạn
   ma_nhan_su            Int?
   ma_giao_vien          Int?
-  ngay                  DateTime  @db.Date
-  gio_vao               DateTime?
-  gio_ra                DateTime?
-  so_cong               Float?    @default(0)
-  so_gio_day            Float?    @default(0) // Giờ dạy cho GV
-  vi_pham               String?
 
-  bang_cham_cong BangChamCong @relation(fields: [ma_bang_cham_cong], references: [ma_bang_cham_cong])
-  nhan_su        NhanSu?      @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
-  giao_vien      GiaoVien?    @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
+  ngay                  DateTime  @db.Date
+  
+  gio_vao_1             String?
+  gio_ra_1              String?
+  gio_vao_2             String?
+  gio_ra_2              String?
+  gio_vao_3             String?
+  gio_ra_3              String?
+  gio_vao_4             String?
+  gio_ra_4              String?
+  gio_vao_5             String?
+  gio_ra_5              String?
+  gio_vao_6             String?
+  gio_ra_6              String?
+
+  phieu_cham_cong       PhieuChamCong @relation(fields: [ma_phieu_cham_cong], references: [ma_phieu_cham_cong])
+  nhan_su               NhanSu?       @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
+  giao_vien             GiaoVien?     @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
 }
 
 model BangLuong {
@@ -201,16 +274,13 @@ model PhieuLuong {
   ma_nhan_su        Int?
   ma_giao_vien      Int?
   ma_bang_luong     Int
-  ma_bang_cham_cong Int
-  ky_luong          String
+  ma_phieu_cham_cong Int     @unique
   luong_co_ban      Decimal  @db.Decimal(15, 2)
-  so_cong_thuc_te   Float
-  tang_ca           Decimal? @default(0)
-  phu_cap           Decimal? @default(0)
-  tong_thuong       Decimal? @default(0)
-  thu_nhap_khac     Decimal? @default(0)
-  ung_luong         Decimal? @default(0)
-  khau_tru_khac     Decimal? @default(0)
+  tien_hoa_hong      Decimal?  @default(0) @db.Decimal(15, 2)
+  chi_tiet_phu_cap   Json?     // Copy mảng JSON phụ cấp từ Hợp đồng sang
+  tang_ca            Decimal?  @default(0)
+  tong_thuong        Decimal?  @default(0)
+  bao_hiem_xa_hoi    Decimal?  @default(0) @db.Decimal(15, 2)
   thuc_linh         Decimal  @db.Decimal(15, 2)
   ghi_chu           String?
   trang_thai        String?
@@ -218,7 +288,8 @@ model PhieuLuong {
   nhan_su        NhanSu?      @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
   giao_vien      GiaoVien?    @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
   bang_luong     BangLuong    @relation(fields: [ma_bang_luong], references: [ma_bang_luong])
-  bang_cham_cong BangChamCong @relation(fields: [ma_bang_cham_cong], references: [ma_bang_cham_cong])
+
+  phieu_cham_cong   PhieuChamCong @relation(fields: [ma_phieu_cham_cong], references: [ma_phieu_cham_cong])
 
   danh_sach_thuong PhieuThuong[]
 }
