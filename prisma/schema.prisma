@@ -311,19 +311,18 @@ model PhieuThuong {
 // ==========================================
 
 model PhieuThu {
-  ma_phieu_thu  Int      @id @default(autoincrement())
-  so_tien       Decimal  @db.Decimal(15, 2)
-  ngay_thu      DateTime @default(now())
+  ma_phieu_thu  Int                   @id @default(autoincrement())
+  so_tien       Decimal               @db.Decimal(15, 2)
+  ngay_thu      DateTime              @default(now())
   noi_dung      String?
   ma_hoc_vien   Int
-  ma_nhan_su    Int // Người lập phiếu
+  ma_nhan_su    Int
   ma_khuyen_mai Int?
   ma_khoa_hoc   Int
-
-  hoc_vien   HocVien               @relation(fields: [ma_hoc_vien], references: [ma_hoc_vien])
-  nhan_su    NhanSu                @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
-  khuyen_mai ChuongTrinhKhuyenMai? @relation(fields: [ma_khuyen_mai], references: [ma_khuyen_mai])
-  khoa_hoc   KhoaHoc               @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
+  hoc_vien      HocVien               @relation(fields: [ma_hoc_vien], references: [ma_hoc_vien])
+  nhan_su       NhanSu                @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
+  khuyen_mai    ChuongTrinhKhuyenMai? @relation(fields: [ma_khuyen_mai], references: [ma_khuyen_mai])
+  khoa_hoc      KhoaHoc               @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
 }
 
 model PhieuChi {
@@ -461,17 +460,23 @@ model ThamGiaLop {
 }
 
 model CamKet {
-  ma_cam_ket            Int       @id @default(autoincrement())
-  ngay_ky               DateTime
-  ngay_het_han          DateTime?
-  noi_dung_cam_ket      String?
-  trang_thai            String?
-  so_buoi_vang_cho_phep Int?
-  tham_gia_thi_day_du   Boolean?
-  so_buoi_di_muon       Int?
-  so_lan_thieu_bai_tap  Int?
-  ma_hoc_vien           Int
-  ma_khoa_hoc           Int
+  ma_cam_ket                   Int       @id @default(autoincrement())
+  ngay_ky                      DateTime
+  ngay_het_han                 DateTime?
+  noi_dung_cam_ket             String?
+  trang_thai                   String?
+  so_buoi_vang_cho_phep        Int?
+  tham_gia_thi_day_du          Boolean?
+  so_buoi_di_muon              Int?
+  so_lan_thieu_bai_tap         Int?
+  ma_hoc_vien                  Int
+  ma_khoa_hoc                  Int
+  bi_vi_pham                    Boolean  @default(false)
+  ly_do_vi_pham                 String?
+  so_buoi_vang_thuc_te         Int?      @default(0)
+  so_buoi_di_muon_thuc_te      Int?      @default(0)
+  so_lan_thieu_bai_tap_thuc_te Int?      @default(0)
+  da_bo_thi                    Boolean?  @default(false)
 
   hoc_vien HocVien @relation(fields: [ma_hoc_vien], references: [ma_hoc_vien])
   khoa_hoc KhoaHoc @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
