@@ -74,7 +74,7 @@ model NhanSu {
   ngay_sinh     DateTime?
   gioi_tinh     String?
   so_dien_thoai String?
-  email         String?
+  email         String? @unique
   dia_chi       String?
   ma_chuc_vu    Int
   ma_phong_ban  Int
@@ -109,7 +109,8 @@ model GiaoVien {
 
   chuc_vu   ChucVu   @relation(fields: [ma_chuc_vu], references: [ma_chuc_vu])
   phong_ban PhongBan @relation(fields: [ma_phong_ban], references: [ma_phong_ban])
-
+  
+  phieu_thuong  PhieuThuong[]
   tai_khoan    TaiKhoan?
   hop_dong     HopDongLaoDong[]
   phieu_luong  PhieuLuong[]
@@ -235,10 +236,8 @@ model ChiTietChamCong {
   ma_chi_tiet_cham_cong Int       @id @default(autoincrement())
   ma_phieu_cham_cong    Int       
   
-  // Giữ nguyên 2 trường này theo chuẩn UI của bạn
   ma_nhan_su            Int?
   ma_giao_vien          Int?
-
   ngay                  DateTime  @db.Date
   
   gio_vao_1             String?
@@ -255,9 +254,11 @@ model ChiTietChamCong {
   gio_ra_6              String?
 
   phieu_cham_cong       PhieuChamCong @relation(fields: [ma_phieu_cham_cong], references: [ma_phieu_cham_cong])
+
   nhan_su               NhanSu?       @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
   giao_vien             GiaoVien?     @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
 }
+
 
 model BangLuong {
   ma_bang_luong Int     @id @default(autoincrement())
@@ -294,15 +295,27 @@ model PhieuLuong {
   danh_sach_thuong PhieuThuong[]
 }
 
+model BangThuong {
+  ma_bang_thuong Int      @id @default(autoincrement())
+  ki_thuong      String?  // Ví dụ: "5/2026"
+  so_tien_thuong Decimal? @db.Decimal(15, 2) 
+
+  phieu_thuong   PhieuThuong[]
+}
+
 model PhieuThuong {
   ma_phieu_thuong Int     @id @default(autoincrement())
   ma_nhan_su      Int?
+  ma_giao_vien    Int?
   ma_phieu_luong  Int?
+  ma_bang_thuong  Int?
   loai_thuong     String
   so_tien         Decimal @db.Decimal(15, 2)
   noi_dung        String?
 
-  nhan_su     NhanSu?     @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
+  bang_thuong     BangThuong? @relation(fields: [ma_bang_thuong], references: [ma_bang_thuong])
+  nhan_su         NhanSu?     @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
+  giao_vien       GiaoVien?   @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
   phieu_luong PhieuLuong? @relation(fields: [ma_phieu_luong], references: [ma_phieu_luong])
 }
 

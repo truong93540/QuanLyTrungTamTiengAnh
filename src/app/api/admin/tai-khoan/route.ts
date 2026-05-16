@@ -77,17 +77,19 @@ export async function POST(req: Request) {
         const idNumber = Number(ma_id)
 
         // Kiểm tra nhân sự tồn tại và chưa có tài khoản
-        if (role === 'giao-vien') {
+        const isGiaoVienHoacTroGiang = role === 'giao-vien' || role === 'tro-giang'
+
+        if (isGiaoVienHoacTroGiang) {
             const giaoVien = await prisma.giaoVien.findUnique({
                 where: { ma_giao_vien: idNumber },
                 include: { tai_khoan: true },
             })
             if (!giaoVien) {
-                return NextResponse.json({ message: 'Mã giáo viên không tồn tại' }, { status: 404 })
+                return NextResponse.json({ message: 'Mã giáo viên/trợ giảng không tồn tại' }, { status: 404 })
             }
             if (giaoVien.tai_khoan) {
                 return NextResponse.json(
-                    { message: 'Giáo viên này đã được cấp tài khoản' },
+                    { message: 'Nhân sự này đã được cấp tài khoản' },
                     { status: 400 },
                 )
             }
@@ -129,7 +131,7 @@ export async function POST(req: Request) {
                 data: {
                     ten_dang_nhap,
                     mat_khau: hashedPassword,
-                    ...(role === 'giao-vien' ? { ma_giao_vien: idNumber } : { ma_nhan_su: idNumber }),
+                    ...(isGiaoVienHoacTroGiang ? { ma_giao_vien: idNumber } : { ma_nhan_su: idNumber }),
                     trang_thai: trang_thai || 'Hoạt động',
                 },
             })

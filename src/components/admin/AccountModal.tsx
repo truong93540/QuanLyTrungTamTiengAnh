@@ -178,10 +178,8 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
         try {
             // Xác định loại nhân sự dựa trên role
             let loai: string
-            if (role === 'giao-vien') {
+            if (role === 'giao-vien' || role === 'tro-giang') {
                 loai = 'giao-vien'
-            } else if (role === 'tro-giang') {
-                loai = 'nhan-su'
             } else {
                 loai = 'nhan-su'
             }
@@ -367,7 +365,7 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Mã {role === 'giao-vien' ? 'giáo viên' : role === 'tro-giang' ? 'nhân sự (trợ giảng)' : 'nhân sự'}{' '}
+                                            Mã {(role === 'giao-vien' || role === 'tro-giang') ? 'giáo viên/trợ giảng' : 'nhân sự'}{' '}
                                             <span className="text-red-500">*</span>
                                         </label>
                                         <input
@@ -378,7 +376,7 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
                                             }
                                             onBlur={checkMaNhanSu}
                                             disabled={isEditMode}
-                                            placeholder={`Nhập mã ${role === 'giao-vien' ? 'giáo viên' : role === 'tro-giang' ? 'nhân sự (trợ giảng)' : 'nhân sự'}...`}
+                                            placeholder={`Nhập mã ${(role === 'giao-vien' || role === 'tro-giang') ? 'giáo viên/trợ giảng' : 'nhân sự'}...`}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500 text-gray-900 bg-white"
                                         />
                                         <div className="mt-1 min-h-[20px]">

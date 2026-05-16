@@ -150,7 +150,14 @@ export default function PhieuThuHocPhiPage() {
         })
     }, [formData.ma_khoa_hoc, formData.ma_khuyen_mai, khoaHocList, khuyenMaiList])
 
+    const initialSearchMountRef = useRef(true)
+
     useEffect(() => {
+        if (initialSearchMountRef.current) {
+            initialSearchMountRef.current = false
+            return
+        }
+
         if (formData.ten_hoc_vien === '') {
             const fetchAllData = async () => {
                 try {
@@ -339,7 +346,7 @@ export default function PhieuThuHocPhiPage() {
             ma_khuyen_mai: '',
         })
     }
-    const openModalForEdit = (row: any) => {
+    const openModalForEdit = (row: PhieuThu) => {
         const formattedDate = new Date(row.ngay_thu).toISOString().split('T')[0]
         setFormData({
             ma_phieu_thu: row.ma_phieu_thu.toString(),
