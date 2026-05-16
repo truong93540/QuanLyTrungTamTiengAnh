@@ -1,6 +1,4 @@
 import { prisma } from '@/lib/prisma'
-
-// Định nghĩa khuôn mẫu dữ liệu đầu vào
 export interface KhuyenMaiInput {
     ten_chuong_trinh: string
     mo_ta?: string
@@ -9,28 +7,25 @@ export interface KhuyenMaiInput {
     ngay_ket_thuc?: string | Date | null
 }
 
-// 1. LẤY DANH SÁCH KHUYẾN MÃI (READ)
 export const layDanhSachKhuyenMai = async () => {
     return await prisma.chuongTrinhKhuyenMai.findMany({
-        orderBy: { ma_khuyen_mai: 'asc' }, // Mới nhất xếp lên đầu cho dễ nhìn
+        orderBy: { ma_khuyen_mai: 'asc' }, 
     })
 }
 
-// 2. THÊM MỚI KHUYẾN MÃI (CREATE)
 export const taoKhuyenMaiMoi = async (data: KhuyenMaiInput) => {
     return await prisma.chuongTrinhKhuyenMai.create({
         data: {
             ten_chuong_trinh: data.ten_chuong_trinh,
             mo_ta: data.mo_ta,
             phan_tram_giam: data.phan_tram_giam,
-            // Đảm bảo ép kiểu về Date chuẩn để Prisma lưu vào PostgreSQL
             ngay_bat_dau: new Date(data.ngay_bat_dau),
             ngay_ket_thuc: data.ngay_ket_thuc ? new Date(data.ngay_ket_thuc) : null,
         },
     })
 }
 
-// 3. CẬP NHẬT KHUYẾN MÃI (UPDATE) - Rải điều kiện chống ghi đè rác
+
 export const capNhatKhuyenMai = async (ma_khuyen_mai: number, data: Partial<KhuyenMaiInput>) => {
     return await prisma.chuongTrinhKhuyenMai.update({
         where: { ma_khuyen_mai: ma_khuyen_mai },
@@ -46,7 +41,6 @@ export const capNhatKhuyenMai = async (ma_khuyen_mai: number, data: Partial<Khuy
         },
     })
 }
-// 4. XÓA KHUYẾN MÃI (DELETE)
 export const xoaKhuyenMai = async (ma_khuyen_mai: number) => {
     return await prisma.chuongTrinhKhuyenMai.delete({
         where: { ma_khuyen_mai: ma_khuyen_mai },

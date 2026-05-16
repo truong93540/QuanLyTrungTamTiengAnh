@@ -136,7 +136,6 @@ export default function QuanLyCamKetPage() {
             so_buoi_di_muon: row.so_buoi_di_muon ?? 3, so_lan_thieu_bai_tap: row.so_lan_thieu_bai_tap ?? 3,
             bi_vi_pham: row.bi_vi_pham || false, ly_do_vi_pham: row.ly_do_vi_pham || ''
         })
-        // ĐÃ SỬA: Lấy dữ liệu thực tế từ Database để hiển thị thay vì reset về 0
         setViolationStats({ 
             vang: row.so_buoi_vang_thuc_te || 0, 
             muon: row.so_buoi_di_muon_thuc_te || 0, 
@@ -148,7 +147,7 @@ export default function QuanLyCamKetPage() {
     const openViewModal = (row: CamKet) => { 
         fillFormData(row); setIsViewMode(true); setEditingId(row.ma_cam_ket); 
         setShowSuggestions(false); setDateError(''); setFormError(''); setShowStudentDetails(false); 
-        setActiveTab('info'); // ĐÃ SỬA: Mở tab Info đầu tiên
+        setActiveTab('info'); 
         setIsModalOpen(true);
     }
     
@@ -162,7 +161,7 @@ export default function QuanLyCamKetPage() {
     const openEditModal = (row: CamKet) => { 
         fillFormData(row); setIsViewMode(false); setEditingId(row.ma_cam_ket); 
         setShowSuggestions(false); setDateError(''); setShowStudentDetails(false); 
-        setActiveTab('info'); // ĐÃ SỬA: Mở tab Info đầu tiên
+        setActiveTab('info'); 
         setIsModalOpen(true);
     }
 

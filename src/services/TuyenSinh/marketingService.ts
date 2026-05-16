@@ -1,56 +1,106 @@
-import { prisma } from '@/lib/prisma'
+import {prisma} from '@/lib/prisma'
 
-// Định nghĩa khuôn mẫu dữ liệu đầu vào từ giao diện
-export interface MarketingInput {
-    ten_chuong_trinh_marketing: string
-    ma_khoa_hoc: number
-    noi_dung?: string
-    ngay_bat_dau: string | Date
-    ngay_ket_thuc: string | Date
-    ngan_sach: number
+interface PhanCongData {
+    ma_nhan_su: number;
+    vai_tro: string;
 }
 
-// 1. LẤY DANH SÁCH CHIẾN DỊCH (READ)
-export const layDanhSachMarketing = async () => {
+interface ChuongTrinhData {
+    ten_chuong_trinh_marketing: string;
+    noi_dung?: string | null;
+    ngay_bat_dau: Date;
+    ngay_ket_thuc: Date;
+    ngan_sach?: number | null;
+    ma_khoa_hoc?: number | null;
+    danh_sach_nhan_su?: PhanCongData[];
+}
+
+export const layDanhSachChuongTrinh = async () => {
     return await prisma.chuongTrinhMarketing.findMany({
-        // Đã thiết lập tăng dần theo yêu cầu của bạn ở form trước
-        orderBy: { ma_chuong_trinh_marketing: 'asc' }, 
-    })
+        include: {
+            khoa_hoc: { 
+                select: { 
+                    ten_khoa_hoc: true, 
+                    hoc_phi: true, 
+                    thoi_luong: true, 
+                    trinh_do: true,
+                    trang_thai: true // BỔ SUNG: Trạng thái khóa học
+                } 
+            },
+            phan_cong: {
+                include: { 
+                    nhan_su: { 
+                        select: { 
+                            ho_ten: true, 
+                            so_dien_thoai: true, 
+                            email: true,
+                            // BỔ SUNG: Lấy tên phòng ban từ bảng liên kết PhongBan
+                            phong_ban: { select: { ten_phong_ban: true } }
+                        } 
+                    } 
+                }
+            }
+        },
+        // BỔ SUNG: Chuyển logic sắp xếp từ Frontend xuống Database (Mã giảm dần)
+        orderBy: { ma_chuong_trinh_marketing: 'asc' }
+    });
 }
 
-// 2. THÊM MỚI CHIẾN DỊCH (CREATE)
-export const taoMarketingMoi = async (data: MarketingInput) => {
+export const layDanhSachNhanSuMarketing = async () => {
+    return await prisma.nhanSu.findMany({
+        where: { 
+            phong_ban: { ten_phong_ban: { contains: 'Marketing', mode: 'insensitive' } } 
+        },
+        select: { ma_nhan_su: true, ho_ten: true, so_dien_thoai: true, email: true }
+    });
+}
+
+export const taoChuongTrinhMoi = async (data: ChuongTrinhData) => {
     return await prisma.chuongTrinhMarketing.create({
         data: {
             ten_chuong_trinh_marketing: data.ten_chuong_trinh_marketing,
-            ma_khoa_hoc: data.ma_khoa_hoc,
             noi_dung: data.noi_dung,
+            ngay_bat_dau: data.ngay_bat_dau,
+            ngay_ket_thuc: data.ngay_ket_thuc,
             ngan_sach: data.ngan_sach,
-            // Ép kiểu về Date chuẩn để lưu vào PostgreSQL
-            ngay_bat_dau: new Date(data.ngay_bat_dau),
-            ngay_ket_thuc: new Date(data.ngay_ket_thuc),
+            ma_khoa_hoc: data.ma_khoa_hoc,
+            phan_cong: {
+                create: data.danh_sach_nhan_su?.map(item => ({
+                    nhan_su: { connect: { ma_nhan_su: item.ma_nhan_su } },
+                    vai_tro: item.vai_tro
+                })) || []
+            }
         },
-    })
+        include: { khoa_hoc: true, phan_cong: { include: { nhan_su: { include: { phong_ban: true } } } } }
+    });
 }
 
-// 3. CẬP NHẬT CHIẾN DỊCH (UPDATE)
-export const capNhatMarketing = async (ma_chuong_trinh: number, data: Partial<MarketingInput>) => {
+export const capNhatChuongTrinh = async (id: number, data: ChuongTrinhData) => {
+    await prisma.phanCongMarketing.deleteMany({
+        where: { ma_chuong_trinh_marketing: id }
+    });
+
     return await prisma.chuongTrinhMarketing.update({
-        where: { ma_chuong_trinh_marketing: ma_chuong_trinh },
+        where: { ma_chuong_trinh_marketing: id },
         data: {
-            ...(data.ten_chuong_trinh_marketing && { ten_chuong_trinh_marketing: data.ten_chuong_trinh_marketing }),
-            ...(data.ma_khoa_hoc && { ma_khoa_hoc: data.ma_khoa_hoc }),
-            ...(data.noi_dung !== undefined && { noi_dung: data.noi_dung }),
-            ...(data.ngan_sach !== undefined && { ngan_sach: data.ngan_sach }),
-            ...(data.ngay_bat_dau && { ngay_bat_dau: new Date(data.ngay_bat_dau) }),
-            ...(data.ngay_ket_thuc && { ngay_ket_thuc: new Date(data.ngay_ket_thuc) }),
+            ten_chuong_trinh_marketing: data.ten_chuong_trinh_marketing,
+            noi_dung: data.noi_dung,
+            ngay_bat_dau: data.ngay_bat_dau,
+            ngay_ket_thuc: data.ngay_ket_thuc,
+            ngan_sach: data.ngan_sach,
+            ma_khoa_hoc: data.ma_khoa_hoc,
+            phan_cong: {
+                create: data.danh_sach_nhan_su?.map(item => ({
+                    nhan_su: { connect: { ma_nhan_su: item.ma_nhan_su } },
+                    vai_tro: item.vai_tro
+                })) || []
+            }
         },
-    })
+        include: { khoa_hoc: true, phan_cong: { include: { nhan_su: { include: { phong_ban: true } } } } }
+    });
 }
 
-// 4. XÓA CHIẾN DỊCH (DELETE)
-export const xoaMarketing = async (ma_chuong_trinh: number) => {
-    return await prisma.chuongTrinhMarketing.delete({
-        where: { ma_chuong_trinh_marketing: ma_chuong_trinh },
-    })
+export const xoaChuongTrinh = async (id: number) => {
+    await prisma.phanCongMarketing.deleteMany({ where: { ma_chuong_trinh_marketing: id } });
+    return await prisma.chuongTrinhMarketing.delete({ where: { ma_chuong_trinh_marketing: id } });
 }

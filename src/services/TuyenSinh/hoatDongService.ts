@@ -20,6 +20,7 @@ export const layDanhSachGiaoVien = async () => {
     });
 }
 
+// 1. LẤY DANH SÁCH HOẠT ĐỘNG (KÈM GIÁO VIÊN VÀ HỌC VIÊN + LỚP)
 export const layDanhSachHoatDong = async (filters: HoatDongFilter) => {
     const { search } = filters
     const whereClause: any = {}
@@ -35,15 +36,36 @@ export const layDanhSachHoatDong = async (filters: HoatDongFilter) => {
         where: whereClause,
         orderBy: { ngay_to_chuc: 'desc' },
         include: {
+            // Kéo danh sách Giáo viên (Theo đúng tên schema là phan_cong)
             phan_cong: { 
                 include: {
-                    giao_vien: { select: { ho_ten: true } }
+                    giao_vien: { select: { ho_ten: true, so_dien_thoai: true, email: true } }
+                }
+            },
+            // Kéo danh sách Học viên tham gia & Lớp học tương ứng (Theo tên schema là tham_gia_hoc_vien)
+            tham_gia_hoc_vien: {
+                include: {
+                    hoc_vien: {
+                        select: {
+                            ma_hoc_vien: true,
+                            ho_ten: true,
+                            so_dien_thoai: true,
+                            email: true,
+                            // Kéo thêm dữ liệu bảng ThamGiaLop -> LopHoc để gom nhóm trên UI
+                            tham_gia_lop: {
+                                include: {
+                                    lop_hoc: { select: { ma_lop_hoc: true, ten_lop: true } }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     })
 }
 
+// 2. THÊM MỚI HOẠT ĐỘNG
 export const taoHoatDong = async (data: HoatDongData) => {
     return await prisma.hoatDongNgoaiKhoa.create({
         data: {
@@ -60,10 +82,11 @@ export const taoHoatDong = async (data: HoatDongData) => {
                 }
             })
         },
-        include: { phan_cong: { include: { giao_vien: { select: { ho_ten: true } } } } } // Đã sửa
+        include: { phan_cong: { include: { giao_vien: { select: { ho_ten: true } } } } }
     })
 }
 
+// 3. CẬP NHẬT HOẠT ĐỘNG
 export const capNhatHoatDong = async (ma_hoat_dong: number, data: Partial<HoatDongData>) => {
     return await prisma.hoatDongNgoaiKhoa.update({
         where: { ma_hoat_dong_ngoai_khoa: ma_hoat_dong },
@@ -82,15 +105,21 @@ export const capNhatHoatDong = async (ma_hoat_dong: number, data: Partial<HoatDo
                 }
             })
         },
-        include: { phan_cong: { include: { giao_vien: { select: { ho_ten: true } } } } } // Đã sửa
+        include: { phan_cong: { include: { giao_vien: { select: { ho_ten: true } } } } }
     })
 }
 
+// 4. XÓA HOẠT ĐỘNG
 export const xoaHoatDong = async (ma_hoat_dong: number) => {
-    
+    // Xóa liên kết trước khi xóa bảng chính để tránh lỗi khóa ngoại (Foreign Key Constraint)
     await prisma.phanCongHoatDong.deleteMany({
         where: { ma_hoat_dong_ngoai_khoa: ma_hoat_dong }
     });
+    
+    await prisma.thamGiaNgoaiKhoa.deleteMany({
+        where: { ma_hoat_dong_ngoai_khoa: ma_hoat_dong }
+    });
+
     return await prisma.hoatDongNgoaiKhoa.delete({
         where: { ma_hoat_dong_ngoai_khoa: ma_hoat_dong }
     })

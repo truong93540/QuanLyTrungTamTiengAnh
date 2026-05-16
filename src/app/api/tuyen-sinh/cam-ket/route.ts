@@ -1,13 +1,22 @@
 import { NextResponse } from 'next/server'
-import { layDanhSachCamKet, taoCamKetMoi, capNhatCamKet, xoaCamKet, kiemTraVaCapNhatViPham } from '@/services/TuyenSinh/camKetService'
+import { 
+    layDanhSachCamKet, 
+    taoCamKetMoi, 
+    capNhatCamKet, 
+    xoaCamKet, 
+    kiemTraVaCapNhatViPham 
+} from '@/services/TuyenSinh/camKetService'
 
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url)
         const filters = {
-            ma_cam_ket: searchParams.get('ma_cam_ket'), ngay_ky: searchParams.get('ngay_ky'),
-            trang_thai: searchParams.get('trang_thai'), ma_hoc_vien: searchParams.get('ma_hoc_vien'),
-            ten_hoc_vien: searchParams.get('ten_hoc_vien'), ma_khoa_hoc: searchParams.get('ma_khoa_hoc'), 
+            ma_cam_ket: searchParams.get('ma_cam_ket'), 
+            ngay_ky: searchParams.get('ngay_ky'),
+            trang_thai: searchParams.get('trang_thai'), 
+            ma_hoc_vien: searchParams.get('ma_hoc_vien'),
+            ten_hoc_vien: searchParams.get('ten_hoc_vien'), 
+            ma_khoa_hoc: searchParams.get('ma_khoa_hoc'), 
         }
         const danhSach = await layDanhSachCamKet(filters)
         return NextResponse.json(danhSach)
@@ -20,16 +29,24 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json()
-        const { ngay_ky, ngay_het_han, noi_dung_cam_ket, trang_thai, ma_hoc_vien, ma_khoa_hoc, so_buoi_vang_cho_phep, tham_gia_thi_day_du, so_buoi_di_muon, so_lan_thieu_bai_tap, bi_vi_pham, ly_do_vi_pham, so_buoi_vang_thuc_te, so_buoi_di_muon_thuc_te, so_lan_thieu_bai_tap_thuc_te, da_bo_thi } = body
+        const { 
+            ngay_ky, ngay_het_han, noi_dung_cam_ket, trang_thai, ma_hoc_vien, ma_khoa_hoc, 
+            so_buoi_vang_cho_phep, tham_gia_thi_day_du, so_buoi_di_muon, so_lan_thieu_bai_tap, 
+            bi_vi_pham, ly_do_vi_pham, so_buoi_vang_thuc_te, so_buoi_di_muon_thuc_te, 
+            so_lan_thieu_bai_tap_thuc_te, da_bo_thi 
+        } = body
 
         if (!ngay_ky || !noi_dung_cam_ket || !trang_thai || !ma_hoc_vien || !ma_khoa_hoc) {
-            return NextResponse.json({ error: 'Thiếu dữ liệu bắt buộc' }, { status: 400 })
+            return NextResponse.json({ error: 'Thiếu dữ liệu bắt buộc (Ngày ký, Nội dung, Học viên, Khóa học)' }, { status: 400 })
         }
 
         const duLieuMoi = {
-            ngay_ky: new Date(ngay_ky), ngay_het_han: ngay_het_han ? new Date(ngay_het_han) : null,
-            noi_dung_cam_ket: String(noi_dung_cam_ket), trang_thai: String(trang_thai),
-            ma_hoc_vien: Number(ma_hoc_vien), ma_khoa_hoc: Number(ma_khoa_hoc),
+            ngay_ky: new Date(ngay_ky), 
+            ngay_het_han: ngay_het_han ? new Date(ngay_het_han) : null,
+            noi_dung_cam_ket: String(noi_dung_cam_ket), 
+            trang_thai: String(trang_thai),
+            ma_hoc_vien: Number(ma_hoc_vien), 
+            ma_khoa_hoc: Number(ma_khoa_hoc),
             so_buoi_vang_cho_phep: so_buoi_vang_cho_phep !== undefined ? Number(so_buoi_vang_cho_phep) : null,
             tham_gia_thi_day_du: tham_gia_thi_day_du !== undefined ? Boolean(tham_gia_thi_day_du) : null,
             so_buoi_di_muon: so_buoi_di_muon !== undefined ? Number(so_buoi_di_muon) : null,
@@ -44,13 +61,21 @@ export async function POST(request: Request) {
 
         const camKetMoi = await taoCamKetMoi(duLieuMoi)
         return NextResponse.json(camKetMoi, { status: 201 })
-    } catch (error) { return NextResponse.json({ error: 'Lỗi khi thêm vào CSDL' }, { status: 500 }) }
+    } catch (error) { 
+        console.error('LỖI TẠO CAM KẾT:', error);
+        return NextResponse.json({ error: 'Lỗi khi thêm vào CSDL' }, { status: 500 }) 
+    }
 }
 
 export async function PUT(request: Request) {
     try {
         const body = await request.json()
-        const { action, ma_cam_ket, ngay_ky, ngay_het_han, noi_dung_cam_ket, trang_thai, ma_hoc_vien, ma_khoa_hoc, so_buoi_vang_cho_phep, tham_gia_thi_day_du, so_buoi_di_muon, so_lan_thieu_bai_tap, bi_vi_pham, ly_do_vi_pham, so_buoi_vang_thuc_te, so_buoi_di_muon_thuc_te, so_lan_thieu_bai_tap_thuc_te, da_bo_thi } = body
+        const { 
+            action, ma_cam_ket, ngay_ky, ngay_het_han, noi_dung_cam_ket, trang_thai, ma_hoc_vien, ma_khoa_hoc, 
+            so_buoi_vang_cho_phep, tham_gia_thi_day_du, so_buoi_di_muon, so_lan_thieu_bai_tap, 
+            bi_vi_pham, ly_do_vi_pham, so_buoi_vang_thuc_te, so_buoi_di_muon_thuc_te, 
+            so_lan_thieu_bai_tap_thuc_te, da_bo_thi 
+        } = body
 
         if (!ma_cam_ket) return NextResponse.json({ error: 'Thiếu mã cam kết' }, { status: 400 })
 
@@ -81,7 +106,10 @@ export async function PUT(request: Request) {
         const camKetCapNhat = await capNhatCamKet(Number(ma_cam_ket), duLieuCapNhat)
         return NextResponse.json(camKetCapNhat, { status: 200 })
 
-    } catch (error) { return NextResponse.json({ error: 'Lỗi hệ thống' }, { status: 500 }) }
+    } catch (error) { 
+        console.error('LỖI CẬP NHẬT CAM KẾT:', error);
+        return NextResponse.json({ error: 'Lỗi hệ thống' }, { status: 500 }) 
+    }
 }
 
 export async function DELETE(request: Request) {
@@ -92,5 +120,8 @@ export async function DELETE(request: Request) {
         
         await xoaCamKet(Number(id))
         return NextResponse.json({ message: 'Xóa thành công' }, { status: 200 })
-    } catch (error) { return NextResponse.json({ error: 'Lỗi khi xóa' }, { status: 500 }) }
+    } catch (error) { 
+        console.error('LỖI XÓA CAM KẾT:', error);
+        return NextResponse.json({ error: 'Lỗi khi xóa' }, { status: 500 }) 
+    }
 }

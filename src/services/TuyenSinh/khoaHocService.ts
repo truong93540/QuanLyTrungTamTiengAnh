@@ -14,13 +14,24 @@ export interface KhoaHocInput {
 // 1. LẤY DANH SÁCH KHÓA HỌC (READ)
 export const layDanhSachKhoaHoc = async () => {
     return await prisma.khoaHoc.findMany({
-        // JOIN bảng để lấy tên chương trình học mang lên giao diện
         include: {
             chuong_trinh: {
                 select: { ten_chuong_trinh: true },
             },
+            // Đã đổi thành "marketing" theo đúng schema của bạn
+            marketing: { 
+                orderBy: { ngay_bat_dau: 'desc' }
+            },
+            // "lop_hoc" theo đúng schema
+            lop_hoc: {
+                include: {
+                    giao_vien: { select: { ho_ten: true } },
+                    phong_hoc: { select: { ten_phong_hoc: true } }
+                },
+                orderBy: { ngay_khai_giang: 'desc' }
+            }
         },
-        orderBy: { ma_khoa_hoc: 'asc' }, // Sắp xếp theo mã tăng dần
+        orderBy: { ma_khoa_hoc: 'asc' }, 
     })
 }
 
@@ -42,7 +53,7 @@ export const taoKhoaHocMoi = async (data: KhoaHocInput) => {
     })
 }
 
-// 3. CẬP NHẬT KHÓA HỌC (UPDATE) - Áp dụng "Rải điều kiện" chống ghi đè rác
+// 3. CẬP NHẬT KHÓA HỌC (UPDATE)
 export const capNhatKhoaHoc = async (ma_khoa_hoc: number, data: Partial<KhoaHocInput>) => {
     return await prisma.khoaHoc.update({
         where: { ma_khoa_hoc: ma_khoa_hoc },

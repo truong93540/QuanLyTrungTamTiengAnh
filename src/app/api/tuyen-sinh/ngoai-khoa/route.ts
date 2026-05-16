@@ -1,22 +1,31 @@
 import { NextResponse } from 'next/server'
-import { layDanhSachHoatDong, taoHoatDong, capNhatHoatDong, xoaHoatDong, layDanhSachGiaoVien } from '@/services/TuyenSinh/hoatDongService'
+// CHÚ Ý: Đã sửa lại đường dẫn import cho khớp với tên file service ở bước trước
+import { 
+    layDanhSachHoatDong, 
+    taoHoatDong, 
+    capNhatHoatDong, 
+    xoaHoatDong, 
+    layDanhSachGiaoVien 
+} from '@/services/TuyenSinh/hoatDongService'
 
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url)
         const action = searchParams.get('action')
 
+        // Trả về danh sách giáo viên để chọn khi Thêm/Sửa
         if (action === 'get_teachers') {
             const giaoVien = await layDanhSachGiaoVien()
             return NextResponse.json(giaoVien)
         }
 
+        // Trả về danh sách Hoạt động ngoại khóa (Có tìm kiếm)
         const filters = { search: searchParams.get('search') }
         const danhSach = await layDanhSachHoatDong(filters)
         return NextResponse.json(danhSach)
 
     } catch (error) {
-        console.error('Lỗi GET:', error)
+        console.error('Lỗi GET API Hoạt động ngoại khóa:', error)
         return NextResponse.json({ error: 'Lỗi kết nối cơ sở dữ liệu' }, { status: 500 })
     }
 }
@@ -42,7 +51,7 @@ export async function POST(request: Request) {
         const hoatDongMoi = await taoHoatDong(duLieuMoi)
         return NextResponse.json(hoatDongMoi, { status: 201 })
     } catch (error) {
-        console.error('Lỗi POST:', error)
+        console.error('Lỗi POST API Hoạt động ngoại khóa:', error)
         return NextResponse.json({ error: 'Lỗi khi thêm vào cơ sở dữ liệu' }, { status: 500 })
     }
 }
@@ -68,7 +77,7 @@ export async function PUT(request: Request) {
         const hoatDongCapNhat = await capNhatHoatDong(Number(ma_hoat_dong_ngoai_khoa), duLieuCapNhat)
         return NextResponse.json(hoatDongCapNhat, { status: 200 })
     } catch (error) {
-        console.error('Lỗi PUT:', error)
+        console.error('Lỗi PUT API Hoạt động ngoại khóa:', error)
         return NextResponse.json({ error: 'Lỗi hệ thống' }, { status: 500 })
     }
 }
@@ -82,6 +91,7 @@ export async function DELETE(request: Request) {
         await xoaHoatDong(Number(id))
         return NextResponse.json({ message: 'Xóa thành công' }, { status: 200 })
     } catch (error) {
+        console.error('Lỗi DELETE API Hoạt động ngoại khóa:', error)
         return NextResponse.json({ error: 'Lỗi khi xóa' }, { status: 500 })
     }
 }

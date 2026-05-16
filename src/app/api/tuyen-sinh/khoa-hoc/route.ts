@@ -1,37 +1,46 @@
 import { NextResponse } from 'next/server'
-// Import các hàm từ Service (Đổi đường dẫn @/services/... cho khớp với dự án của bạn)
 import { layDanhSachKhoaHoc, taoKhoaHocMoi, capNhatKhoaHoc, xoaKhoaHoc } from '@/services/TuyenSinh/khoaHocService'
 
-export async function GET(request: Request) {
+export async function GET() {
     try {
         const danhSach = await layDanhSachKhoaHoc()
         return NextResponse.json(danhSach)
     } catch (error) {
-        console.error('Lỗi GET:', error)
-        return NextResponse.json({ error: 'Lỗi kết nối CSDL' }, { status: 500 })
+        return NextResponse.json({ error: 'Lỗi máy chủ' }, { status: 500 })
     }
 }
 
 export async function POST(request: Request) {
     try {
-        const data = await request.json()
-        const newKhoaHoc = await taoKhoaHocMoi(data)
-        return NextResponse.json(newKhoaHoc)
+        const body = await request.json()
+        if (!body.ten_khoa_hoc || !body.hoc_phi || !body.ma_chuong_trinh) {
+            return NextResponse.json({ error: 'Thiếu thông tin bắt buộc' }, { status: 400 })
+        }
+
+        const ketQua = await taoKhoaHocMoi({
+            ...body,
+            hoc_phi: Number(body.hoc_phi),
+            ma_chuong_trinh: Number(body.ma_chuong_trinh)
+        })
+        return NextResponse.json(ketQua, { status: 201 })
     } catch (error) {
-        console.error('Lỗi POST:', error)
-        return NextResponse.json({ error: 'Không thể thêm khóa học' }, { status: 500 })
+        return NextResponse.json({ error: 'Lỗi khi tạo mới' }, { status: 500 })
     }
 }
 
 export async function PUT(request: Request) {
     try {
-        const data = await request.json()
-        // Tách ID ra, phần còn lại ném vào hàm cập nhật
-        const updatedKhoaHoc = await capNhatKhoaHoc(data.ma_khoa_hoc, data)
-        return NextResponse.json(updatedKhoaHoc)
+        const body = await request.json()
+        if (!body.ma_khoa_hoc) return NextResponse.json({ error: 'Thiếu ID' }, { status: 400 })
+
+        const ketQua = await capNhatKhoaHoc(Number(body.ma_khoa_hoc), {
+            ...body,
+            hoc_phi: Number(body.hoc_phi),
+            ma_chuong_trinh: Number(body.ma_chuong_trinh)
+        })
+        return NextResponse.json(ketQua, { status: 200 })
     } catch (error) {
-        console.error('Lỗi PUT:', error)
-        return NextResponse.json({ error: 'Không thể cập nhật khóa học' }, { status: 500 })
+        return NextResponse.json({ error: 'Lỗi khi cập nhật' }, { status: 500 })
     }
 }
 
@@ -39,13 +48,11 @@ export async function DELETE(request: Request) {
     try {
         const { searchParams } = new URL(request.url)
         const id = searchParams.get('id')
+        if (!id) return NextResponse.json({ error: 'Thiếu ID' }, { status: 400 })
         
-        if (!id) return NextResponse.json({ error: 'Thiếu ID khóa học' }, { status: 400 })
-
         await xoaKhoaHoc(Number(id))
-        return NextResponse.json({ success: true, message: 'Đã xóa thành công' })
-    } catch (error) {
-        console.error('Lỗi DELETE:', error)
-        return NextResponse.json({ error: 'Không thể xóa khóa học' }, { status: 500 })
+        return NextResponse.json({ message: 'Xóa thành công' }, { status: 200 })
+    } catch (error) { 
+        return NextResponse.json({ error: 'Lỗi khi xóa (Có thể do khóa ngoại)' }, { status: 500 }) 
     }
 }

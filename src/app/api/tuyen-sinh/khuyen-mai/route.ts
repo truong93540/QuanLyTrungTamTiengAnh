@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-// Đổi đường dẫn @/services/... cho khớp với dự án của bạn nhé
 import { 
     layDanhSachKhuyenMai, 
     taoKhuyenMaiMoi, 
