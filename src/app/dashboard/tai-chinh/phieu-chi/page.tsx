@@ -25,7 +25,6 @@ interface PhieuChi {
     nhan_su?: { ho_ten: string }
     bang_luong?: { ky_luong: string; tong_so_tien: number } | null
     chuong_trinh_mkt?: { ten_chuong_trinh_marketing: string } | null
-    ngay_tao?: string | null
     ngay_chi?: string | null
 }
 
@@ -281,7 +280,7 @@ function PhieuChiContent() {
 
     // Helper function to extract month and year of a voucher (ALWAYS based on actual transaction/payment date)
     const getItemMonthAndYear = (item: PhieuChi) => {
-        const dateStr = item.ngay_chi || item.ngay_tao
+        const dateStr = item.ngay_chi
         if (dateStr) {
             const date = new Date(dateStr)
             // Shift by 7 hours (Vietnam timezone UTC+7) to ensure exact local date
