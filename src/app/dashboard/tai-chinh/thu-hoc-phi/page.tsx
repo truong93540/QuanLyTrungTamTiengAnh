@@ -3,7 +3,7 @@
 import Alert from '@/components/Alert'
 import ConfirmModal from '@/components/ConfirmModal'
 import { useState, useEffect, useRef } from 'react'
-import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash } from 'react-icons/fa'
+import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaChalkboardTeacher, FaArrowLeft } from 'react-icons/fa'
 
 interface PhieuThu {
     ma_phieu_thu: number
@@ -16,6 +16,8 @@ interface PhieuThu {
     ma_khuyen_mai?: number | null
     hoc_vien?: { ho_ten: string }
     nhan_su?: { ho_ten: string }
+    khoa_hoc?: { ma_khoa_hoc: number, ten_khoa_hoc: string, hoc_phi: number } | null
+    khuyen_mai?: { ma_khuyen_mai: number, ten_chuong_trinh: string, phan_tram_giam: number } | null
 }
 
 interface NhanSu {
@@ -40,7 +42,27 @@ interface KhuyenMai {
     phan_tram_giam: number
 }
 
+interface ThamGiaLop {
+    ma_tham_gia_lop: number
+    ma_hoc_vien: number
+    hoc_vien: {
+        ma_hoc_vien: number
+        ho_ten: string
+    }
+}
 
+interface LopHoc {
+    ma_lop_hoc: number
+    ten_lop: string
+    si_so_toi_da?: number | null
+    ma_khoa_hoc: number
+    khoa_hoc: {
+        ma_khoa_hoc: number
+        ten_khoa_hoc: string
+        hoc_phi: number
+    }
+    tham_gia: ThamGiaLop[]
+}
 
 export default function PhieuThuHocPhiPage() {
     const [data, setData] = useState<PhieuThu[]>([])
@@ -48,6 +70,9 @@ export default function PhieuThuHocPhiPage() {
     const [hocVienList, setHocVienList] = useState<HocVien[]>([])
     const [khoaHocList, setKhoaHocList] = useState<KhoaHoc[]>([])
     const [khuyenMaiList, setKhuyenMaiList] = useState<KhuyenMai[]>([])
+    const [lopHocList, setLopHocList] = useState<LopHoc[]>([])
+    const [selectedClassId, setSelectedClassId] = useState<number | null>(null)
+    const [classSearchQuery, setClassSearchQuery] = useState('')
     const [isLoading, setIsLoading] = useState(true)
     const [editingId, setEditingId] = useState<number | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -80,22 +105,44 @@ export default function PhieuThuHocPhiPage() {
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 10
 
+    const getFilteredData = () => {
+        if (selectedClassId === null) return data
+        if (selectedClassId === -1) {
+            return data.filter(row => {
+                return !lopHocList.some(lop => 
+                    lop.ma_khoa_hoc === row.ma_khoa_hoc && 
+                    lop.tham_gia.some(tg => tg.ma_hoc_vien === row.ma_hoc_vien)
+                )
+            })
+        }
+        const selectedClass = lopHocList.find(c => c.ma_lop_hoc === selectedClassId)
+        if (!selectedClass) return data
+        const studentIds = selectedClass.tham_gia.map(tg => tg.ma_hoc_vien)
+        return data.filter(row => studentIds.includes(row.ma_hoc_vien) && row.ma_khoa_hoc === selectedClass.ma_khoa_hoc)
+    }
+    const filteredData = getFilteredData()
+
     const indexOfLastItem = currentPage * itemsPerPage
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
-    const currentItems = data.slice(indexOfFirstItem, indexOfLastItem)
-    const totalPages = Math.ceil(data.length / itemsPerPage)
+    const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem)
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage)
 
     const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
 
     useEffect(() => {
+        setCurrentPage(1)
+    }, [selectedClassId])
+
+    useEffect(() => {
         const fetchData = async () => {
             try {
-                const [phieuThuRes, nhanSuRes, hocVienRes, khoaHocRes, khuyenMaiRes] = await Promise.all([
+                const [phieuThuRes, nhanSuRes, hocVienRes, khoaHocRes, khuyenMaiRes, lopHocRes] = await Promise.all([
                     fetch('/api/tai-chinh/phieu-thu'),
                     fetch('/api/tai-chinh/nhan-vien'),
                     fetch('/api/dao-tao/hoc-vien'),
                     fetch('/api/tai-chinh/khoa-hoc'),
                     fetch('/api/tai-chinh/khuyen-mai'),
+                    fetch('/api/tai-chinh/lop-hoc'),
                 ])
                 if (phieuThuRes.ok) {
                     const result = await phieuThuRes.json()
@@ -117,6 +164,10 @@ export default function PhieuThuHocPhiPage() {
                     const resultKm = await khuyenMaiRes.json()
                     setKhuyenMaiList(resultKm)
                 }
+                if (lopHocRes.ok) {
+                    const resultLh = await lopHocRes.json()
+                    setLopHocList(resultLh)
+                }
             } catch (error) {
                 console.error('Lỗi fetch API:', error)
             } finally {
@@ -127,30 +178,89 @@ export default function PhieuThuHocPhiPage() {
     }, [])
 
     useEffect(() => {
+        if (!formData.ma_hoc_vien || editingId) return
+
+        // Tìm các phiếu thu trước đây của học sinh này
+        const previousPayments = data.filter(pt => pt.ma_hoc_vien.toString() === formData.ma_hoc_vien)
+        if (previousPayments.length === 0) return
+
+        // Lấy phiếu thu gần nhất (sắp xếp giảm dần theo ngày thu từ backend)
+        const latestPayment = previousPayments[0]
+        
+        setFormData(prev => {
+            const nextState = { ...prev }
+            let updated = false
+
+            if (!prev.ma_khoa_hoc && latestPayment.ma_khoa_hoc) {
+                nextState.ma_khoa_hoc = latestPayment.ma_khoa_hoc.toString()
+                updated = true
+            }
+
+            if (!prev.ma_khuyen_mai && latestPayment.ma_khuyen_mai) {
+                nextState.ma_khuyen_mai = latestPayment.ma_khuyen_mai.toString()
+                updated = true
+            }
+
+            return updated ? nextState : prev
+        })
+    }, [formData.ma_hoc_vien, data, editingId])
+
+    useEffect(() => {
         if (!formData.ma_khoa_hoc) return
 
         const khoaHoc = khoaHocList.find(kh => kh.ma_khoa_hoc.toString() === formData.ma_khoa_hoc)
         if (!khoaHoc) return
 
-        let finalPrice = Number(khoaHoc.hoc_phi)
+        // 1. Tìm khuyến mãi cũ từ các đợt đóng trước của học viên cho khóa học này
+        const previousPayments = data.filter(pt => 
+            pt.ma_hoc_vien.toString() === formData.ma_hoc_vien && 
+            pt.ma_khoa_hoc.toString() === formData.ma_khoa_hoc &&
+            (editingId ? pt.ma_phieu_thu !== editingId : true)
+        )
+        const firstPaymentWithPromo = previousPayments.find(pt => pt.ma_khuyen_mai)
+        const inheritedPromoId = firstPaymentWithPromo ? firstPaymentWithPromo.ma_khuyen_mai?.toString() || '' : ''
 
-        if (formData.ma_khuyen_mai) {
-            const khuyenMai = khuyenMaiList.find(km => km.ma_khuyen_mai.toString() === formData.ma_khuyen_mai)
+        let currentPromoId = formData.ma_khuyen_mai
+        if (inheritedPromoId && !currentPromoId) {
+            currentPromoId = inheritedPromoId
+        }
+
+        // 2. Tính học phí gốc sau khi áp dụng giảm giá
+        let finalPrice = Number(khoaHoc.hoc_phi)
+        if (currentPromoId) {
+            const khuyenMai = khuyenMaiList.find(km => km.ma_khuyen_mai.toString() === currentPromoId)
             if (khuyenMai && khuyenMai.phan_tram_giam) {
                 finalPrice = finalPrice * (1 - khuyenMai.phan_tram_giam / 100)
             }
         }
 
+        // 3. Khấu trừ đi tổng số tiền học viên đã đóng trước đó
+        const totalPaidBefore = previousPayments.reduce((sum, pt) => sum + Number(pt.so_tien), 0)
+        const remainingPrice = Math.max(0, finalPrice - totalPaidBefore)
+
         setFormData(prev => {
-            // Chỉ cập nhật nếu khác biệt để tránh re-render vô hạn
-            if (prev.so_tien !== finalPrice.toString()) {
-                return { ...prev, so_tien: finalPrice.toString() }
+            const nextState = { ...prev }
+            let updated = false
+            if (inheritedPromoId && !prev.ma_khuyen_mai) {
+                nextState.ma_khuyen_mai = inheritedPromoId
+                updated = true
             }
-            return prev
+            if (prev.so_tien !== remainingPrice.toString()) {
+                nextState.so_tien = remainingPrice.toString()
+                updated = true
+            }
+            return updated ? nextState : prev
         })
-    }, [formData.ma_khoa_hoc, formData.ma_khuyen_mai, khoaHocList, khuyenMaiList])
+    }, [formData.ma_hoc_vien, formData.ma_khoa_hoc, formData.ma_khuyen_mai, khoaHocList, khuyenMaiList, data, editingId])
+
+    const initialSearchMountRef = useRef(true)
 
     useEffect(() => {
+        if (initialSearchMountRef.current) {
+            initialSearchMountRef.current = false
+            return
+        }
+
         if (formData.ten_hoc_vien === '') {
             const fetchAllData = async () => {
                 try {
@@ -183,6 +293,29 @@ export default function PhieuThuHocPhiPage() {
         document.addEventListener("mousedown", handleClickOutside)
         return () => document.removeEventListener("mousedown", handleClickOutside)
     }, [])
+
+    useEffect(() => {
+        if (isLoading) return
+
+        const params = new URLSearchParams(window.location.search)
+        const maHocVienParam = params.get('ma_hoc_vien')
+        if (maHocVienParam) {
+            setIsModalOpen(true)
+            setFormData({
+                ma_phieu_thu: '',
+                so_tien: '',
+                ngay_thu: new Date().toISOString().split('T')[0],
+                ma_hoc_vien: maHocVienParam,
+                noi_dung: '',
+                ma_nhan_su: '',
+                ten_hoc_vien: '',
+                ma_khoa_hoc: '',
+                ma_khuyen_mai: '',
+            })
+            // Xóa tham số khỏi URL
+            window.history.replaceState(null, '', window.location.pathname)
+        }
+    }, [isLoading])
 
     const showAlert = (message: string, type: 'success' | 'error') => {
         setAlert({ message, type })
@@ -234,8 +367,6 @@ export default function PhieuThuHocPhiPage() {
             showAlert('Không thể kết nối đến máy chủ.', 'error')
         }
     }
-
-
 
     const handleSavePhieuThu = async () => {
         if (isSubmitting) return
@@ -319,13 +450,13 @@ export default function PhieuThuHocPhiPage() {
         }
     }
 
-
-
     const closeModal = () => {
         setIsModalOpen(false)
         handleCancelEdit()
     }
+
     const openModalForAdd = () => {
+        const selectedClass = lopHocList.find(c => c.ma_lop_hoc === selectedClassId)
         setIsModalOpen(true)
         setFormData({
             ma_phieu_thu: '',
@@ -335,11 +466,12 @@ export default function PhieuThuHocPhiPage() {
             noi_dung: '',
             ma_nhan_su: '',
             ten_hoc_vien: '',
-            ma_khoa_hoc: '',
+            ma_khoa_hoc: selectedClass ? selectedClass.ma_khoa_hoc.toString() : '',
             ma_khuyen_mai: '',
         })
     }
-    const openModalForEdit = (row: any) => {
+
+    const openModalForEdit = (row: PhieuThu) => {
         const formattedDate = new Date(row.ngay_thu).toISOString().split('T')[0]
         setFormData({
             ma_phieu_thu: row.ma_phieu_thu.toString(),
@@ -378,233 +510,341 @@ export default function PhieuThuHocPhiPage() {
                                 <FaTimes size={24} />
                             </button>
                         </div>
-                        <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-x-12 gap-y-6 text-gray-700">
-                                <div className="space-y-4 md:col-span-2">
-                                {editingId && (
-                                    <div className="flex items-center">
-                                        <label className="w-1/4 text-sm font-medium text-gray-700">
-                                            Mã phiếu thu:
-                                        </label>
-                                        <input
-                                            type="number"
-                                            name="ma_phieu_thu"
-                                            value={formData.ma_phieu_thu}
-                                            onChange={handleChange}
-                                            placeholder={editingId ? 'Đang sửa đổi...' : ''}
-                                            disabled={editingId !== null}
-                                            className={`w-3/4 border rounded p-2 focus:outline-blue-500  ${editingId ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-300'}`}
-                                        />
-                                    </div>
-                                )}
 
-                                <div className="flex items-center">
-                                    <label className="w-1/4 text-sm font-medium text-gray-700">
-                                        Số tiền:
-                                    </label>
-                                    <div className="w-3/4 relative">
-                                        <input
-                                            type="number"
-                                            name="so_tien"
-                                            value={formData.so_tien}
-                                            readOnly
-                                            disabled
-                                            className="w-full border border-gray-200 bg-gray-100 text-gray-700 rounded p-2 pr-12 font-medium cursor-not-allowed"
-                                        />
-                                        <span className="absolute right-3 top-2 text-gray-500 font-medium">
-                                            VNĐ
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center">
-                                    <label className="w-1/4 text-sm font-medium text-gray-700">
-                                        Ngày thu:
-                                    </label>
-                                    <input
-                                        type="date"
-                                        name="ngay_thu"
-                                        value={formData.ngay_thu}
-                                        onChange={handleChange}
-                                        className="w-3/4 border border-gray-300 rounded p-2 focus:outline-blue-500 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                                    />
-                                </div>
-                                <div className="flex items-start">
-                                    <label className="w-1/4 text-sm font-medium text-gray-700 pt-2">
-                                        Mã học viên:
-                                    </label>
-                                    <div className="w-3/4">
+                        <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-gray-700">
+                                <div className="space-y-5">
+                                    {editingId && (
+                                        <div className="flex flex-col">
+                                            <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                                                Mã phiếu thu
+                                            </label>
+                                            <input
+                                                type="number"
+                                                name="ma_phieu_thu"
+                                                value={formData.ma_phieu_thu}
+                                                onChange={handleChange}
+                                                placeholder={editingId ? 'Đang sửa đổi...' : ''}
+                                                disabled={editingId !== null}
+                                                className={`w-full border rounded p-2 focus:outline-blue-500 text-sm ${editingId ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-300'}`}
+                                            />
+                                        </div>
+                                    )}
+
+                                    <div className="flex flex-col">
+                                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                                            Mã học viên <span className="text-red-500">*</span>
+                                        </label>
+                                        
+                                        {/* Dropdown chọn nhanh học viên thuộc lớp đang chọn */}
+                                        {(() => {
+                                            const selectedClass = lopHocList.find(c => c.ma_lop_hoc === selectedClassId)
+                                            if (!selectedClass || selectedClass.tham_gia.length === 0) return null
+                                            return (
+                                                <div className="mb-2.5 p-3 bg-blue-50/40 border border-blue-100/80 rounded-[8px]">
+                                                    <label className="block text-sm font-semibold text-slate-600 mb-1.5">
+                                                        Chọn nhanh học viên trong lớp {selectedClass.ten_lop}:
+                                                    </label>
+                                                    <select
+                                                        value={formData.ma_hoc_vien}
+                                                        onChange={(e) => {
+                                                            if (e.target.value) {
+                                                                setFormData(prev => ({
+                                                                    ...prev,
+                                                                    ma_hoc_vien: e.target.value
+                                                                }))
+                                                            }
+                                                        }}
+                                                        className="w-full border border-gray-300 rounded-[8px] p-2 text-sm bg-white text-slate-800 focus:outline-blue-500 cursor-pointer font-medium"
+                                                    >
+                                                        <option value="">-- Chọn học viên --</option>
+                                                        {selectedClass.tham_gia.map(tg => (
+                                                            <option key={tg.hoc_vien.ma_hoc_vien} value={tg.hoc_vien.ma_hoc_vien}>
+                                                                {tg.hoc_vien.ho_ten} (Mã: {tg.hoc_vien.ma_hoc_vien})
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            )
+                                        })()}
+
                                         <input
                                             type="number"
                                             name="ma_hoc_vien"
                                             value={formData.ma_hoc_vien}
                                             onChange={handleChange}
-                                            className="w-full border border-gray-300 rounded p-2 focus:outline-blue-500"
+                                            placeholder="Nhập mã học viên..."
+                                            className="w-full border border-gray-300 rounded-[8px] p-2 focus:outline-blue-500 text-sm"
                                         />
                                         {formData.ma_hoc_vien && (
-                                            <div className="text-sm mt-1 font-medium text-blue-600">
+                                            <div className="text-xs mt-1.5 font-semibold text-blue-600">
                                                 {hocVienList.some(hv => hv.ma_hoc_vien.toString() === formData.ma_hoc_vien)
                                                     ? `Tên học viên: ${hocVienList.find(hv => hv.ma_hoc_vien.toString() === formData.ma_hoc_vien)?.ho_ten}`
                                                     : <span className="text-red-500">Không tìm thấy học viên</span>}
                                             </div>
                                         )}
                                     </div>
-                                </div>
-                                
-                            </div>
 
-                            <div className="space-y-4 flex flex-col md:col-span-3">
-                                <div className="flex items-center">
-                                    <label className="w-1/3 text-sm font-medium text-gray-700">
-                                        Khóa học:
-                                    </label>
-                                    <div className="w-2/3 relative" ref={khoaHocDropdownRef}>
-                                        <div
-                                            className="w-full border border-gray-300 rounded p-2 bg-white flex justify-between items-center cursor-pointer hover:border-blue-500"
-                                            onClick={() => setIsKhoaHocDropdownOpen(!isKhoaHocDropdownOpen)}
-                                        >
-                                            <span className="truncate text-sm">
-                                                {formData.ma_khoa_hoc 
-                                                    ? khoaHocList.find(kh => kh.ma_khoa_hoc.toString() === formData.ma_khoa_hoc)?.ten_khoa_hoc || '-- Chọn khóa học --'
-                                                    : '-- Chọn khóa học --'}
+                                    <div className="flex flex-col">
+                                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                                            Số tiền thu <span className="text-red-500">*</span>
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                name="so_tien"
+                                                value={formData.so_tien}
+                                                onChange={handleChange}
+                                                placeholder="Nhập số tiền thu học phí..."
+                                                className="w-full border border-gray-300 rounded p-2 pr-12 font-semibold text-sm focus:outline-blue-500 text-slate-800"
+                                            />
+                                            <span className="absolute right-3 top-2.5 text-gray-400 text-xs font-bold">
+                                                VNĐ
                                             </span>
-                                            <span className="text-gray-400 text-xs">▼</span>
                                         </div>
-                                        {isKhoaHocDropdownOpen && (
-                                            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
-                                                <div
-                                                    className="p-2 text-sm cursor-pointer hover:bg-blue-50 text-gray-500"
-                                                    onClick={() => {
-                                                        setFormData({ ...formData, ma_khoa_hoc: '' })
-                                                        setFormError(null)
-                                                        setIsKhoaHocDropdownOpen(false)
-                                                    }}
-                                                >
-                                                    -- Chọn khóa học --
+                                    </div>
+
+                                    {(() => {
+                                        if (!formData.ma_hoc_vien || !formData.ma_khoa_hoc) return null
+                                        
+                                        const previousPaymentsForCheck = data.filter(pt => 
+                                            pt.ma_hoc_vien.toString() === formData.ma_hoc_vien && 
+                                            pt.ma_khoa_hoc.toString() === formData.ma_khoa_hoc &&
+                                            (editingId ? pt.ma_phieu_thu !== editingId : true)
+                                        )
+                                        const totalPaidBeforeCheck = previousPaymentsForCheck.reduce((sum, pt) => sum + Number(pt.so_tien), 0)
+
+                                        const checkKhoaHoc = khoaHocList.find(kh => kh.ma_khoa_hoc.toString() === formData.ma_khoa_hoc)
+                                        let checkFinalPrice = checkKhoaHoc ? Number(checkKhoaHoc.hoc_phi) : 0
+                                        
+                                        let promoId = formData.ma_khuyen_mai
+                                        if (!promoId && previousPaymentsForCheck.length > 0) {
+                                            const prevWithPromo = previousPaymentsForCheck.find(pt => pt.ma_khuyen_mai != null)
+                                            if (prevWithPromo && prevWithPromo.ma_khuyen_mai != null) {
+                                                promoId = prevWithPromo.ma_khuyen_mai.toString()
+                                            }
+                                        }
+
+                                        let appliedDiscountPercent = 0
+                                        let promoName = ""
+                                        if (promoId) {
+                                            const checkKhuyenMai = khuyenMaiList.find(km => km.ma_khuyen_mai.toString() === promoId)
+                                            if (checkKhuyenMai) {
+                                                appliedDiscountPercent = checkKhuyenMai.phan_tram_giam || 0
+                                                promoName = checkKhuyenMai.ten_chuong_trinh
+                                                checkFinalPrice = checkFinalPrice * (1 - appliedDiscountPercent / 100)
+                                            }
+                                        }
+                                        
+                                        const remainingDue = Math.max(0, checkFinalPrice - totalPaidBeforeCheck)
+
+                                        return (
+                                            <div className="w-full flex flex-col gap-2.5 p-4 bg-blue-50/30 border border-blue-100 rounded-[8px] text-sm text-slate-700 shadow-sm animate-fade-in">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-slate-500 font-medium">Học phí gốc của khóa:</span>
+                                                    <span className="font-semibold text-slate-700">
+                                                        {checkKhoaHoc ? new Intl.NumberFormat('vi-VN').format(checkKhoaHoc.hoc_phi) : 0} đ
+                                                    </span>
                                                 </div>
-                                                {khoaHocList.map(kh => (
-                                                    <div
-                                                        key={kh.ma_khoa_hoc}
-                                                        className={`p-2 text-sm cursor-pointer hover:bg-blue-50 ${formData.ma_khoa_hoc === kh.ma_khoa_hoc.toString() ? 'bg-blue-100 font-medium text-blue-700' : 'text-gray-700'}`}
-                                                        onClick={() => {
-                                                            setFormData({ ...formData, ma_khoa_hoc: kh.ma_khoa_hoc.toString() })
-                                                            setFormError(null)
-                                                            setIsKhoaHocDropdownOpen(false)
-                                                        }}
-                                                    >
-                                                        {kh.ten_khoa_hoc}
+                                                {appliedDiscountPercent > 0 && (
+                                                    <div className="flex justify-between items-center text-emerald-600">
+                                                        <span className="font-medium text-sm">Khuyến mãi áp dụng ({promoName}):</span>
+                                                        <span className="font-semibold">-{appliedDiscountPercent}%</span>
                                                     </div>
-                                                ))}
+                                                )}
+                                                <div className="flex justify-between items-center border-t border-dashed border-gray-200 pt-2">
+                                                    <span className="text-slate-500 font-medium">Học phí thực tế phải nộp:</span>
+                                                    <span className="font-semibold text-slate-800">
+                                                        {new Intl.NumberFormat('vi-VN').format(checkFinalPrice)} đ
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-slate-500 font-medium">Đã đóng trước đó:</span>
+                                                    <span className="font-semibold text-emerald-600">
+                                                        {new Intl.NumberFormat('vi-VN').format(totalPaidBeforeCheck)} đ
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center border-t border-slate-200/80 pt-2.5 font-semibold">
+                                                    <span className="text-slate-800">Học phí còn thiếu:</span>
+                                                    <span className={`${remainingDue > 0 ? 'text-rose-600' : 'text-green-600'} text-base font-bold`}>
+                                                        {new Intl.NumberFormat('vi-VN').format(remainingDue)} đ
+                                                    </span>
+                                                </div>
                                             </div>
-                                        )}
+                                        )
+                                    })()}
+
+                                    <div className="flex flex-col">
+                                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                                            Ngày thu <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="date"
+                                            name="ngay_thu"
+                                            value={formData.ngay_thu}
+                                            onChange={handleChange}
+                                            className="w-full border border-gray-300 rounded p-2 focus:outline-blue-500 text-sm [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                                        />
                                     </div>
                                 </div>
 
-                                {khuyenMaiList.length > 0 && (
-                                    <div className="flex items-center">
-                                        <label className="w-1/3 text-sm font-medium text-gray-700">
-                                            Khuyến mãi áp dụng:
+                                <div className="space-y-5">
+                                    <div className="flex flex-col">
+                                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                                            Khóa học đăng ký <span className="text-red-500">*</span>
                                         </label>
-                                        <div className="w-2/3 relative" ref={khuyenMaiDropdownRef}>
+                                        <div className="relative" ref={khoaHocDropdownRef}>
                                             <div
-                                                className="w-full border border-gray-300 rounded p-2 bg-white flex justify-between items-center cursor-pointer hover:border-blue-500"
-                                                onClick={() => setIsKhuyenMaiDropdownOpen(!isKhuyenMaiDropdownOpen)}
+                                                className="w-full border border-gray-300 rounded p-2 bg-white flex justify-between items-center cursor-pointer hover:border-blue-500 text-sm text-slate-700"
+                                                onClick={() => setIsKhoaHocDropdownOpen(!isKhoaHocDropdownOpen)}
                                             >
-                                                <span className="truncate text-sm">
-                                                    {formData.ma_khuyen_mai 
-                                                        ? khuyenMaiList.find(km => km.ma_khuyen_mai.toString() === formData.ma_khuyen_mai)?.ten_chuong_trinh + ` (Giảm ${khuyenMaiList.find(km => km.ma_khuyen_mai.toString() === formData.ma_khuyen_mai)?.phan_tram_giam}%)` || '-- Không áp dụng khuyến mãi --'
-                                                        : '-- Không áp dụng khuyến mãi --'}
+                                                <span className="truncate">
+                                                    {formData.ma_khoa_hoc 
+                                                        ? khoaHocList.find(kh => kh.ma_khoa_hoc.toString() === formData.ma_khoa_hoc)?.ten_khoa_hoc || '-- Chọn khóa học --'
+                                                        : '-- Chọn khóa học --'}
                                                 </span>
                                                 <span className="text-gray-400 text-xs">▼</span>
                                             </div>
-                                            {isKhuyenMaiDropdownOpen && (
+                                            {isKhoaHocDropdownOpen && (
                                                 <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
                                                     <div
                                                         className="p-2 text-sm cursor-pointer hover:bg-blue-50 text-gray-500"
                                                         onClick={() => {
-                                                            setFormData({ ...formData, ma_khuyen_mai: '' })
+                                                            setFormData({ ...formData, ma_khoa_hoc: '' })
                                                             setFormError(null)
-                                                            setIsKhuyenMaiDropdownOpen(false)
+                                                            setIsKhoaHocDropdownOpen(false)
                                                         }}
                                                     >
-                                                        -- Không áp dụng khuyến mãi --
+                                                        -- Chọn khóa học --
                                                     </div>
-                                                    {khuyenMaiList.map(km => (
+                                                    {khoaHocList.map(kh => (
                                                         <div
-                                                            key={km.ma_khuyen_mai}
-                                                            className={`p-2 text-sm cursor-pointer hover:bg-blue-50 ${formData.ma_khuyen_mai === km.ma_khuyen_mai.toString() ? 'bg-blue-100 font-medium text-blue-700' : 'text-gray-700'}`}
+                                                            key={kh.ma_khoa_hoc}
+                                                            className={`p-2 text-sm cursor-pointer hover:bg-blue-50 ${formData.ma_khoa_hoc === kh.ma_khoa_hoc.toString() ? 'bg-blue-100 font-medium text-blue-700' : 'text-gray-700'}`}
                                                             onClick={() => {
-                                                                setFormData({ ...formData, ma_khuyen_mai: km.ma_khuyen_mai.toString() })
+                                                                setFormData({ ...formData, ma_khoa_hoc: kh.ma_khoa_hoc.toString() })
                                                                 setFormError(null)
-                                                                setIsKhuyenMaiDropdownOpen(false)
+                                                                setIsKhoaHocDropdownOpen(false)
                                                             }}
                                                         >
-                                                            {km.ten_chuong_trinh} (Giảm {km.phan_tram_giam}%)
+                                                            {kh.ten_khoa_hoc}
                                                         </div>
                                                     ))}
                                                 </div>
                                             )}
                                         </div>
                                     </div>
-                                )}
-                                <div className="flex items-center">
-                                    <label className="w-1/3 text-sm font-medium text-gray-700">
-                                        Người lập phiếu:
-                                    </label>
-                                    <div className="w-2/3 relative" ref={nhanSuDropdownRef}>
-                                        <div
-                                            className="w-full border border-gray-300 rounded p-2 bg-white flex justify-between items-center cursor-pointer hover:border-blue-500"
-                                            onClick={() => setIsNhanSuDropdownOpen(!isNhanSuDropdownOpen)}
-                                        >
-                                            <span className="truncate text-sm">
-                                                {formData.ma_nhan_su 
-                                                    ? nhanSuList.find(ns => ns.ma_nhan_su.toString() === formData.ma_nhan_su)?.ho_ten || '-- Chọn người lập --'
-                                                    : '-- Chọn người lập --'}
-                                            </span>
-                                            <span className="text-gray-400 text-xs">▼</span>
-                                        </div>
-                                        {isNhanSuDropdownOpen && (
-                                            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
+
+                                    {khuyenMaiList.length > 0 && (
+                                        <div className="flex flex-col">
+                                            <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                                                Khuyến mãi áp dụng
+                                            </label>
+                                            <div className="relative" ref={khuyenMaiDropdownRef}>
                                                 <div
-                                                    className="p-2 text-sm cursor-pointer hover:bg-blue-50 text-gray-500"
-                                                    onClick={() => {
-                                                        setFormData({ ...formData, ma_nhan_su: '' })
-                                                        setFormError(null)
-                                                        setIsNhanSuDropdownOpen(false)
-                                                    }}
+                                                    className="w-full border border-gray-300 rounded p-2 bg-white flex justify-between items-center cursor-pointer hover:border-blue-500 text-sm text-slate-700"
+                                                    onClick={() => setIsKhuyenMaiDropdownOpen(!isKhuyenMaiDropdownOpen)}
                                                 >
-                                                    -- Chọn người lập --
+                                                    <span className="truncate">
+                                                        {formData.ma_khuyen_mai 
+                                                            ? khuyenMaiList.find(km => km.ma_khuyen_mai.toString() === formData.ma_khuyen_mai)?.ten_chuong_trinh + ` (Giảm ${khuyenMaiList.find(km => km.ma_khuyen_mai.toString() === formData.ma_khuyen_mai)?.phan_tram_giam}%)` || '-- Không áp dụng khuyến mãi --'
+                                                            : '-- Không áp dụng khuyến mãi --'}
+                                                    </span>
+                                                    <span className="text-gray-400 text-xs">▼</span>
                                                 </div>
-                                                {nhanSuList.map(ns => (
+                                                {isKhuyenMaiDropdownOpen && (
+                                                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
+                                                        <div
+                                                            className="p-2 text-sm cursor-pointer hover:bg-blue-50 text-gray-500"
+                                                            onClick={() => {
+                                                                setFormData({ ...formData, ma_khuyen_mai: '' })
+                                                                setFormError(null)
+                                                                setIsKhuyenMaiDropdownOpen(false)
+                                                            }}
+                                                        >
+                                                            -- Không áp dụng khuyến mãi --
+                                                        </div>
+                                                        {khuyenMaiList.map(km => (
+                                                            <div
+                                                                key={km.ma_khuyen_mai}
+                                                                className={`p-2 text-sm cursor-pointer hover:bg-blue-50 ${formData.ma_khuyen_mai === km.ma_khuyen_mai.toString() ? 'bg-blue-100 font-medium text-blue-700' : 'text-gray-700'}`}
+                                                                onClick={() => {
+                                                                    setFormData({ ...formData, ma_khuyen_mai: km.ma_khuyen_mai.toString() })
+                                                                    setFormError(null)
+                                                                    setIsKhuyenMaiDropdownOpen(false)
+                                                                }}
+                                                            >
+                                                                {km.ten_chuong_trinh} (Giảm {km.phan_tram_giam}%)
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="flex flex-col">
+                                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                                            Người lập phiếu thu <span className="text-red-500">*</span>
+                                        </label>
+                                        <div className="relative" ref={nhanSuDropdownRef}>
+                                            <div
+                                                className="w-full border border-gray-300 rounded p-2 bg-white flex justify-between items-center cursor-pointer hover:border-blue-500 text-sm text-slate-700"
+                                                onClick={() => setIsNhanSuDropdownOpen(!isNhanSuDropdownOpen)}
+                                            >
+                                                <span className="truncate">
+                                                    {formData.ma_nhan_su 
+                                                        ? nhanSuList.find(ns => ns.ma_nhan_su.toString() === formData.ma_nhan_su)?.ho_ten || '-- Chọn người lập --'
+                                                        : '-- Chọn người lập --'}
+                                                </span>
+                                                <span className="text-gray-400 text-xs">▼</span>
+                                            </div>
+                                            {isNhanSuDropdownOpen && (
+                                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
                                                     <div
-                                                        key={ns.ma_nhan_su}
-                                                        className={`p-2 text-sm cursor-pointer hover:bg-blue-50 ${formData.ma_nhan_su === ns.ma_nhan_su.toString() ? 'bg-blue-100 font-medium text-blue-700' : 'text-gray-700'}`}
+                                                        className="p-2 text-sm cursor-pointer hover:bg-blue-50 text-gray-500"
                                                         onClick={() => {
-                                                            setFormData({ ...formData, ma_nhan_su: ns.ma_nhan_su.toString() })
+                                                            setFormData({ ...formData, ma_nhan_su: '' })
                                                             setFormError(null)
                                                             setIsNhanSuDropdownOpen(false)
                                                         }}
                                                     >
-                                                        {ns.ho_ten}
+                                                        -- Chọn người lập --
                                                     </div>
-                                                ))}
-                                            </div>
-                                        )}
+                                                    {nhanSuList.map(ns => (
+                                                        <div
+                                                            key={ns.ma_nhan_su}
+                                                            className={`p-2 text-sm cursor-pointer hover:bg-blue-50 ${formData.ma_nhan_su === ns.ma_nhan_su.toString() ? 'bg-blue-100 font-medium text-blue-700' : 'text-gray-700'}`}
+                                                            onClick={() => {
+                                                                setFormData({ ...formData, ma_nhan_su: ns.ma_nhan_su.toString() })
+                                                                setFormError(null)
+                                                                setIsNhanSuDropdownOpen(false)
+                                                            }}
+                                                        >
+                                                            {ns.ho_ten}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col">
+                                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                                            Nội dung chi tiết
+                                        </label>
+                                        <textarea
+                                            name="noi_dung"
+                                            value={formData.noi_dung}
+                                            onChange={handleChange}
+                                            rows={4}
+                                            placeholder="Ghi chú thêm nội dung phiếu thu..."
+                                            className="w-full border border-gray-300 rounded p-2 focus:outline-blue-500 resize-none text-sm text-slate-700"
+                                        ></textarea>
                                     </div>
                                 </div>
-                                <div className="flex items-start">
-                                    <label className="w-1/3 text-sm font-medium text-gray-700 pt-2">
-                                        Nội dung:
-                                    </label>
-                                    <textarea
-                                        name="noi_dung"
-                                        value={formData.noi_dung}
-                                        onChange={handleChange}
-                                        rows={4}
-                                        className="w-2/3 border border-gray-300 rounded p-2 focus:outline-blue-500 resize-none"></textarea>
-                                </div>
-                            </div>   
-                        </div>       
-                    </div>           
+                            </div>
+                        </div>
 
                         {formError && (
                             <div className="mx-6 mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shrink-0">
@@ -631,9 +871,311 @@ export default function PhieuThuHocPhiPage() {
 
             {/* end model */}
 
+            {/* Bộ lọc theo lớp học */}
+            {selectedClassId === null || selectedClassId === -1 ? (
+                <div className="mb-6 bg-slate-50/50 p-4 border border-gray-100 rounded-[8px]">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+                        <label className="text-sm font-semibold text-slate-700">
+                            Danh sách lớp học:
+                        </label>
+                        <div className="relative w-full md:w-64">
+                            <input
+                                type="text"
+                                placeholder="Tìm nhanh lớp học..."
+                                value={classSearchQuery}
+                                onChange={(e) => setClassSearchQuery(e.target.value)}
+                                className="w-full text-sm border border-gray-300 rounded-[8px] py-1.5 pl-8 pr-3 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent text-gray-800 placeholder-gray-400 font-medium"
+                            />
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-2.5 text-gray-400 text-sm">
+                                <FaSearch />
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-80 overflow-y-auto custom-scrollbar pr-1">
+                        {/* Thẻ Tất cả các lớp */}
+                        <button
+                            onClick={() => setSelectedClassId(null)}
+                            className={`p-3 rounded-[8px] border text-sm font-semibold text-center transition flex flex-col justify-center items-center min-h-[96px] h-auto shadow-sm cursor-pointer ${
+                                selectedClassId === null 
+                                    ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700' 
+                                    : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/10 text-slate-700'
+                            }`}
+                        >
+                            <span className="text-base mb-1">📁</span>
+                            <span className="break-words w-full">Tất cả các lớp</span>
+                            <span className={`text-sm mt-1 font-medium ${selectedClassId === null ? 'opacity-80' : 'text-gray-400'}`}>({data.length} phiếu)</span>
+                        </button>
+
+                        {/* Thẻ Chưa phân lớp */}
+                        <button
+                            onClick={() => setSelectedClassId(-1)}
+                            className={`p-3 rounded-[8px] border text-sm text-left transition flex flex-col justify-between min-h-[96px] h-auto shadow-sm cursor-pointer ${
+                                selectedClassId === -1 
+                                    ? 'bg-amber-600 text-white border-amber-600 hover:bg-amber-700' 
+                                    : 'bg-white border-gray-200 hover:border-amber-300 hover:bg-amber-50/10 text-slate-700'
+                            }`}
+                        >
+                            <div className="flex justify-between items-start w-full gap-2 mb-1">
+                                <span className={`font-semibold text-sm leading-snug break-words flex-1 ${selectedClassId === -1 ? 'text-white' : 'text-slate-800'}`}>
+                                    ⚠️ Chưa xếp lớp
+                                </span>
+                                <span className={`px-1.5 py-0.5 rounded-[4px] text-sm font-semibold shrink-0 ${selectedClassId === -1 ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-700'}`}>
+                                    {(() => {
+                                        const unassignedReceipts = data.filter(row => {
+                                            return !lopHocList.some(lop => 
+                                                lop.ma_khoa_hoc === row.ma_khoa_hoc && 
+                                                lop.tham_gia.some(tg => tg.ma_hoc_vien === row.ma_hoc_vien)
+                                            )
+                                        })
+                                        return unassignedReceipts.length
+                                    })()}
+                                </span>
+                            </div>
+                            <span className={`block text-sm break-words w-full mt-1 font-medium leading-snug ${selectedClassId === -1 ? 'text-amber-100' : 'text-gray-500'}`}>
+                                Học viên đóng phí nhưng chưa được xếp lớp
+                            </span>
+                            <div className={`flex justify-between items-center w-full mt-2 text-sm font-semibold border-t pt-1.5 ${selectedClassId === -1 ? 'border-amber-500 text-white' : 'border-gray-100/50 text-amber-600'}`}>
+                                <span>Xem chi tiết</span>
+                            </div>
+                        </button>
+
+                        {/* Danh sách các thẻ lớp học */}
+                        {lopHocList
+                            .filter(lop => lop.ten_lop.toLowerCase().includes(classSearchQuery.toLowerCase()))
+                            .map(lop => {
+                                const classReceiptsCount = data.filter(row => {
+                                    const studentIds = lop.tham_gia.map(tg => tg.ma_hoc_vien)
+                                    return studentIds.includes(row.ma_hoc_vien) && row.ma_khoa_hoc === lop.ma_khoa_hoc
+                                }).length
+
+                                return (
+                                    <button
+                                        key={lop.ma_lop_hoc}
+                                        onClick={() => setSelectedClassId(lop.ma_lop_hoc)}
+                                        className="p-3 rounded-[8px] border text-sm text-left transition flex flex-col justify-between min-h-[96px] h-auto shadow-sm cursor-pointer bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/10 text-slate-700"
+                                    >
+                                        <div className="flex justify-between items-start w-full gap-2 mb-1">
+                                            <span className="font-semibold text-sm leading-snug break-words flex-1 text-slate-800">
+                                                {lop.ten_lop}
+                                            </span>
+                                            <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded-[4px] text-sm font-semibold shrink-0">
+                                                {lop.tham_gia.length} HV
+                                            </span>
+                                        </div>
+                                        <span className="block text-sm text-gray-500 break-words w-full mt-1 font-medium leading-snug">
+                                            📖 {lop.khoa_hoc.ten_khoa_hoc}
+                                        </span>
+                                        <div className="flex justify-between items-center w-full mt-2 text-sm font-semibold text-blue-600 border-t border-gray-100/50 pt-1.5">
+                                            <span>{classReceiptsCount} phiếu</span>
+                                            <span className="text-sm text-gray-400 font-normal">ID: {lop.ma_lop_hoc}</span>
+                                        </div>
+                                    </button>
+                                )
+                            })}
+                    </div>
+                </div>
+            ) : (
+                // Giao diện khi chọn một lớp học cụ thể
+                (() => {
+                    const lop = lopHocList.find(c => c.ma_lop_hoc === selectedClassId)
+                    if (!lop) return null
+
+                    const classReceiptsCount = data.filter(row => {
+                        const studentIds = lop.tham_gia.map(tg => tg.ma_hoc_vien)
+                        return studentIds.includes(row.ma_hoc_vien) && row.ma_khoa_hoc === lop.ma_khoa_hoc
+                    }).length
+
+                    return (
+                        <div className="mb-6 bg-blue-50/20 border border-blue-100/60 p-4 rounded-[8px] flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => setSelectedClassId(null)}
+                                    className="flex items-center justify-center w-10 h-10 rounded-[8px] bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition shadow-sm cursor-pointer shrink-0"
+                                    title="Quay lại danh sách lớp học"
+                                >
+                                    <FaArrowLeft size={16} />
+                                </button>
+                                <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-lg font-semibold text-blue-800">
+                                            Lớp: {lop.ten_lop}
+                                        </span>
+                                        <span className="px-2.5 py-0.5 bg-blue-100 text-blue-700 rounded-[4px] text-sm font-semibold">
+                                            {lop.tham_gia.length} học viên
+                                        </span>
+                                        <span className="px-2.5 py-0.5 bg-green-100 text-green-700 rounded-[4px] text-sm font-semibold">
+                                            {classReceiptsCount} phiếu thu học phí
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-gray-600 mt-1 font-medium">
+                                        Khóa học đăng ký: <span className="font-semibold text-slate-800">{lop.khoa_hoc.ten_khoa_hoc}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setSelectedClassId(null)}
+                                className="flex items-center gap-1.5 px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-[8px] hover:bg-gray-50 font-semibold text-sm transition cursor-pointer shadow-sm"
+                            >
+                                Xem tất cả các lớp
+                            </button>
+                        </div>
+                    )
+                })()
+            )}
+
+            {selectedClassId !== null && (
+                (() => {
+                    const lop = lopHocList.find(c => c.ma_lop_hoc === selectedClassId)
+                    if (!lop) return null
+
+                    const kh = khoaHocList.find(kh => kh.ma_khoa_hoc === lop.ma_khoa_hoc)
+                    const baseTuition = kh ? kh.hoc_phi : 0
+
+                    return (
+                        <div className="mb-8 bg-white border border-gray-200 rounded-[8px] p-5 shadow-sm">
+                            <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2 tracking-wider">
+                                <span className="w-1.5 h-4 bg-blue-600 rounded-sm"></span>
+                                Bảng tổng hợp học phí & Công nợ học viên trong lớp
+                            </h3>
+                            <div className="overflow-x-auto">
+                                <table className="w-full border-collapse border border-gray-300 text-sm text-center">
+                                    <thead className="bg-gray-50 text-gray-700">
+                                        <tr>
+                                            <th className="border border-gray-300 p-2.5 min-w-[80px] whitespace-nowrap">Mã HV</th>
+                                            <th className="border border-gray-300 p-2.5 min-w-[160px] text-left whitespace-nowrap">Học viên</th>
+                                            <th className="border border-gray-300 p-2.5 min-w-[120px] whitespace-nowrap">Học phí gốc</th>
+                                            <th className="border border-gray-300 p-2.5 min-w-[150px] whitespace-nowrap">Khuyến mãi</th>
+                                            <th className="border border-gray-300 p-2.5 min-w-[120px] whitespace-nowrap">Đã đóng</th>
+                                            <th className="border border-gray-300 p-2.5 min-w-[120px] whitespace-nowrap">Còn thiếu</th>
+                                            <th className="border border-gray-300 p-2.5 min-w-[110px] whitespace-nowrap">Trạng thái</th>
+                                            <th className="border border-gray-300 p-2.5 min-w-[110px] whitespace-nowrap">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {lop.tham_gia.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={8} className="border border-gray-300 py-10 text-gray-500 font-medium bg-gray-50 text-center">
+                                                    Chưa có học viên nào tham gia lớp học này
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            lop.tham_gia.map(tg => {
+                                                const totalPaid = data
+                                                    .filter(pt => pt.ma_hoc_vien === tg.ma_hoc_vien && pt.ma_khoa_hoc === lop.ma_khoa_hoc)
+                                                    .reduce((sum, pt) => sum + pt.so_tien, 0)
+
+                                                const promoPayment = data.find(
+                                                    pt => pt.ma_hoc_vien === tg.ma_hoc_vien && pt.ma_khoa_hoc === lop.ma_khoa_hoc && pt.ma_khuyen_mai != null
+                                                )
+                                                let discountPercent = 0
+                                                let promoName = ""
+                                                if (promoPayment && promoPayment.ma_khuyen_mai) {
+                                                    const km = khuyenMaiList.find(km => km.ma_khuyen_mai === promoPayment.ma_khuyen_mai)
+                                                    if (km) {
+                                                        discountPercent = km.phan_tram_giam || 0
+                                                        promoName = km.ten_chuong_trinh
+                                                    }
+                                                }
+
+                                                const actualTuition = baseTuition * (1 - discountPercent / 100)
+                                                const remainingDue = Math.max(0, actualTuition - totalPaid)
+
+                                                return (
+                                                    <tr key={tg.ma_hoc_vien} className="hover:bg-slate-50 transition text-gray-700">
+                                                        <td className="border border-gray-300 p-2.5">
+                                                            {tg.ma_hoc_vien}
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5 text-left font-semibold text-slate-800 whitespace-nowrap">
+                                                            {tg.hoc_vien?.ho_ten || 'Không rõ'}
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5 text-slate-600 font-medium">
+                                                            {new Intl.NumberFormat('vi-VN').format(baseTuition)} đ
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5 text-slate-600 font-medium">
+                                                            {discountPercent > 0 ? (
+                                                                <span className="text-emerald-600 font-semibold" title={promoName}>
+                                                                    -{discountPercent}% ({promoName})
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-gray-400">Không có</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5 text-blue-600 font-semibold">
+                                                            {new Intl.NumberFormat('vi-VN').format(totalPaid)} đ
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5 font-bold">
+                                                            {remainingDue > 0 ? (
+                                                                <span className="text-rose-600">
+                                                                    {new Intl.NumberFormat('vi-VN').format(remainingDue)} đ
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-green-600 font-semibold">Đã đóng đủ</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5">
+                                                            {remainingDue > 0 ? (
+                                                                <span className="px-2.5 py-0.5 bg-amber-100 text-amber-800 rounded-[4px] text-sm font-semibold whitespace-nowrap">
+                                                                    Còn thiếu
+                                                                </span>
+                                                            ) : (
+                                                                <span className="px-2.5 py-0.5 bg-green-100 text-green-700 rounded-[4px] text-sm font-semibold whitespace-nowrap">
+                                                                    Hoàn thành
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5">
+                                                            {remainingDue > 0 ? (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        // Mở modal thêm phiếu thu, tự động điền sẵn học viên
+                                                                        setEditingId(null)
+                                                                        setFormData({
+                                                                            ma_phieu_thu: '',
+                                                                            so_tien: remainingDue.toString(),
+                                                                            ngay_thu: new Date().toISOString().split('T')[0],
+                                                                            ma_hoc_vien: tg.ma_hoc_vien.toString(),
+                                                                            ma_nhan_su: '',
+                                                                            noi_dung: `Thu học phí đợt tiếp theo khóa ${lop.khoa_hoc.ten_khoa_hoc}`,
+                                                                            ten_hoc_vien: tg.hoc_vien?.ho_ten || '',
+                                                                            ma_khoa_hoc: lop.ma_khoa_hoc.toString(),
+                                                                            ma_khuyen_mai: promoPayment?.ma_khuyen_mai ? promoPayment.ma_khuyen_mai.toString() : '',
+                                                                        })
+                                                                        setFormError(null)
+                                                                        setIsModalOpen(true)
+                                                                    }}
+                                                                    className="px-2.5 py-1 bg-blue-600 text-white rounded-[8px] hover:bg-blue-700 text-sm font-bold transition shadow-sm cursor-pointer whitespace-nowrap"
+                                                                >
+                                                                    Thu học phí
+                                                                </button>
+                                                            ) : (
+                                                                <span className="text-gray-400 text-sm font-medium whitespace-nowrap">Đã thu đủ</span>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )
+                })()
+            )}
+
+            {selectedClassId === -1 && (
+                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-[8px] flex items-center gap-3 text-sm font-medium">
+                    <span className="text-lg">⚠️</span>
+                    <div>
+                        <span className="font-bold text-amber-900">Danh sách chờ xếp lớp:</span> Hệ thống đang lọc và hiển thị phiếu thu của những học viên đã đóng học phí thành công nhưng chưa được xếp vào bất kỳ lớp học nào thuộc khóa học tương ứng.
+                    </div>
+                </div>
+            )}
+
             <div className="flex justify-between items-end gap-4 mb-8 border-b pb-6">
                 <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                         Tìm kiếm theo tên học viên:
                     </label>
                     <div className="flex gap-2">
@@ -644,18 +1186,18 @@ export default function PhieuThuHocPhiPage() {
                             onChange={handleChange}
                             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                             placeholder="Nhập tên học viên..."
-                            className="border border-gray-300 rounded p-2 focus:outline-blue-500 text-gray-800"
+                            className="border border-gray-300 rounded-[8px] p-2 focus:outline-blue-500 text-gray-800 text-sm font-medium"
                         />
                         <button
                             onClick={handleSearch}
-                            className="flex items-center gap-2 px-6 py-2 font-medium transition shadow-sm cursor-pointer bg-blue-600 text-white rounded hover:bg-blue-700">
+                            className="flex items-center gap-2 px-6 py-2 font-semibold transition shadow-sm cursor-pointer bg-blue-600 text-white rounded-[8px] hover:bg-blue-700 text-sm">
                             <FaSearch /> Tìm kiếm
                         </button>
                     </div>
                 </div>
                 <button
                     onClick={openModalForAdd}
-                    className="flex items-center gap-2 px-6 py-2 font-medium transition shadow-sm cursor-pointer bg-blue-600 text-white rounded hover:bg-blue-700">
+                    className="flex items-center gap-2 px-6 py-2 font-semibold transition shadow-sm cursor-pointer bg-blue-600 text-white rounded-[8px] hover:bg-blue-700 text-sm">
                     <FaPlus /> Thêm mới
                 </button>
             </div>
@@ -669,60 +1211,114 @@ export default function PhieuThuHocPhiPage() {
                     <table className="w-full border-collapse border border-gray-300 text-sm text-center">
                         <thead className="bg-gray-100 text-gray-700">
                             <tr>
-                                <th className="border border-gray-300 p-1">Mã phiếu</th>
-                                <th className="border border-gray-300 p-1">Số tiền</th>
-                                <th className="border border-gray-300 p-1">Ngày thu</th>
-                                <th className="border border-gray-300 p-1">Mã HV</th>
-                                <th className="border border-gray-300 p-1">Tên HV</th>
-                                <th className="border border-gray-300 p-1">Tên người lập</th>
-                                <th className="border border-gray-300 p-1">Nội dung</th>
-                                <th className="border border-gray-300 p-1">Hành động</th>
+                                <th className="border border-gray-300 p-2.5 min-w-[90px] whitespace-nowrap">Mã phiếu</th>
+                                <th className="border border-gray-300 p-2.5 min-w-[120px] whitespace-nowrap">Số tiền</th>
+                                <th className="border border-gray-300 p-2.5 min-w-[110px] whitespace-nowrap">Ngày thu</th>
+                                <th className="border border-gray-300 p-2.5 min-w-[85px] whitespace-nowrap">Mã HV</th>
+                                <th className="border border-gray-300 p-2.5 min-w-[170px] whitespace-nowrap">Tên HV</th>
+                                {(selectedClassId === null || selectedClassId === -1) && (
+                                    <th className="border border-gray-300 p-2.5 min-w-[200px]">Khóa học</th>
+                                )}
+                                {(selectedClassId === null || selectedClassId === -1) && (
+                                    <th className="border border-gray-300 p-2.5 min-w-[120px] whitespace-nowrap">Còn thiếu</th>
+                                )}
+                                <th className="border border-gray-300 p-2.5 min-w-[170px] whitespace-nowrap">Người lập</th>
+                                <th className="border border-gray-300 p-2.5 min-w-[260px]">Nội dung</th>
+                                <th className="border border-gray-300 p-2.5 min-w-[100px] whitespace-nowrap">Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {currentItems.map((row) => (
-                                <tr
-                                    key={row.ma_phieu_thu}
-                                    className={`transition text-gray-700 ${editingId === row.ma_phieu_thu ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'}`}>
-                                    <td className="border border-gray-300 p-1">
-                                        {row.ma_phieu_thu}
-                                    </td>
-                                    <td className="border border-gray-300 p-1 font-medium text-blue-600">
-                                        {new Intl.NumberFormat('vi-VN').format(row.so_tien)}
-                                    </td>
-                                    <td className="border border-gray-300 p-1">
-                                        {new Date(row.ngay_thu).toLocaleDateString('vi-VN')}
-                                    </td>
-                                    <td className="border border-gray-300 p-1">
-                                        {row.ma_hoc_vien}
-                                    </td>
-                                    <td className="border border-gray-300 p-1 font-medium text-left">
-                                        {row.hoc_vien?.ho_ten || 'Không rõ'}
-                                    </td>
-                                    <td className="border border-gray-300 p-1 text-left">
-                                        {row.nhan_su?.ho_ten || 'Không rõ'}
-                                    </td>
-                                    <td className="border border-gray-300 p-1 text-left">
-                                        {row.noi_dung}
-                                    </td>
-                                    <td className="border border-gray-300 p-1">
-                                        <div className="flex justify-center gap-1">
-                                            <button
-                                                onClick={() => openModalForEdit(row)}
-                                                className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-yellow-100 hover:text-yellow-600 transition cursor-pointer"
-                                                title="Sửa phiếu thu">
-                                                <FaEdit />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteClick(row.ma_phieu_thu)}
-                                                className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-red-100 hover:text-red-600 transition cursor-pointer"
-                                                title="Xóa phiếu thu">
-                                                <FaTrash />
-                                            </button>
-                                        </div>
+                            {currentItems.length === 0 ? (
+                                <tr>
+                                    <td colSpan={(selectedClassId === null || selectedClassId === -1) ? 10 : 8} className="border border-gray-300 py-10 text-gray-500 font-medium bg-gray-50 text-center text-sm">
+                                        {selectedClassId === -1 
+                                            ? "Không tìm thấy học viên chưa xếp lớp nào đã đóng học phí"
+                                            : selectedClassId !== null 
+                                                ? "Chưa có học viên nào đóng học phí" 
+                                                : "Không tìm thấy phiếu thu nào"}
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                currentItems.map((row) => (
+                                    <tr
+                                        key={row.ma_phieu_thu}
+                                        className={`transition text-gray-700 ${editingId === row.ma_phieu_thu ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'}`}>
+                                        <td className="border border-gray-300 p-2.5">
+                                            {row.ma_phieu_thu}
+                                        </td>
+                                        <td className="border border-gray-300 p-2.5 font-semibold text-blue-600">
+                                            {new Intl.NumberFormat('vi-VN').format(row.so_tien)}
+                                        </td>
+                                        <td className="border border-gray-300 p-2.5">
+                                            {new Date(row.ngay_thu).toLocaleDateString('vi-VN')}
+                                        </td>
+                                        <td className="border border-gray-300 p-2.5">
+                                            {row.ma_hoc_vien}
+                                        </td>
+                                        <td className="border border-gray-300 p-2.5 font-semibold text-left text-slate-800 whitespace-nowrap">
+                                            {row.hoc_vien?.ho_ten || 'Không rõ'}
+                                        </td>
+                                        {(selectedClassId === null || selectedClassId === -1) && (
+                                            <td className="border border-gray-300 p-2.5 text-left text-slate-700">
+                                                {row.khoa_hoc?.ten_khoa_hoc || 'Không rõ'}
+                                            </td>
+                                        )}
+                                        {(selectedClassId === null || selectedClassId === -1) && (
+                                            <td className="border border-gray-300 p-2.5 text-center font-medium">
+                                                {(() => {
+                                                    const totalPaid = data
+                                                        .filter(pt => pt.ma_hoc_vien === row.ma_hoc_vien && pt.ma_khoa_hoc === row.ma_khoa_hoc)
+                                                        .reduce((sum, pt) => sum + pt.so_tien, 0)
+                                                    
+                                                    const promoPayment = data.find(
+                                                        pt => pt.ma_hoc_vien === row.ma_hoc_vien && pt.ma_khoa_hoc === row.ma_khoa_hoc && pt.khuyen_mai
+                                                    )
+                                                    const discountPercent = promoPayment?.khuyen_mai?.phan_tram_giam || 0
+                                                    
+                                                    const baseTuition = row.khoa_hoc?.hoc_phi || 0
+                                                    const actualTuition = baseTuition * (1 - discountPercent / 100)
+                                                    const conThieu = Math.max(0, actualTuition - totalPaid)
+                                                    
+                                                    if (conThieu > 0) {
+                                                        return (
+                                                            <span className="text-amber-600 text-sm font-semibold">
+                                                                {new Intl.NumberFormat('vi-VN').format(conThieu)} đ
+                                                            </span>
+                                                        )
+                                                    }
+                                                    return (
+                                                        <span className="text-green-600 text-sm font-semibold">
+                                                            Đã đóng đủ
+                                                        </span>
+                                                    )
+                                                })()}
+                                            </td>
+                                        )}
+                                        <td className="border border-gray-300 p-2.5 text-left text-slate-700 whitespace-nowrap">
+                                            {row.nhan_su?.ho_ten || 'Không rõ'}
+                                        </td>
+                                        <td className="border border-gray-300 p-2.5 text-left text-slate-600">
+                                            {row.noi_dung}
+                                        </td>
+                                        <td className="border border-gray-300 p-2.5">
+                                            <div className="flex justify-center gap-1">
+                                                <button
+                                                    onClick={() => openModalForEdit(row)}
+                                                    className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-yellow-100 hover:text-yellow-600 transition cursor-pointer"
+                                                    title="Sửa phiếu thu">
+                                                    <FaEdit />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteClick(row.ma_phieu_thu)}
+                                                    className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-red-100 hover:text-red-600 transition cursor-pointer"
+                                                    title="Xóa phiếu thu">
+                                                    <FaTrash />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 )}
@@ -780,8 +1376,6 @@ export default function PhieuThuHocPhiPage() {
                     autoClose={3000}
                 />
             )}
-
-
 
             <ConfirmModal
                 isOpen={confirmDelete.isOpen}

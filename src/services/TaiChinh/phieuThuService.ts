@@ -56,7 +56,7 @@ export const layDanhSachPhieuThu = async (filters: PhieuThuFilter) => {
             khoa_hoc: true,
             khuyen_mai: true,
         },
-        orderBy: { ngay_thu: 'desc' },
+        orderBy: { ma_phieu_thu: 'asc' },
     })
 
     return result
@@ -68,6 +68,22 @@ export const taoPhieuThuMoi = async (data: PhieuThuData) => {
 
     await validatePhieuThuReferences(maHocVien, maNhanSu)
 
+    // Tự động kế thừa mã khuyến mãi từ đợt đóng trước nếu có
+    let maKhuyenMai = data.ma_khuyen_mai ? Number(data.ma_khuyen_mai) : null
+    if (!maKhuyenMai) {
+        const previousPaymentWithPromo = await prisma.phieuThu.findFirst({
+            where: {
+                ma_hoc_vien: maHocVien,
+                ma_khoa_hoc: Number(data.ma_khoa_hoc),
+                ma_khuyen_mai: { not: null }
+            },
+            select: { ma_khuyen_mai: true }
+        })
+        if (previousPaymentWithPromo) {
+            maKhuyenMai = previousPaymentWithPromo.ma_khuyen_mai
+        }
+    }
+
     const newPhieuThu = await prisma.phieuThu.create({
         data: {
             so_tien: Number(data.so_tien),
@@ -76,7 +92,7 @@ export const taoPhieuThuMoi = async (data: PhieuThuData) => {
             ma_hoc_vien: maHocVien,
             ma_nhan_su: maNhanSu,
             ma_khoa_hoc: Number(data.ma_khoa_hoc),
-            ma_khuyen_mai: data.ma_khuyen_mai ? Number(data.ma_khuyen_mai) : null,
+            ma_khuyen_mai: maKhuyenMai,
         },
         include: {
             hoc_vien: { select: { ho_ten: true } },
@@ -95,6 +111,23 @@ export const capNhatPhieuThu = async (ma_phieu_thu: number, data: PhieuThuData) 
 
     await validatePhieuThuReferences(maHocVien, maNhanSu)
 
+    // Tự động kế thừa mã khuyến mãi từ đợt đóng trước nếu có
+    let maKhuyenMai = data.ma_khuyen_mai ? Number(data.ma_khuyen_mai) : null
+    if (!maKhuyenMai) {
+        const previousPaymentWithPromo = await prisma.phieuThu.findFirst({
+            where: {
+                ma_hoc_vien: maHocVien,
+                ma_khoa_hoc: Number(data.ma_khoa_hoc),
+                ma_khuyen_mai: { not: null },
+                ma_phieu_thu: { not: ma_phieu_thu }
+            },
+            select: { ma_khuyen_mai: true }
+        })
+        if (previousPaymentWithPromo) {
+            maKhuyenMai = previousPaymentWithPromo.ma_khuyen_mai
+        }
+    }
+
     const updatedPhieuThu = await prisma.phieuThu.update({
         where: { ma_phieu_thu: ma_phieu_thu },
         data: {
@@ -104,7 +137,7 @@ export const capNhatPhieuThu = async (ma_phieu_thu: number, data: PhieuThuData) 
             ma_hoc_vien: maHocVien,
             ma_nhan_su: maNhanSu,
             ma_khoa_hoc: Number(data.ma_khoa_hoc),
-            ma_khuyen_mai: data.ma_khuyen_mai ? Number(data.ma_khuyen_mai) : null,
+            ma_khuyen_mai: maKhuyenMai,
         },
         include: {
             hoc_vien: { select: { ho_ten: true } },

@@ -27,12 +27,13 @@ body {
 
 /* Tùy chỉnh thanh cuộn cho Sidebar */
 .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
+    height: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #1e3a8a; /* Màu xanh dương đậm */
+    background-color: #979ca7; /* Màu xanh dương đậm */
     border-radius: 10px;
 }
