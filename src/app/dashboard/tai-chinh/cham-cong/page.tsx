@@ -237,7 +237,7 @@ export default function ChamCongPage() {
                                     <th className="p-4 text-center border-l-2 border-slate-200 bg-blue-50 text-blue-700 min-w-[80px]">Công</th>
                                     <th className="p-4 text-center bg-orange-50 text-orange-700 border-l border-slate-200 min-w-[60px]">Số lần đi muộn</th>
                                     <th className="p-4 text-center bg-orange-50 text-orange-700 border-l border-slate-100 min-w-[60px]">Số lần về sớm</th>
-                                    <th className="p-4 text-center bg-green-50 text-green-700 border-l border-slate-200 min-w-[80px]">Giờ Ngày thường</th>
+                                    <th className="p-4 text-center bg-green-50 text-green-700 border-l border-slate-200 min-w-[80px]">Giờ ngày thường</th>
                                     <th className="p-4 text-center bg-green-50 text-green-700 border-l border-slate-100 min-w-[80px]">Tăng ca ngày thường</th>
                                     <th className="p-4 text-center bg-purple-50 text-purple-700 border-l border-slate-200 min-w-[80px]">Giờ Ngày nghỉ</th>
                                     <th className="p-4 text-center bg-purple-50 text-purple-700 border-l border-slate-100 min-w-[80px]">Tăng ca ngày nghỉ</th>

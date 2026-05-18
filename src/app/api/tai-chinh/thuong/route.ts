@@ -5,6 +5,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const month = parseInt(searchParams.get("month") || String(new Date().getMonth() + 1));
     const year = parseInt(searchParams.get("year") || String(new Date().getFullYear()));
+    const ngayLeText = searchParams.get("ngayLeText") || "";
 
     try {
         // 1. Lấy tất cả nhân sự và dữ liệu liên quan (Hợp đồng, Phiếu chấm công, Phiếu thu)
@@ -30,6 +31,13 @@ export async function GET(request: Request) {
                     },
                     take: 1
                 }
+            }
+        });
+
+        const giaoVienList = await prisma.giaoVien.findMany({
+            include: {
+                chuc_vu: true,
+                phong_ban: true
             }
         });
 
@@ -64,6 +72,45 @@ export async function GET(request: Request) {
 
 
 
+        const getWorkingDaysInMonth = (m: number, y: number) => {
+            const daysInMonth = new Date(y, m, 0).getDate();
+            let workingDays = 0;
+            for (let i = 1; i <= daysInMonth; i++) {
+                if (new Date(y, m - 1, i).getDay() !== 0) workingDays++;
+            }
+            return workingDays;
+        };
+        const standardWorkingDays = getWorkingDaysInMonth(month, year);
+        
+        // Tính số ngày lễ hợp lệ (chỉ đếm các ngày thuộc tháng hiện tại và không phải Chủ Nhật)
+        let countNgayLeHieuLuc = 0;
+        if (ngayLeText.trim()) {
+            const parsedNgayLe = ngayLeText.split(",").map(d => d.trim()).filter(d => d.length > 0);
+            parsedNgayLe.forEach(dateStr => {
+                let d = NaN, m = NaN;
+                if (dateStr.includes("/")) {
+                    const parts = dateStr.split("/").map(Number);
+                    d = parts[0];
+                    m = parts[1];
+                } else {
+                    d = Number(dateStr);
+                    m = month; // Nếu chỉ nhập ngày, mặc định là tháng đang chọn
+                }
+                
+                if (!isNaN(d) && !isNaN(m) && m === month) {
+                    const daysInMonth = new Date(year, month, 0).getDate();
+                    if (d >= 1 && d <= daysInMonth) {
+                        const dateObj = new Date(year, m - 1, d);
+                        // Chỉ trừ đi ngày công nếu ngày lễ rơi vào ngày làm việc bình thường (khác Chủ Nhật)
+                        if (dateObj.getDay() !== 0) {
+                            countNgayLeHieuLuc++;
+                        }
+                    }
+                }
+            });
+        }
+        const requiredWorkingDays = Math.max(0, standardWorkingDays - countNgayLeHieuLuc);
+
         // 4. Tổng hợp dữ liệu
         const results = nhanSuList.map(ns => {
             const hopDong = ns.hop_dong[0];
@@ -83,10 +130,11 @@ export async function GET(request: Request) {
                 if (item) tienChuyenCanHieuLuc = Number(item.soTien);
             }
 
-            // Xét điều kiện chuyên cần: Có dữ liệu công, không đi muộn, không về sớm
+            // Xét điều kiện chuyên cần: Có dữ liệu công, làm đủ ngày công chuẩn, không đi muộn
             const diMuon = pcc?.so_lan_di_muon || 0;
             const veSom = pcc?.so_lan_ve_som || 0;
-            const isChuyenCan = pcc && diMuon === 0 && veSom === 0;
+            const soNgayCongThuong = (pcc?.so_gio_lam_viec_thuong || 0) / 8;
+            const isChuyenCan = pcc && (soNgayCongThuong >= requiredWorkingDays) && diMuon === 0;
             const thuongChuyenCan = isChuyenCan ? tienChuyenCanHieuLuc : 0;
 
             // Tính thưởng nóng (lấy từ dữ liệu đã lưu)
@@ -107,6 +155,7 @@ export async function GET(request: Request) {
                 thuong_chuyen_can: thuongChuyenCan,
                 thuong_nong: tongThuongNong,
                 chi_tiet_thuong_nong: dsThuongNong.map(p => ({
+                    ma_phieu_thuong: p.ma_phieu_thuong,
                     so_tien: Number(p.so_tien),
                     noi_dung: p.noi_dung
                 })),
@@ -114,12 +163,61 @@ export async function GET(request: Request) {
                 chi_tiet_cong: {
                     has_data: !!pcc,
                     di_muon: diMuon,
-                    ve_som: veSom
+                    ve_som: veSom,
+                    so_ngay_cong: soNgayCongThuong,
+                    required_days: requiredWorkingDays
                 }
             };
         });
 
-        return NextResponse.json(results);
+        // 5. Tổng hợp dữ liệu Giáo viên (chỉ tính thưởng nóng)
+        const gvResults = giaoVienList.map(gv => {
+            const dsThuongNong = existingBangThuong?.phieu_thuong.filter(p => p.ma_giao_vien === gv.ma_giao_vien) || [];
+            const tongThuongNong = dsThuongNong.reduce((acc, p) => acc + Number(p.so_tien), 0);
+
+            return {
+                ma_nhan_su: gv.ma_giao_vien, // Dùng chung field ID để frontend dễ xử lý
+                isTeacher: true,
+                ho_ten: gv.ho_ten,
+                ma_chuc_vu: gv.ma_chuc_vu,
+                chuc_vu: gv.chuc_vu.ten_chuc_vu,
+                ten_phong_ban: gv.phong_ban.ten_phong_ban,
+                tong_doanh_so: 0,
+                phan_tram: 0,
+                tien_hoa_hong: 0,
+                tien_chuyen_can: 0,
+                duoc_thuong_chuyen_can: false,
+                thuong_chuyen_can: 0,
+                thuong_nong: tongThuongNong,
+                chi_tiet_thuong_nong: dsThuongNong.map(p => ({
+                    ma_phieu_thuong: p.ma_phieu_thuong,
+                    so_tien: Number(p.so_tien),
+                    noi_dung: p.noi_dung
+                })),
+                tong_thuong: tongThuongNong,
+                chi_tiet_cong: {
+                    has_data: false,
+                    di_muon: 0,
+                    ve_som: 0,
+                    so_ngay_cong: 0,
+                    required_days: 0
+                }
+            };
+        });
+
+        // Kiểm tra xem bảng thưởng đã được chốt (lưu) chưa
+        const checkSaved = await prisma.phieuThuong.findFirst({
+            where: {
+                bang_thuong: { ki_thuong: kiThuong },
+                loai_thuong: { in: ["Tiền hoa hồng", "Chuyên cần"] }
+            }
+        });
+        const isSaved = !!checkSaved;
+
+        return NextResponse.json({
+            results: [...results, ...gvResults],
+            isSaved
+        });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -139,9 +237,13 @@ export async function POST(request: Request) {
                     bangThuong = await tx.bangThuong.create({ data: { ki_thuong: kiThuong, so_tien_thuong: 0 } });
                 }
 
+                const isTeacher = ma_nhan_su.startsWith('GV_');
+                const realId = isTeacher ? parseInt(ma_nhan_su.replace('GV_', '')) : parseInt(ma_nhan_su);
+
                 const phieu = await tx.phieuThuong.create({
                     data: {
-                        ma_nhan_su: parseInt(ma_nhan_su),
+                        ma_nhan_su: isTeacher ? null : realId,
+                        ma_giao_vien: isTeacher ? realId : null,
                         ma_bang_thuong: bangThuong.ma_bang_thuong,
                         loai_thuong: "Thưởng nóng",
                         so_tien: parseFloat(so_tien),

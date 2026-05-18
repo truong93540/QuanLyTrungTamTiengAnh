@@ -346,6 +346,8 @@ model PhieuChi {
   nguoi_nhan     String?
   noi_dung       String?
   trang_thai     String?
+  ngay_tao       DateTime @default(now())
+  ngay_chi       DateTime?
 
   // Khóa ngoại Nullable để linh hoạt theo loại phiếu
   ma_bang_luong             Int? @unique

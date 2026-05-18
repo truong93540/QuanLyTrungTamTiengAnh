@@ -101,6 +101,36 @@ export async function POST(req: Request) {
 
         const previewMap = new Map<string, any>()
 
+        if (!isPreview) {
+            const bang = await prisma.bangChamCong.findFirst({ where: { ky_cham_cong: apiMonth } })
+            if (bang) {
+                // Xoá tất cả chi tiết chấm công cũ của tháng này trước khi ghi nhận mới
+                await prisma.chiTietChamCong.deleteMany({
+                    where: {
+                        phieu_cham_cong: {
+                            ma_bang_cham_cong: bang.ma_bang_cham_cong
+                        }
+                    }
+                })
+                // Reset toàn bộ công và chỉ số tích lũy về 0
+                await prisma.phieuChamCong.updateMany({
+                    where: { ma_bang_cham_cong: bang.ma_bang_cham_cong },
+                    data: {
+                        ngay_1: 0, ngay_2: 0, ngay_3: 0, ngay_4: 0, ngay_5: 0, ngay_6: 0, ngay_7: 0, ngay_8: 0, ngay_9: 0, ngay_10: 0,
+                        ngay_11: 0, ngay_12: 0, ngay_13: 0, ngay_14: 0, ngay_15: 0, ngay_16: 0, ngay_17: 0, ngay_18: 0, ngay_19: 0, ngay_20: 0,
+                        ngay_21: 0, ngay_22: 0, ngay_23: 0, ngay_24: 0, ngay_25: 0, ngay_26: 0, ngay_27: 0, ngay_28: 0, ngay_29: 0, ngay_30: 0, ngay_31: 0,
+                        tong_so_gio_lam_viec: 0,
+                        so_lan_di_muon: 0,
+                        so_lan_ve_som: 0,
+                        so_gio_lam_viec_thuong: 0,
+                        so_gio_tang_ca_ngay_thuong: 0,
+                        so_gio_lam_viec_thuong_ngay_nghi: 0,
+                        so_gio_tang_ca_ngay_nghi: 0
+                    }
+                })
+            }
+        }
+
         for (const rowObj of jsonData) {
             const data: any = { intervals: [] }
             const tempVao: Record<number, any> = {}
@@ -197,7 +227,7 @@ export async function POST(req: Request) {
                     Object.assign(ct, metrics.shiftSlots)
                 }
 
-                const isW = loai === 'GV' ? false : (ngay.getDay() === 0 || ngay.getDay() === 6)
+                const isW = loai === 'GV' ? false : (ngay.getDay() === 0)
                 const finalGioThuong = loai === 'GV' ? (metrics.gio_lam_thuong + metrics.gio_tang_ca) : metrics.gio_lam_thuong
                 const finalTangCa = loai === 'GV' ? 0 : metrics.gio_tang_ca
 

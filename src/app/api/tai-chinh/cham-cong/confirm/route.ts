@@ -16,6 +16,23 @@ export async function POST(request: Request) {
                 bang = await tx.bangChamCong.create({ 
                     data: { ky_cham_cong: month, trang_thai: 'Đang mở' } 
                 })
+            } else {
+                // RESET TOÀN BỘ PHIẾU CHẤM CÔNG CỦA THÁNG VỀ 0 TRƯỚC ĐỂ XÓA RÁC VÀ PHÒNG TRỪ CÔNG CŨ
+                await tx.phieuChamCong.updateMany({
+                    where: { ma_bang_cham_cong: bang.ma_bang_cham_cong },
+                    data: {
+                        ngay_1: 0, ngay_2: 0, ngay_3: 0, ngay_4: 0, ngay_5: 0, ngay_6: 0, ngay_7: 0, ngay_8: 0, ngay_9: 0, ngay_10: 0,
+                        ngay_11: 0, ngay_12: 0, ngay_13: 0, ngay_14: 0, ngay_15: 0, ngay_16: 0, ngay_17: 0, ngay_18: 0, ngay_19: 0, ngay_20: 0,
+                        ngay_21: 0, ngay_22: 0, ngay_23: 0, ngay_24: 0, ngay_25: 0, ngay_26: 0, ngay_27: 0, ngay_28: 0, ngay_29: 0, ngay_30: 0, ngay_31: 0,
+                        tong_so_gio_lam_viec: 0,
+                        so_lan_di_muon: 0,
+                        so_lan_ve_som: 0,
+                        so_gio_lam_viec_thuong: 0,
+                        so_gio_tang_ca_ngay_thuong: 0,
+                        so_gio_lam_viec_thuong_ngay_nghi: 0,
+                        so_gio_tang_ca_ngay_nghi: 0
+                    }
+                })
             }
 
             // 2. Xử lý từng nhân sự
@@ -30,10 +47,17 @@ export async function POST(request: Request) {
                     continue
                 }
 
-                // Lọc ra các trường ngay_1 đến ngay_31
-                const ngayFields = Object.fromEntries(
-                    Object.entries(item).filter(([key]) => key.startsWith('ngay_'))
-                )
+                // KHỞI TẠO TẤT CẢ 31 NGÀY VỀ 0 đẻ đảm bảo những ngày trống trong file Excel vẫn được cập nhật về 0
+                const ngayFields: Record<string, number> = {}
+                for (let i = 1; i <= 31; i++) {
+                    ngayFields[`ngay_${i}`] = 0
+                }
+
+                Object.entries(item).forEach(([key, val]) => {
+                    if (key.startsWith('ngay_') && val !== undefined && val !== null) {
+                        ngayFields[key] = Number(val)
+                    }
+                })
 
                 // Tìm hoặc tạo Phiếu chấm công
                 let phieu = await tx.phieuChamCong.findFirst({

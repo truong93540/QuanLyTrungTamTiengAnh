@@ -63,8 +63,27 @@ export const calculateDayMetrics = (data: RawChamCongData, expectedShifts: numbe
         }
     }
 
+    // Làm sạch và ghép cặp vaoRas
+    // Các máy chấm công đôi khi trả về mảng các lần quét (v, v, v...) thay vì (v, r) rõ ràng
+    const allTimes: number[] = [];
+    vaoRas.forEach(vr => {
+        if (vr.v !== null) allTimes.push(vr.v);
+        if (vr.r !== null) allTimes.push(vr.r);
+    });
+    
+    // Sắp xếp các mốc thời gian tăng dần
+    allTimes.sort((a, b) => a - b);
+    
+    const pairedVaoRas: {v: number | null, r: number | null}[] = [];
+    for (let i = 0; i < allTimes.length; i += 2) {
+        pairedVaoRas.push({
+            v: allTimes[i],
+            r: i + 1 < allTimes.length ? allTimes[i + 1] : null
+        });
+    }
+
     // LUÔN ĐIỀN GIỜ QUÉT THẺ THÔ TRƯỚC CHO MỌI ĐỐI TƯỢNG (Để Tooltip luôn có dữ liệu)
-    vaoRas.forEach((vr, idx) => {
+    pairedVaoRas.forEach((vr, idx) => {
         if (idx < 6) {
             metrics.shiftSlots[`gio_vao_${idx+1}`] = vr.v !== null ? minToTime(vr.v) : null
             metrics.shiftSlots[`gio_ra_${idx+1}`] = vr.r !== null ? minToTime(vr.r) : null
@@ -80,7 +99,7 @@ export const calculateDayMetrics = (data: RawChamCongData, expectedShifts: numbe
             const caEnd = timeToMin(config.ra)
 
             // Chỉ tính toán nếu có cả v và r
-            const match = vaoRas.find(vr => 
+            const match = pairedVaoRas.find(vr => 
                 vr.v !== null && vr.r !== null && 
                 Math.max(vr.v, caStart) < Math.min(vr.r, caEnd)
             ) as {v: number, r: number} | undefined
@@ -103,7 +122,7 @@ export const calculateDayMetrics = (data: RawChamCongData, expectedShifts: numbe
         })
     } else {
         // Lọc ra các cặp hoàn chỉnh để tính công cho nhân sự hành chính
-        const fullVaoRas = vaoRas.filter(vr => vr.v !== null && vr.r !== null) as {v: number, r: number}[]
+        const fullVaoRas = pairedVaoRas.filter(vr => vr.v !== null && vr.r !== null) as {v: number, r: number}[]
         
         if (fullVaoRas.length > 0) {
             let actualMins = 0
@@ -203,7 +222,7 @@ export const ghiNhanChamCongNgay = async (data: RawChamCongData) => {
         })
         
         // VỚI GIÁO VIÊN: Không có tăng ca và không tách biệt ngày nghỉ (Tất cả tính là giờ thường)
-        const isW = data.loai === 'GV' ? false : (ngay.getDay() === 0 || ngay.getDay() === 6)
+        const isW = data.loai === 'GV' ? false : (ngay.getDay() === 0)
         const finalGioThuong = data.loai === 'GV' ? (metrics.gio_lam_thuong + metrics.gio_tang_ca) : metrics.gio_lam_thuong
         const finalTangCa = data.loai === 'GV' ? 0 : metrics.gio_tang_ca
         

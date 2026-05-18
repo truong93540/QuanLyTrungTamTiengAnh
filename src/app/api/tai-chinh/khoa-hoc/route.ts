@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { layDanhSachKhoaHoc } from '@/services/TaiChinh/khoaHocService'
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         const danhSach = await layDanhSachKhoaHoc()
