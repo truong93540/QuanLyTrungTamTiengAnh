@@ -1,10 +1,10 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
 }
 
 model Quyen {
@@ -557,9 +557,4 @@ model NhanXet {
   hoc_vien          HocVien  @relation(fields: [ma_hoc_vien], references: [ma_hoc_vien])
 }
 
-model BangThuong {
-  ma_bang_thuong Int           @id @default(autoincrement())
-  ki_thuong      String?
-  so_tien_thuong Decimal?      @db.Decimal(15, 2)
-  PhieuThuong    PhieuThuong[]
-}
+
