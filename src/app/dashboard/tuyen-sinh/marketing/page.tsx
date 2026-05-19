@@ -1,8 +1,13 @@
 'use client'
+
 import { useState, useEffect } from 'react'
-import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaBullhorn, FaEye, FaCheckCircle, FaUsers, FaGraduationCap, FaChevronDown, FaChevronUp } from 'react-icons/fa'
+import { 
+    FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaUserGraduate,  FaEye, FaCheckCircle, FaSpinner, FaQuestionCircle,FaUserPlus, 
+    FaExclamationTriangle, FaShieldAlt, FaSync, FaTasks, FaClock, FaFileAlt, FaChevronDown, FaChevronUp,FaFilter, FaBookOpen,  FaBullhorn, FaGraduationCap, FaUsers
+} from 'react-icons/fa'
 
 interface KhoaHocInfo {
+    ma_khoa_hoc: number
     ten_khoa_hoc: string
     hoc_phi: number
     thoi_luong: string
@@ -11,6 +16,7 @@ interface KhoaHocInfo {
 }
 
 interface NhanSuInfo {
+    ma_nhan_su:number
     ho_ten: string
     so_dien_thoai: string | null
     email: string | null
@@ -57,26 +63,24 @@ export default function QuanLyMarketingPage() {
     const [danhSachKhoaHoc, setDanhSachKhoaHoc] = useState<KhoaHoc[]>([]) 
     const [danhSachNhanSu, setDanhSachNhanSu] = useState<NhanSu[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    
     const [searchTerm, setSearchTerm] = useState('')
+    const [selectedMonth, setSelectedMonth] = useState<string>('all') 
     const [tuKhoaNhanSu, setTuKhoaNhanSu] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 5
 
-    // Modal States
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isViewMode, setIsViewMode] = useState(false)
     const [editingId, setEditingId] = useState<number | null>(null)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [deletingId, setDeletingId] = useState<number | null>(null)
 
-    // Trạng thái điều khiển Đóng/Mở chi tiết (View Mode)
-    const [showKhoaHocDetail, setShowKhoaHocDetail] = useState(false)
-    const [showNhanSuDetail, setShowNhanSuDetail] = useState(false)
+    const [showKhoaHocDetail, setShowKhoaHocDetail] = useState(true) 
+    const [showNhanSuDetail, setShowNhanSuDetail] = useState(false) 
 
-    // View Data State 
     const [viewData, setViewData] = useState<ChuongTrinhMarketing | null>(null)
 
-    // Form States 
     const [formData, setFormData] = useState({
         ten_chuong_trinh_marketing: '',
         ma_khoa_hoc: '',
@@ -86,7 +90,9 @@ export default function QuanLyMarketingPage() {
         ngan_sach: '',
         danh_sach_nhan_su: [] as PhanCongForm[] 
     })
-    const [formError, setFormError] = useState('')
+    
+    // STATE LƯU TRỮ LỖI CHO TỪNG TRƯỜNG
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({})
     const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
 
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -125,7 +131,7 @@ export default function QuanLyMarketingPage() {
                 const resKhoaHoc = await fetch('/api/tuyen-sinh/khoa-hoc')
                 if (resKhoaHoc.ok) setDanhSachKhoaHoc(await resKhoaHoc.json())
 
-                const resNhanSu = await fetch('/api/tuyen-sinh/marketing?action=get_marketing_staff')
+                const resNhanSu = await fetch('/api/tuyen-sinh/marketing?action=get_all_staff')
                 if (resNhanSu.ok) setDanhSachNhanSu(await resNhanSu.json())
 
             } catch (error) {
@@ -138,15 +144,20 @@ export default function QuanLyMarketingPage() {
     }, [])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value })
-        if (formError) setFormError('') 
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+        
+        // Tự động xóa lỗi của trường đang gõ
+        if (formErrors[name]) {
+            setFormErrors(prev => ({ ...prev, [name]: '' }));
+        }
     }
 
     const handleToggleNhanSu = (ma_nhan_su: number, isChecked: boolean) => {
         if (isViewMode) return;
         setFormData(prev => {
             if (isChecked) {
-                return { ...prev, danh_sach_nhan_su: [...prev.danh_sach_nhan_su, { ma_nhan_su, vai_tro: 'Nhân viên phụ trách' }] }
+                return { ...prev, danh_sach_nhan_su: [...prev.danh_sach_nhan_su, { ma_nhan_su, vai_tro: '' }] }
             } else {
                 return { ...prev, danh_sach_nhan_su: prev.danh_sach_nhan_su.filter(id => id.ma_nhan_su !== ma_nhan_su) }
             }
@@ -167,7 +178,7 @@ export default function QuanLyMarketingPage() {
         setEditingId(null)
         setFormData({ ten_chuong_trinh_marketing: '', ma_khoa_hoc: '', noi_dung: '', ngay_bat_dau: '', ngay_ket_thuc: '', ngan_sach: '', danh_sach_nhan_su: [] })
         setTuKhoaNhanSu('')
-        setFormError('')
+        setFormErrors({}) // Xóa toàn bộ lỗi cũ
         setIsModalOpen(true)
     }
 
@@ -184,7 +195,7 @@ export default function QuanLyMarketingPage() {
             ngan_sach: row.ngan_sach?.toString() || '',
             danh_sach_nhan_su: row.phan_cong?.map(pc => ({ ma_nhan_su: pc.ma_nhan_su, vai_tro: pc.vai_tro || '' })) || []
         })
-        setFormError('')
+        setFormErrors({}) // Xóa toàn bộ lỗi cũ
         setIsModalOpen(true)
     }
 
@@ -193,10 +204,9 @@ export default function QuanLyMarketingPage() {
         setViewData(row) 
         setEditingId(row.ma_chuong_trinh_marketing)
         setTuKhoaNhanSu('')
-        setFormError('')
-        // Tự động thu gọn các mục chi tiết khi mở lên
-        setShowKhoaHocDetail(false)
-        setShowNhanSuDetail(false)
+        setFormErrors({})
+        setShowKhoaHocDetail(false) 
+        setShowNhanSuDetail(false) 
         setIsModalOpen(true)
     }
 
@@ -226,12 +236,53 @@ export default function QuanLyMarketingPage() {
         }
     }
 
+    // --- HÀM KIỂM TRA NGÀY HỢP LỆ (Bắt lỗi người dùng nhập 30/2, 31/4...) ---
+    const isValidDateInput = (dateString: string) => {
+        // DateString từ input type="date" thường có dạng yyyy-mm-dd
+        const dateObj = new Date(dateString);
+        return dateObj instanceof Date && !isNaN(dateObj.getTime());
+    }
+
     const handleSave = async () => {
-        if (!formData.ten_chuong_trinh_marketing || !formData.ma_khoa_hoc || !formData.ngay_bat_dau || !formData.ngay_ket_thuc || !formData.ngan_sach) {
-            setFormError('Vui lòng nhập đầy đủ các trường bắt buộc (*)')
-            return
+        const errors: Record<string, string> = {};
+
+        // 1. Kiểm tra Text và Khóa học
+        if (!formData.ten_chuong_trinh_marketing.trim()) errors.ten_chuong_trinh_marketing = 'Vui lòng nhập tên chương trình';
+        if (!formData.ma_khoa_hoc) errors.ma_khoa_hoc = 'Vui lòng chọn khóa học áp dụng';
+        
+        // 2. Kiểm tra Ngân sách
+        if (!formData.ngan_sach || formData.ngan_sach.toString().trim() === '') {
+            errors.ngan_sach = 'Vui lòng nhập ngân sách dự kiến';
+        } else if (Number(formData.ngan_sach) < 0) {
+            errors.ngan_sach = 'Ngân sách không được là số âm';
         }
 
+        if (!formData.ngay_bat_dau) {
+            errors.ngay_bat_dau = 'Vui lòng nhập dữ liệu'; 
+        } else if (!isValidDateInput(formData.ngay_bat_dau)) {
+            errors.ngay_bat_dau = 'Dữ liệu ngày tháng năm không hợp lệ'; 
+        }
+
+        if (!formData.ngay_ket_thuc) {
+            errors.ngay_ket_thuc = 'Vui lòng nhập dữ liệu'; 
+        } else if (!isValidDateInput(formData.ngay_ket_thuc)) {
+            errors.ngay_ket_thuc = 'Dữ liệu ngày tháng năm không hợp lệ'; 
+        }
+
+        if (!errors.ngay_bat_dau && !errors.ngay_ket_thuc) {
+            const startDate = new Date(formData.ngay_bat_dau);
+            const endDate = new Date(formData.ngay_ket_thuc);
+            if (endDate < startDate) {
+                errors.ngay_ket_thuc = 'Ngày kết thúc không được trước ngày bắt đầu';
+            }
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setFormErrors(errors);
+            return;
+        }
+
+        setFormErrors({}); 
         try {
             const payload = {
                 ma_chuong_trinh_marketing: editingId || undefined,
@@ -264,10 +315,22 @@ export default function QuanLyMarketingPage() {
         }
     }
 
-    const filteredData = data.filter(item => 
-        item.ten_chuong_trinh_marketing.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.ma_chuong_trinh_marketing.toString().includes(searchTerm)
-    )
+    const filteredData = data.filter(item => {
+        const lowerSearch = searchTerm.toLowerCase();
+        const matchProgram = item.ten_chuong_trinh_marketing.toLowerCase().includes(lowerSearch) ||
+                             item.ma_chuong_trinh_marketing.toString().includes(lowerSearch);
+        const matchStaff = item.phan_cong?.some(pc => 
+            pc.nhan_su?.ho_ten.toLowerCase().includes(lowerSearch)
+        ) || false;
+        const matchSearch = matchProgram || matchStaff;
+        let matchMonth = true;
+        if (selectedMonth !== 'all') {
+            const startMonth = new Date(item.ngay_bat_dau).getMonth() + 1;
+            matchMonth = startMonth.toString() === selectedMonth;
+        }
+
+        return matchSearch && matchMonth;
+    }).sort((a, b) => b.ma_chuong_trinh_marketing - a.ma_chuong_trinh_marketing);
 
     const indexOfLastItem = currentPage * itemsPerPage
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
@@ -293,14 +356,36 @@ export default function QuanLyMarketingPage() {
                     </button>
                 </div>
 
-                <div className="mb-6 w-full md:w-1/2 lg:w-1/3">
-                    <div className="relative">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500"><FaSearch /></span>
-                        <input
-                            type="text" placeholder="Tìm kiếm mã hoặc tên chương trình..." value={searchTerm}
-                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                            className="w-full border border-gray-300 rounded-md py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] transition shadow-sm text-sm text-gray-900 placeholder-gray-500 font-medium"
+                <div className="flex flex-col md:flex-row gap-4 mb-6 w-full lg:w-2/3">
+                    <div className="relative flex-1 md:max-w-md">
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                            <FaSearch className="text-gray-400 text-sm" />
+                        </div>
+                        <input 
+                            type="text" 
+                            placeholder="Tìm theo mã, tên chương trình hoặc tên nhân sự..." 
+                            value={searchTerm} 
+                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1) }} 
+                            className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400" 
                         />
+                    </div>
+                    <div className="relative w-full md:w-36 shrink-0 group">
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <FaFilter className="text-gray-400 text-[11px]" />
+                        </div>
+                        <select 
+                            value={selectedMonth}
+                            onChange={(e) => setSelectedMonth(e.target.value)}
+                            className="block w-full appearance-none rounded-lg border border-gray-300 bg-white py-2.5 pl-8 pr-7 text-sm font-semibold text-gray-700 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 cursor-pointer transition-all hover:bg-gray-50"
+                        >
+                            <option value="all">Tất cả</option>
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                                <option key={month} value={month.toString()}>Tháng {month}</option>
+                            ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <FaChevronDown className="text-gray-400 text-[10px] transition-transform group-hover:text-gray-600" />
+                        </div>
                     </div>
                 </div>
 
@@ -309,7 +394,7 @@ export default function QuanLyMarketingPage() {
                         <thead className="bg-[#1d4ed8] text-white font-semibold text-xs uppercase tracking-wider">
                             <tr>
                                 <th className="px-4 py-4 text-center whitespace-nowrap border-b border-blue-600">Mã</th>
-                                <th className="px-4 py-4 min-w-[250px] border-b border-blue-600">Thông Tin Chương Trình</th>
+                                <th className="px-4 py-4 min-w-[250px] border-b border-blue-600 text-center">Tên Tin Chương Trình</th>
                                 <th className="px-4 py-4 text-right whitespace-nowrap border-b border-blue-600">Ngân Sách</th>
                                 <th className="px-4 py-4 min-w-[200px] border-b border-blue-600">Nhân Sự Phụ Trách</th>
                                 <th className="px-4 py-4 text-center whitespace-nowrap border-b border-blue-600">Thời Gian</th>
@@ -336,12 +421,11 @@ export default function QuanLyMarketingPage() {
                                             </td>
                                             <td className="px-4 py-4 align-top">
                                                 {row.phan_cong && row.phan_cong.length > 0 ? (
-                                                    <div className="flex flex-col gap-1.5">
+                                                    <div className="flex flex-wrap gap-1.5">
                                                         {row.phan_cong.map(pc => (
-                                                            <div key={pc.ma_nhan_su} className="text-xs bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-1 rounded-md w-max">
-                                                                <span className="font-semibold">{pc.nhan_su?.ho_ten || `Mã ${pc.ma_nhan_su}`}</span> 
-                                                                <span className="text-gray-500 font-normal ml-1">({pc.vai_tro})</span>
-                                                            </div>
+                                                            <span key={pc.ma_nhan_su} className="px-2.5 py-1 bg-blue-50 text-blue-800 border border-blue-200 rounded-md text-xs font-semibold whitespace-nowrap">
+                                                                {pc.nhan_su?.ho_ten || `Mã ${pc.ma_nhan_su}`}
+                                                            </span>
                                                         ))}
                                                     </div>
                                                 ) : <span className="italic text-gray-400 text-xs">Chưa phân công</span>}
@@ -401,7 +485,7 @@ export default function QuanLyMarketingPage() {
 
                         <div className="p-6 overflow-y-auto space-y-6 bg-gray-50/50">
                             
-                            {/* Khối 1: Thông tin tổng quan (Luôn hiện) */}
+                            {/* Khối 1: Thông tin tổng quan */}
                             <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
                                 <h3 className="text-lg font-bold text-gray-800 mb-5 border-l-4 border-[#1d4ed8] pl-3 flex items-center">Thông Tin Chung</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-y-5 gap-x-8 text-sm">
@@ -428,7 +512,7 @@ export default function QuanLyMarketingPage() {
                                 </div>
                             </div>
 
-                            {/* Khối 2: Liên kết Khóa Học (Accordion) */}
+                            {/* Khối 2: Liên kết Khóa Học */}
                             {viewData.khoa_hoc && (
                                 <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
                                     <div 
@@ -456,15 +540,15 @@ export default function QuanLyMarketingPage() {
                                                 </div>
                                                 <div>
                                                     <span className="text-gray-500 block mb-1">Thời lượng</span>
-                                                    <span className="font-bold text-gray-800">{viewData.khoa_hoc.thoi_luong}</span>
+                                                    <span className="font-bold text-gray-800">{viewData.khoa_hoc.thoi_luong || 'Chưa cập nhật'}</span>
                                                 </div>
                                                 <div>
                                                     <span className="text-gray-500 block mb-1">Trình độ</span>
-                                                    <span className="font-bold text-gray-800">{viewData.khoa_hoc.trinh_do}</span>
+                                                    <span className="font-bold text-gray-800">{viewData.khoa_hoc.trinh_do || 'Chưa cập nhật'}</span>
                                                 </div>
                                                 <div>
                                                     <span className="text-gray-500 block mb-1">Trạng thái</span>
-                                                    <span className="font-bold text-blue-600">{viewData.khoa_hoc.trang_thai}</span>
+                                                    <span className="font-bold text-blue-600">{viewData.khoa_hoc.trang_thai || 'Đang mở'}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -472,7 +556,7 @@ export default function QuanLyMarketingPage() {
                                 </div>
                             )}
 
-                            {/* Khối 3: Đội ngũ Nhân Sự (Accordion) */}
+                            {/* Khối 3: Đội ngũ Nhân Sự */}
                             <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
                                 <div 
                                     className="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition"
@@ -489,29 +573,43 @@ export default function QuanLyMarketingPage() {
                                 {showNhanSuDetail && (
                                     <div className="px-5 pb-5 pt-0 animate-fade-in-up">
                                         {viewData.phan_cong && viewData.phan_cong.length > 0 ? (
-                                            <div className="overflow-hidden border border-gray-200 rounded-lg shadow-sm">
+                                            <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
                                                 <table className="w-full text-sm text-left">
                                                     <thead className="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                                                         <tr>
-                                                            <th className="px-4 py-3 text-center">Họ & Tên</th>
-                                                            <th className="px-4 py-3 text-center">Phòng Ban</th>
-                                                            <th className="px-4 py-3 text-center">Vai Trò</th>
-                                                            <th className="px-4 py-3 text-center">Số Điện Thoại</th>
-                                                            <th className="px-4 py-3">Email Liên Hệ</th>
+                                                            <th className="px-4 py-3 text-center whitespace-nowrap">Mã NS</th>
+                                                            <th className="px-4 py-3 text-center whitespace-nowrap">Họ & Tên</th>
+                                                            <th className="px-4 py-3 text-center whitespace-nowrap">Phòng Ban</th>
+                                                            <th className="px-4 py-3 text-center min-w-[300px]">Vai Trò</th>
+                                                            <th className="px-4 py-3 text-center whitespace-nowrap">Số Điện Thoại</th>
+                                                            <th className="px-4 py-3 text-center whitespace-nowrap">Email Liên Hệ</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="bg-white">
-                                                        {viewData.phan_cong.map((pc, idx) => (
-                                                            <tr key={pc.ma_nhan_su} className={`border-b last:border-0 hover:bg-gray-50 ${idx % 2 !== 0 ? 'bg-gray-50/50' : ''}`}>
-                                                                <td className="px-4 py-3.5 font-bold text-gray-800">{pc.nhan_su?.ho_ten}</td>
-                                                                <td className="px-4 py-3.5 text-gray-600 font-medium">{pc.nhan_su?.phong_ban?.ten_phong_ban || '-'}</td>
-                                                                <td className="px-4 py-3.5">
-                                                                    <span className="bg-purple-100 text-purple-700 px-2.5 py-1 rounded-md text-xs font-bold border border-purple-200">
-                                                                        {pc.vai_tro}
-                                                                    </span>
+                                                        {viewData.phan_cong?.map((pc, idx) => (
+                                                            <tr key={pc.ma_nhan_su} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                                                                <td className="px-4 py-4 text-center font-bold text-gray-900 whitespace-nowrap">
+                                                                    NS{pc.nhan_su?.ma_nhan_su}
                                                                 </td>
-                                                                <td className="px-4 py-3.5 text-center text-gray-600 font-medium">{pc.nhan_su?.so_dien_thoai || '-'}</td>
-                                                                <td className="px-4 py-3.5 text-gray-600 font-medium">{pc.nhan_su?.email || '-'}</td>
+                                                                <td className="px-4 py-4 text-center font-bold text-gray-900 whitespace-nowrap">
+                                                                    {pc.nhan_su?.ho_ten}
+                                                                </td>
+                                                                <td className="px-4 py-4 text-center text-gray-700 whitespace-nowrap">
+                                                                    {pc.nhan_su?.phong_ban?.ten_phong_ban || '-'}
+                                                                </td>
+                                                                <td className="px-4 py-4 text-center">
+                                                                    <div className="inline-block min-w-[250px] max-w-[400px] bg-purple-50 text-purple-900 px-3 py-2 rounded-md border border-purple-200 text-left">
+                                                                        <p className="line-clamp-3 text-xs font-bold leading-snug break-words">
+                                                                            {pc.vai_tro}
+                                                                        </p>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-4 py-4 text-center text-gray-700 whitespace-nowrap">
+                                                                    {pc.nhan_su?.so_dien_thoai || '-'}
+                                                                </td>
+                                                                <td className="px-4 py-4 text-center text-gray-700 whitespace-nowrap">
+                                                                    {pc.nhan_su?.email || '-'}
+                                                                </td>
                                                             </tr>
                                                         ))}
                                                     </tbody>
@@ -525,11 +623,10 @@ export default function QuanLyMarketingPage() {
                                     </div>
                                 )}
                             </div>
-
                         </div>
                         
                         <div className="p-4 border-t border-gray-200 bg-white rounded-b-xl flex justify-end shrink-0">
-                            <button onClick={closeModal} className="px-6 py-2 border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-50 font-bold transition shadow-sm text-sm">Đóng</button>
+                            <button onClick={closeModal} className="px-6 py-2 border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-50 font-bold transition shadow-sm text-sm">Đóng Báo Cáo</button>
                         </div>
                     </div>
                 </div>
@@ -550,32 +647,79 @@ export default function QuanLyMarketingPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div className="md:col-span-2">
                                     <label className="block text-sm text-gray-700 mb-1.5 font-bold">Tên chương trình Marketing <span className="text-red-500">*</span></label>
-                                    <input type="text" name="ten_chuong_trinh_marketing" value={formData.ten_chuong_trinh_marketing} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-[#1d4ed8] outline-none text-sm text-gray-900 font-medium" />
+                                    <input 
+                                        type="text" 
+                                        name="ten_chuong_trinh_marketing" 
+                                        value={formData.ten_chuong_trinh_marketing} 
+                                        onChange={(e) => {
+                                            handleChange(e);
+                                            if (formErrors.ten_chuong_trinh_marketing) setFormErrors(prev => ({...prev, ten_chuong_trinh_marketing: ''}))
+                                        }} 
+                                        className={`w-full border rounded-md p-2.5 outline-none text-sm text-gray-900 font-medium ${formErrors.ten_chuong_trinh_marketing ? 'border-red-500 focus:ring-2 focus:ring-red-500' : 'border-gray-300 focus:ring-2 focus:ring-[#1d4ed8]'}`} 
+                                    />
+                                    {formErrors.ten_chuong_trinh_marketing && <p className="text-red-500 text-xs mt-1 font-medium">{formErrors.ten_chuong_trinh_marketing}</p>}
                                 </div>
 
                                 <div>
                                     <label className="block text-sm text-gray-700 mb-1.5 font-bold">Áp dụng cho Khóa học <span className="text-red-500">*</span></label>
-                                    <select name="ma_khoa_hoc" value={formData.ma_khoa_hoc} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-[#1d4ed8] outline-none text-sm bg-white text-gray-900 font-medium">
+                                    <select 
+                                        name="ma_khoa_hoc" 
+                                        value={formData.ma_khoa_hoc} 
+                                        onChange={(e) => {
+                                            handleChange(e);
+                                            if (formErrors.ma_khoa_hoc) setFormErrors(prev => ({...prev, ma_khoa_hoc: ''}))
+                                        }} 
+                                        className={`w-full border rounded-md p-2.5 outline-none text-sm bg-white text-gray-900 font-medium ${formErrors.ma_khoa_hoc ? 'border-red-500 focus:ring-2 focus:ring-red-500' : 'border-gray-300 focus:ring-2 focus:ring-[#1d4ed8]'}`}
+                                    >
                                         <option value="">-- Chọn khóa học --</option>
                                         {danhSachKhoaHoc.map(kh => (
                                             <option key={kh.ma_khoa_hoc} value={kh.ma_khoa_hoc}>{kh.ten_khoa_hoc}</option>
                                         ))}
                                     </select>
+                                    {formErrors.ma_khoa_hoc && <p className="text-red-500 text-xs mt-1 font-medium">{formErrors.ma_khoa_hoc}</p>}
                                 </div>
-
                                 <div>
                                     <label className="block text-sm text-gray-700 mb-1.5 font-bold">Ngân sách (VNĐ) <span className="text-red-500">*</span></label>
-                                    <input type="number" name="ngan_sach" value={formData.ngan_sach} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-[#1d4ed8] outline-none text-sm text-red-600 font-bold" placeholder="VD: 5000000" />
+                                    <input 
+                                        type="number" 
+                                        name="ngan_sach" 
+                                        value={formData.ngan_sach} 
+                                        onChange={(e) => {
+                                            handleChange(e);
+                                            if (formErrors.ngan_sach) setFormErrors(prev => ({...prev, ngan_sach: ''}))
+                                        }}
+                                        className={`w-full border rounded-md p-2.5 outline-none text-sm text-red-600 font-bold ${formErrors.ngan_sach ? 'border-red-500 focus:ring-2 focus:ring-red-500' : 'border-gray-300 focus:ring-2 focus:ring-[#1d4ed8]'}`} 
+                                    />
+                                    {formErrors.ngan_sach && <p className="text-red-500 text-xs mt-1 font-medium">{formErrors.ngan_sach}</p>}
                                 </div>
 
                                 <div>
                                     <label className="block text-sm text-gray-700 mb-1.5 font-bold">Ngày bắt đầu <span className="text-red-500">*</span></label>
-                                    <input type="date" name="ngay_bat_dau" value={formData.ngay_bat_dau} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-[#1d4ed8] outline-none text-sm text-gray-900 font-medium" />
+                                    <input 
+                                        type="date" 
+                                        name="ngay_bat_dau" 
+                                        value={formData.ngay_bat_dau} 
+                                        onChange={(e) => {
+                                            handleChange(e);
+                                            if (formErrors.ngay_bat_dau) setFormErrors(prev => ({...prev, ngay_bat_dau: ''}))
+                                        }} 
+                                        className={`w-full border rounded-md p-2.5 outline-none text-sm text-gray-900 font-medium ${formErrors.ngay_bat_dau ? 'border-red-500 focus:ring-2 focus:ring-red-500' : 'border-gray-300 focus:ring-2 focus:ring-[#1d4ed8]'}`} 
+                                    />
+                                    {formErrors.ngay_bat_dau && <p className="text-red-500 text-xs mt-1 font-medium">{formErrors.ngay_bat_dau}</p>}
                                 </div>
-                                
                                 <div>
                                     <label className="block text-sm text-gray-700 mb-1.5 font-bold">Ngày kết thúc <span className="text-red-500">*</span></label>
-                                    <input type="date" name="ngay_ket_thuc" value={formData.ngay_ket_thuc} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-[#1d4ed8] outline-none text-sm text-gray-900 font-medium" />
+                                    <input 
+                                        type="date" 
+                                        name="ngay_ket_thuc" 
+                                        value={formData.ngay_ket_thuc} 
+                                        onChange={(e) => {
+                                            handleChange(e);
+                                            if (formErrors.ngay_ket_thuc) setFormErrors(prev => ({...prev, ngay_ket_thuc: ''}))
+                                        }} 
+                                        className={`w-full border rounded-md p-2.5 outline-none text-sm text-gray-900 font-medium ${formErrors.ngay_ket_thuc ? 'border-red-500 focus:ring-2 focus:ring-red-500' : 'border-gray-300 focus:ring-2 focus:ring-[#1d4ed8]'}`} 
+                                    />
+                                    {formErrors.ngay_ket_thuc && <p className="text-red-500 text-xs mt-1 font-medium">{formErrors.ngay_ket_thuc}</p>}
                                 </div>
                             </div>
 
@@ -583,7 +727,7 @@ export default function QuanLyMarketingPage() {
 
                             <div className="bg-gray-50/50 p-4 rounded-lg border border-gray-200">
                                 <label className="block text-sm text-[#1d4ed8] font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    <FaUsers /> Phân công nhân sự Marketing
+                                    <FaUsers /> Phân công nhân sự
                                 </label>
                                 
                                 <div className="mb-4 relative">
@@ -601,10 +745,16 @@ export default function QuanLyMarketingPage() {
                                             <div className="space-y-2">
                                                 {formData.danh_sach_nhan_su.map(item => {
                                                     const nsInfo = danhSachNhanSu.find(n => n.ma_nhan_su === item.ma_nhan_su);
+                                                    const currentProgram = data.find(d => d.ma_chuong_trinh_marketing === editingId);
+                                                    const oldInfo = currentProgram?.phan_cong?.find(pc => pc.ma_nhan_su === item.ma_nhan_su)?.nhan_su;
+                                                    const tenHienThi = nsInfo?.ho_ten || oldInfo?.ho_ten || `Mã nhân sự: ${item.ma_nhan_su}`;
+
                                                     return (
-                                                        <div key={`selected-${item.ma_nhan_su}`} className="flex items-center gap-3 bg-blue-50/50 p-2.5 rounded border border-blue-100">
-                                                            <input type="checkbox" checked={true} onChange={(e) => handleToggleNhanSu(item.ma_nhan_su, e.target.checked)} className="w-4 h-4 text-blue-600 rounded cursor-pointer" />
-                                                            <span className="text-sm font-semibold text-gray-800 w-1/3 truncate">{nsInfo?.ho_ten}</span>
+                                                        <div key={`selected-${item.ma_nhan_su}`} className="flex flex-col sm:flex-row sm:items-center gap-3 bg-blue-50/50 p-2.5 rounded border border-blue-100">
+                                                            <div className="flex items-center gap-3 sm:w-1/3">
+                                                                <input type="checkbox" checked={true} onChange={(e) => handleToggleNhanSu(item.ma_nhan_su, e.target.checked)} className="w-4 h-4 text-blue-600 rounded cursor-pointer shrink-0" />
+                                                                <span className="text-sm font-semibold text-gray-800 truncate" title={tenHienThi}>{tenHienThi}</span>
+                                                            </div>
                                                             <input 
                                                                 type="text" 
                                                                 placeholder="Nhập vai trò (VD: Content...)" 
@@ -623,7 +773,7 @@ export default function QuanLyMarketingPage() {
                                         <div className="bg-white p-3 rounded-md border border-gray-200 shadow-sm max-h-48 overflow-y-auto">
                                             <p className="text-xs font-bold text-gray-500 mb-2 uppercase border-b pb-2">Kết quả tìm kiếm:</p>
                                             {nhanSuTimKiem.length === 0 ? (
-                                                <p className="text-sm text-gray-500 italic py-2">Không tìm thấy nhân sự Marketing nào phù hợp.</p>
+                                                <p className="text-sm text-gray-500 italic py-2">Không tìm thấy nhân sự nào phù hợp.</p>
                                             ) : (
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                     {nhanSuTimKiem.map(ns => (
@@ -648,11 +798,11 @@ export default function QuanLyMarketingPage() {
                         </div>
 
                         <div className="p-5 border-t border-gray-200 bg-gray-50 rounded-b-lg shrink-0">
-                            {formError && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md text-sm font-medium border border-red-100">{formError}</div>}
+                            {Object.keys(formErrors).length > 0 && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md text-sm font-medium border border-red-100 flex items-center gap-2"><FaExclamationTriangle /> Vui lòng kiểm tra lại các trường báo đỏ!</div>}
                             <div className="flex justify-end gap-3">
                                 <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 border border-gray-300 bg-white rounded-md hover:bg-gray-100 font-semibold text-gray-700 transition shadow-sm">Hủy bỏ</button>
                                 <button onClick={handleSave} className="flex items-center gap-2 px-6 py-2.5 bg-[#1d4ed8] text-white rounded-md hover:bg-blue-700 font-bold shadow-sm transition">
-                                    <FaSave /> {editingId ? 'Cập nhật' : 'Lưu chiến dịch'}
+                                    <FaSave /> {editingId ? 'Cập nhật' : 'Lưu chương trình'}
                                 </button>
                             </div>
                         </div>
@@ -662,7 +812,7 @@ export default function QuanLyMarketingPage() {
 
             {/* MODAL XÓA */}
             {isDeleteModalOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in-up">
                         <button onClick={() => setIsDeleteModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><FaTimes size={20} /></button>
                         <div className="flex items-center mb-4 gap-3">

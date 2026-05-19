@@ -1,4 +1,4 @@
-import {prisma} from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
 
 interface PhanCongData {
     ma_nhan_su: number;
@@ -20,36 +20,43 @@ export const layDanhSachChuongTrinh = async () => {
         include: {
             khoa_hoc: { 
                 select: { 
+                    ma_khoa_hoc: true, 
                     ten_khoa_hoc: true, 
                     hoc_phi: true, 
                     thoi_luong: true, 
                     trinh_do: true,
-                    trang_thai: true // BỔ SUNG: Trạng thái khóa học
+                    trang_thai: true 
                 } 
             },
             phan_cong: {
                 include: { 
                     nhan_su: { 
                         select: { 
+                            ma_nhan_su: true,
                             ho_ten: true, 
                             so_dien_thoai: true, 
                             email: true,
-                            // BỔ SUNG: Lấy tên phòng ban từ bảng liên kết PhongBan
                             phong_ban: { select: { ten_phong_ban: true } }
                         } 
                     } 
                 }
             }
         },
-        // BỔ SUNG: Chuyển logic sắp xếp từ Frontend xuống Database (Mã giảm dần)
-        orderBy: { ma_chuong_trinh_marketing: 'asc' }
+       
+        orderBy: { ngay_bat_dau: 'desc' }
     });
 }
 
-export const layDanhSachNhanSuMarketing = async () => {
+// LẤY CẢ NHÂN SỰ PHÒNG MARKETING VÀ SALE
+export const layDanhSachNhanSuMarketingVaSale = async () => {
     return await prisma.nhanSu.findMany({
         where: { 
-            phong_ban: { ten_phong_ban: { contains: 'Marketing', mode: 'insensitive' } } 
+            phong_ban: { 
+                OR: [
+                    { ten_phong_ban: { contains: 'Marketing', mode: 'insensitive' } },
+                    { ten_phong_ban: { contains: 'Sale', mode: 'insensitive' } }
+                ]
+            } 
         },
         select: { ma_nhan_su: true, ho_ten: true, so_dien_thoai: true, email: true }
     });
@@ -71,7 +78,10 @@ export const taoChuongTrinhMoi = async (data: ChuongTrinhData) => {
                 })) || []
             }
         },
-        include: { khoa_hoc: true, phan_cong: { include: { nhan_su: { include: { phong_ban: true } } } } }
+        include: { 
+            khoa_hoc: { select: { ma_khoa_hoc: true, ten_khoa_hoc: true, hoc_phi: true, thoi_luong: true, trinh_do: true, trang_thai: true } }, 
+            phan_cong: { include: { nhan_su: { include: { phong_ban: true } } } } 
+        }
     });
 }
 
@@ -96,7 +106,10 @@ export const capNhatChuongTrinh = async (id: number, data: ChuongTrinhData) => {
                 })) || []
             }
         },
-        include: { khoa_hoc: true, phan_cong: { include: { nhan_su: { include: { phong_ban: true } } } } }
+        include: { 
+            khoa_hoc: { select: { ma_khoa_hoc: true, ten_khoa_hoc: true, hoc_phi: true, thoi_luong: true, trinh_do: true, trang_thai: true } }, 
+            phan_cong: { include: { nhan_su: { include: { phong_ban: true } } } } 
+        }
     });
 }
 

@@ -18,14 +18,16 @@ export const layDanhSachKhoaHoc = async () => {
             chuong_trinh: {
                 select: { ten_chuong_trinh: true },
             },
-            // Đã đổi thành "marketing" theo đúng schema của bạn
             marketing: { 
                 orderBy: { ngay_bat_dau: 'desc' }
             },
-            // "lop_hoc" theo đúng schema
             lop_hoc: {
                 include: {
-                    giao_vien: { select: { ho_ten: true } },
+                    phan_cong_giang_day: {
+                        include: {
+                            giao_vien: { select: { ho_ten: true } }
+                        }
+                    },
                     phong_hoc: { select: { ten_phong_hoc: true } }
                 },
                 orderBy: { ngay_khai_giang: 'desc' }

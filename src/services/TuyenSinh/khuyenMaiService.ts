@@ -34,7 +34,6 @@ export const capNhatKhuyenMai = async (ma_khuyen_mai: number, data: Partial<Khuy
             ...(data.mo_ta !== undefined && { mo_ta: data.mo_ta }),
             ...(data.phan_tram_giam !== undefined && { phan_tram_giam: data.phan_tram_giam }),
             ...(data.ngay_bat_dau && { ngay_bat_dau: new Date(data.ngay_bat_dau) }),
-            // Xử lý riêng cho ngày kết thúc (cho phép cập nhật thành null)
             ...(data.ngay_ket_thuc !== undefined && { 
                 ngay_ket_thuc: data.ngay_ket_thuc ? new Date(data.ngay_ket_thuc) : null 
             }),
