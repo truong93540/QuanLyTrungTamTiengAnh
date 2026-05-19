@@ -1,10 +1,12 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaBookOpen, FaEye, FaCheckCircle, FaBullhorn, FaChalkboardTeacher, FaChevronDown, FaChevronUp } from 'react-icons/fa'
+import { FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaBookOpen, FaEye, FaCheckCircle, FaBullhorn, FaChalkboardTeacher, FaChevronDown, FaChevronUp, FaFilter } from 'react-icons/fa'
 
 interface ChuongTrinhHoc {
     ma_chuong_trinh: number
     ten_chuong_trinh: string
+    mo_ta?: string | null
+    muc_tieu?: string | null
 }
 
 interface ChuongTrinhMarketing {
@@ -15,13 +17,17 @@ interface ChuongTrinhMarketing {
     ngay_ket_thuc: string
 }
 
+interface PhanCongGiangDay {
+    giao_vien?: { ho_ten: string }
+}
+
 interface LopHoc {
     ma_lop_hoc: number
     ten_lop: string
     si_so_toi_da: number
     ngay_khai_giang: string
     ngay_ket_thuc: string
-    giao_vien?: { ho_ten: string }
+    phan_cong_giang_day?: PhanCongGiangDay[]
     phong_hoc?: { ten_phong_hoc: string }
 }
 
@@ -34,7 +40,7 @@ interface KhoaHoc {
     trinh_do: string
     trang_thai: string
     ma_chuong_trinh: number
-    chuong_trinh?: { ten_chuong_trinh: string }
+    chuong_trinh?: ChuongTrinhHoc
     marketing?: ChuongTrinhMarketing[]
     lop_hoc?: LopHoc[]
 }
@@ -43,7 +49,11 @@ export default function QuanLyKhoaHocPage() {
     const [data, setData] = useState<KhoaHoc[]>([])
     const [chuongTrinhList, setChuongTrinhList] = useState<ChuongTrinhHoc[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    
+    // Tìm kiếm & Lọc
     const [searchTerm, setSearchTerm] = useState('')
+    const [filterTrinhDo, setFilterTrinhDo] = useState('all') // State lọc theo trình độ
+    
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 5
 
@@ -58,7 +68,8 @@ export default function QuanLyKhoaHocPage() {
     const [viewData, setViewData] = useState<KhoaHoc | null>(null)
     const [openClassId, setOpenClassId] = useState<number | null>(null) 
     
-    // Accordion States cho khối lớn (Mặc định đóng)
+    // Accordion States cho các khối lớn
+    const [showChuongTrinhDetail, setShowChuongTrinhDetail] = useState(false)
     const [showMarketingDetail, setShowMarketingDetail] = useState(false)
     const [showLopHocDetail, setShowLopHocDetail] = useState(false)
 
@@ -72,7 +83,7 @@ export default function QuanLyKhoaHocPage() {
         trang_thai: '',
         ma_chuong_trinh: '',
     })
-    const [formError, setFormError] = useState('')
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
 
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -106,15 +117,18 @@ export default function QuanLyKhoaHocPage() {
     }, [])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value })
-        if (formError) setFormError('') 
+        const { name, value } = e.target
+        setFormData({ ...formData, [name]: value })
+        if (formErrors[name]) {
+            setFormErrors(prev => ({ ...prev, [name]: '' }))
+        }
     }
 
     const openAddModal = () => {
         setIsViewMode(false)
         setEditingId(null)
         setFormData({ ten_khoa_hoc: '', mo_ta: '', thoi_luong: '', hoc_phi: '', trinh_do: '', trang_thai: '', ma_chuong_trinh: '' })
-        setFormError('')
+        setFormErrors({})
         setIsModalOpen(true)
     }
 
@@ -130,7 +144,7 @@ export default function QuanLyKhoaHocPage() {
             trang_thai: row.trang_thai || '',
             ma_chuong_trinh: row.ma_chuong_trinh.toString(),
         })
-        setFormError('')
+        setFormErrors({})
         setIsModalOpen(true)
     }
 
@@ -138,7 +152,8 @@ export default function QuanLyKhoaHocPage() {
         setIsViewMode(true)
         setViewData(row)
         
-        // Reset toàn bộ trạng thái nếp gấp (Accordion) về dạng Đóng
+        // Đảm bảo trạng thái đóng mở Accordion gọn gàng
+        setShowChuongTrinhDetail(false)
         setShowMarketingDetail(false)
         setShowLopHocDetail(false)
         setOpenClassId(null) 
@@ -179,10 +194,20 @@ export default function QuanLyKhoaHocPage() {
     }
 
     const handleSaveKhoaHoc = async () => {
-        if (!formData.ten_khoa_hoc || !formData.thoi_luong || !formData.hoc_phi || !formData.trinh_do || !formData.ma_chuong_trinh) {
-            setFormError('Vui lòng nhập đầy đủ các trường có dấu (*)')
-            return
+        const errors: Record<string, string> = {};
+        if (!formData.ten_khoa_hoc.trim()) errors.ten_khoa_hoc = 'Vui lòng nhập tên khóa học';
+        if (!formData.ma_chuong_trinh) errors.ma_chuong_trinh = 'Vui lòng chọn chương trình học';
+        if (!formData.thoi_luong.trim()) errors.thoi_luong = 'Vui lòng nhập thời lượng';
+        if (!formData.hoc_phi || Number(formData.hoc_phi) < 0) errors.hoc_phi = 'Vui lòng nhập học phí hợp lệ';
+        if (!formData.trinh_do) errors.trinh_do = 'Vui lòng chọn trình độ';
+        if (!formData.trang_thai) errors.trang_thai = 'Vui lòng chọn trạng thái';
+        if (!formData.mo_ta.trim()) errors.mo_ta = 'Vui lòng nhập mô tả khóa học';
+
+        if (Object.keys(errors).length > 0) {
+            setFormErrors(errors);
+            return;
         }
+
         try {
             const method = editingId ? 'PUT' : 'POST'
             const payload = {
@@ -200,27 +225,29 @@ export default function QuanLyKhoaHocPage() {
             if (response.ok) {
                 const resFresh = await fetch('/api/tuyen-sinh/khoa-hoc')
                 if (resFresh.ok) setData(await resFresh.json())
-
-                showToast(editingId ? 'Cập nhật khóa học thành công!' : 'Thêm khóa học mới thành công!', 'success')
+                showToast(editingId ? 'Cập nhật thành công!' : 'Thêm mới thành công!', 'success')
                 closeModal()
             } else {
-                showToast(`Lỗi khi ${editingId ? 'cập nhật' : 'thêm'} khóa học.`, 'error')
+                showToast(`Lỗi khi lưu dữ liệu.`, 'error')
             }
         } catch (error) {
             showToast('Không thể kết nối đến máy chủ.', 'error')
         }
     }
 
-    const filteredData = data.filter(item => 
-        item.ten_khoa_hoc.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.ma_khoa_hoc.toString().includes(searchTerm)
-    )
+    // TÍNH TOÁN BỘ LỌC KẾT HỢP TÌM KIẾM
+    const filteredData = data.filter(item => {
+        const matchesSearch = item.ten_khoa_hoc.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                              item.ma_khoa_hoc.toString().includes(searchTerm);
+        const matchesTrinhDo = filterTrinhDo === 'all' || item.trinh_do === filterTrinhDo;
+        return matchesSearch && matchesTrinhDo;
+    })
+
     const indexOfLastItem = currentPage * itemsPerPage
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
     const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem)
     const totalPages = Math.ceil(filteredData.length / itemsPerPage)
 
-    // Lọc Marketing chỉ lấy Sắp tới và Đang diễn ra
     const activeMarketing = viewData?.marketing?.filter(mkt => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -231,7 +258,7 @@ export default function QuanLyKhoaHocPage() {
 
     return (
         <div className="bg-gray-50 min-h-screen p-6 relative">
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
                 
                 <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
                     <h1 className="text-2xl font-bold text-[#1d4ed8] flex items-center gap-3 uppercase tracking-wide">
@@ -243,20 +270,37 @@ export default function QuanLyKhoaHocPage() {
                     </button>
                 </div>
 
-                <div className="mb-6 w-full md:w-1/2 lg:w-1/3">
-                    <div className="relative">
+                {/* THANH TÌM KIẾM & BỘ LỌC TRÌNH ĐỘ */}
+                <div className="flex flex-col md:flex-row gap-4 mb-6 w-full lg:w-2/3">
+                    <div className="relative flex-1">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500"><FaSearch /></span>
                         <input
                             type="text"
                             placeholder="Tìm kiếm theo mã hoặc tên khóa học..."
                             value={searchTerm}
                             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                            className="w-full border border-gray-400 rounded-md py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] focus:border-transparent transition shadow-sm placeholder-gray-500 text-gray-900"
+                            className="w-full border border-gray-300 rounded-md py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] transition shadow-sm text-sm text-gray-900 font-medium"
                         />
+                    </div>
+                    <div className="relative w-full md:w-48 shrink-0">
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500"><FaFilter /></span>
+                        <select 
+                            value={filterTrinhDo} 
+                            onChange={(e) => { setFilterTrinhDo(e.target.value); setCurrentPage(1); }}
+                            className="w-full border border-gray-300 rounded-md py-2.5 pl-10 pr-4 bg-white focus:outline-none focus:ring-2 focus:ring-[#1d4ed8] transition shadow-sm text-sm text-gray-900 font-medium cursor-pointer"
+                        >
+                            <option value="all">Tất cả trình độ</option>
+                            <option value="A1"> A1</option>
+                            <option value="A2"> A2</option>
+                            <option value="B1">B1</option>
+                            <option value="B2"> B2</option>
+                            <option value="C1"> C1</option>
+                            <option value="C2">C2</option>
+                        </select>
                     </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-t-lg border border-gray-200">
+                <div className="overflow-x-auto rounded-lg border border-gray-200">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-[#1d4ed8] text-white uppercase font-semibold text-xs tracking-wider">
                             <tr>
@@ -287,13 +331,13 @@ export default function QuanLyKhoaHocPage() {
                                             {formatCurrency(row.hoc_phi)}
                                         </td>
                                         <td className="px-5 py-4 text-center">
-                                            <span className="px-2 py-1 bg-gray-100 border border-gray-200 rounded text-xs font-semibold">{row.trinh_do}</span>
+                                            <span className="px-2 py-1 bg-purple-100 text-purple-700 border border-purple-200 rounded-md text-xs font-bold">{row.trinh_do}</span>
                                         </td>
                                         <td className="px-5 py-4 text-center">
                                             <span className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ${
-                                                row.trang_thai === 'Đang học' ? 'bg-green-100 text-green-700' : 
-                                                row.trang_thai === 'Sắp khai giảng' ? 'bg-blue-100 text-blue-700' : 'bg-gray-200 text-gray-600'
-                                                
+                                                row.trang_thai === 'Đang mở' ? 'bg-green-100 text-green-700' : 
+                                                row.trang_thai === 'Sắp khai giảng' ? 'bg-blue-100 text-blue-700' : 
+                                                row.trang_thai === 'Tạm dừng' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-600'
                                             }`}>
                                                 {row.trang_thai || 'Chưa rõ'}
                                             </span>
@@ -312,6 +356,7 @@ export default function QuanLyKhoaHocPage() {
                     </table>
                 </div>
 
+                {/* Phân trang */}
                 {!isLoading && filteredData.length > 0 && (
                     <div className="flex justify-between items-center mt-6 text-sm text-gray-600">
                         <div>
@@ -347,19 +392,18 @@ export default function QuanLyKhoaHocPage() {
                             <button onClick={closeModal} className="text-gray-400 hover:text-red-500 transition"><FaTimes size={24} /></button>
                         </div>
 
-                        <div className="p-6 overflow-y-auto space-y-5 bg-gray-50/50">
+                        <div className="p-6 overflow-y-auto space-y-6 bg-gray-50/50">
                             
-                            {/* Khối 1: Thông tin chung (Luôn hiện) */}
                             <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
                                 <h3 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-[#1d4ed8] pl-3">Thông Tin Chung</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
-                                    <div className="md:col-span-2">
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-y-5 gap-x-6 text-sm">
+                                    <div className="md:col-span-4">
                                         <span className="text-gray-500 block mb-1">Tên khóa học</span>
-                                        <span className="font-bold text-lg text-[#1d4ed8]">{viewData.ten_khoa_hoc}</span>
+                                        <span className="font-bold text-xl text-[#1d4ed8]">{viewData.ten_khoa_hoc}</span>
                                     </div>
                                     <div>
                                         <span className="text-gray-500 block mb-1">Học phí</span>
-                                        <span className="font-bold text-red-600 text-base">{formatCurrency(viewData.hoc_phi)}</span>
+                                        <span className="font-bold text-red-600 text-lg">{formatCurrency(viewData.hoc_phi)}</span>
                                     </div>
                                     <div>
                                         <span className="text-gray-500 block mb-1">Thời lượng</span>
@@ -373,16 +417,60 @@ export default function QuanLyKhoaHocPage() {
                                         <span className="text-gray-500 block mb-1">Trạng thái</span>
                                         <span className="font-semibold text-blue-600 text-base">{viewData.trang_thai}</span>
                                     </div>
-                                    <div className="md:col-span-2 mt-1">
-                                        <span className="text-gray-500 block mb-2">Mô tả chi tiết</span>
-                                        <p className="text-gray-800 bg-gray-50 p-3 rounded-md border border-gray-200 leading-relaxed min-h-[60px] text-sm">
+                                    <div className="md:col-span-4 mt-1">
+                                        <span className="text-gray-500 block mb-2">Mô tả chi tiết khóa học</span>
+                                        <p className="text-gray-800 bg-gray-50 p-3.5 rounded-md border border-gray-200 min-h-[60px] text-sm">
                                             {viewData.mo_ta || <span className="italic text-gray-400">Không có mô tả</span>}
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Khối 2: Chương trình Marketing (Accordion) */}
+                            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                                <div 
+                                    className="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition"
+                                    onClick={() => setShowChuongTrinhDetail(!showChuongTrinhDetail)}
+                                >
+                                    <h3 className="text-base font-bold text-gray-800 border-l-4 border-indigo-500 pl-3 flex items-center gap-2">
+                                        <FaBookOpen className="text-indigo-600"/> Chương Trình Đào Tạo Áp Dụng
+                                    </h3>
+                                    <button className="flex items-center gap-2 text-xs font-semibold text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-md hover:bg-indigo-100 transition">
+                                        {showChuongTrinhDetail ? <><FaChevronUp /> Thu gọn</> : <><FaChevronDown /> Xem chi tiết</>}
+                                    </button>
+                                </div>
+                                
+                                {showChuongTrinhDetail && (
+                                    <div className="px-5 pb-5 pt-0 animate-fade-in-up text-sm">
+                                        {viewData.chuong_trinh ? (
+                                            <div className="bg-[#f8fafc] p-4 rounded-lg border border-indigo-100 space-y-4">
+                                                <div>
+                                                    <span className="text-gray-400 text-xs font-bold uppercase tracking-wider block mb-1">Tên Chương Trình Học</span>
+                                                    <span className="font-bold text-gray-950 text-base">{viewData.chuong_trinh.ten_chuong_trinh}</span>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <span className="text-gray-500 font-medium block mb-1.5">Mục tiêu đào tạo</span>
+                                                        <p className="text-gray-800 bg-white p-3 rounded-md border border-gray-200 min-h-[70px] leading-relaxed">
+                                                            {viewData.chuong_trinh.muc_tieu || <span className="italic text-gray-400">Chưa cập nhật mục tiêu cụ thể</span>}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-gray-500 font-medium block mb-1.5">Mô tả tổng quan</span>
+                                                        <p className="text-gray-800 bg-white p-3 rounded-md border border-gray-200 min-h-[70px] leading-relaxed">
+                                                            {viewData.chuong_trinh.mo_ta || <span className="italic text-gray-400">Không có mô tả chi tiết chương trình</span>}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="p-5 bg-gray-50 border border-gray-200 rounded-lg text-center">
+                                                <p className="text-sm text-gray-500 italic">Khóa học này hiện chưa được liên kết với chương trình học nào.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
                             <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
                                 <div 
                                     className="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition"
@@ -430,7 +518,6 @@ export default function QuanLyKhoaHocPage() {
                                 )}
                             </div>
 
-                            {/* Khối 3: Danh sách Lớp Học (Accordion) */}
                             <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
                                 <div 
                                     className="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition"
@@ -468,7 +555,11 @@ export default function QuanLyKhoaHocPage() {
                                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                                                         <div className="bg-gray-50 p-3 rounded-md border border-gray-100">
                                                                             <span className="text-gray-500 block mb-1 text-xs uppercase font-bold tracking-wider">Giáo Viên Phụ Trách</span>
-                                                                            <span className="font-bold text-gray-800 text-base">{lop.giao_vien?.ho_ten || 'Chưa phân công'}</span>
+                                                                            <span className="font-bold text-gray-800 text-base">
+                                                                                {lop.phan_cong_giang_day && lop.phan_cong_giang_day.length > 0 
+                                                                                    ? lop.phan_cong_giang_day.map(pc => pc.giao_vien?.ho_ten).join(', ') 
+                                                                                    : 'Chưa phân công'}
+                                                                            </span>
                                                                         </div>
                                                                         <div className="bg-gray-50 p-3 rounded-md border border-gray-100">
                                                                             <span className="text-gray-500 block mb-1 text-xs uppercase font-bold tracking-wider">Phòng Học</span>
@@ -521,42 +612,57 @@ export default function QuanLyKhoaHocPage() {
                             <div>
                                 <label className="block text-sm text-gray-700 mb-1.5 font-bold">Tên khóa học <span className="text-red-500">*</span></label>
                                 <input type="text" name="ten_khoa_hoc" value={formData.ten_khoa_hoc} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-[#1d4ed8] text-gray-900 font-medium outline-none" />
+                                {formErrors.ten_khoa_hoc && <p className="text-red-500 text-sm mt-1">{formErrors.ten_khoa_hoc}</p>}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
-                                    <label className="block text-sm text-gray-700 mb-1.5 font-bold">Thuộc chương trình <span className="text-red-500">*</span></label>
+                                    <label className="block text-sm text-gray-700 mb-1.5 font-bold">Thuộc chương trình học <span className="text-red-500">*</span></label>
                                     <select name="ma_chuong_trinh" value={formData.ma_chuong_trinh} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2.5 bg-white focus:ring-2 focus:ring-[#1d4ed8] text-gray-900 font-medium outline-none">
                                         <option value="">-- Chọn chương trình học --</option>
                                         {chuongTrinhList.map(ct => (
                                             <option key={ct.ma_chuong_trinh} value={ct.ma_chuong_trinh}>{ct.ten_chuong_trinh}</option>
                                         ))}
                                     </select>
+                                    {formErrors.ma_chuong_trinh && <p className="text-red-500 text-sm mt-1">{formErrors.ma_chuong_trinh}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-sm text-gray-700 mb-1.5 font-bold">Thời lượng <span className="text-red-500">*</span></label>
                                     <input type="text" name="thoi_luong" value={formData.thoi_luong} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-[#1d4ed8] text-gray-900 font-medium outline-none" placeholder="VD: 3 tháng, 20 buổi..." />
+                                    {formErrors.thoi_luong && <p className="text-red-500 text-sm mt-1">{formErrors.thoi_luong}</p>}
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
                                     <label className="block text-sm text-gray-700 mb-1.5 font-bold">Học phí (VNĐ) <span className="text-red-500">*</span></label>
-                                    <input type="number" name="hoc_phi" placeholder="VD: 5000000" value={formData.hoc_phi} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-[#1d4ed8] text-red-600 font-bold outline-none" />
+                                    <input type="number" name="hoc_phi" value={formData.hoc_phi} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-[#1d4ed8] text-red-600 font-bold outline-none" />
+                                    {formErrors.hoc_phi && <p className="text-red-500 text-sm mt-1">{formErrors.hoc_phi}</p>}
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-sm text-gray-700 mb-1.5 font-bold">Trình độ <span className="text-red-500">*</span></label>
-                                        <input type="text" name="trinh_do" placeholder="VD: B1, B2..." value={formData.trinh_do} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-[#1d4ed8] text-gray-900 font-medium outline-none" />
+                                        <select name="trinh_do" value={formData.trinh_do} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2.5 bg-white focus:ring-2 focus:ring-[#1d4ed8] text-gray-900 font-medium outline-none">
+                                            <option value="">-- Chọn trình độ --</option>
+                                            <option value="A1">A1</option>
+                                            <option value="A2">A2</option>
+                                            <option value="B1">B1</option>
+                                            <option value="B2">B2</option>
+                                            <option value="C1">C1</option>
+                                            <option value="C2">C2</option>
+                                        </select>
+                                        {formErrors.trinh_do && <p className="text-red-500 text-sm mt-1">{formErrors.trinh_do}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-sm text-gray-700 mb-1.5 font-bold">Trạng thái</label>
+                                        <label className="block text-sm text-gray-700 mb-1.5 font-bold">Trạng thái <span className="text-red-500">*</span></label>
                                         <select name="trang_thai" value={formData.trang_thai} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2.5 bg-white focus:ring-2 focus:ring-[#1d4ed8] text-gray-900 font-medium outline-none">
                                             <option value="">-- Chọn --</option>
-                                            <option value="Đang học">Đang học</option>
+                                            <option value="Đang mở">Đang mở</option>
                                             <option value="Sắp khai giảng">Sắp khai giảng</option>
+                                            <option value="Tạm dừng">Tạm dừng</option>
                                             <option value="Đã kết thúc">Đã kết thúc</option>
                                         </select>
+                                        {formErrors.trang_thai && <p className="text-red-500 text-sm mt-1">{formErrors.trang_thai}</p>}
                                     </div>
                                 </div>
                             </div>
@@ -564,11 +670,12 @@ export default function QuanLyKhoaHocPage() {
                             <div>
                                 <label className="block text-sm text-gray-700 mb-1.5 font-bold">Mô tả khóa học <span className="text-red-500">*</span></label>
                                 <textarea name="mo_ta" rows={3} value={formData.mo_ta} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-[#1d4ed8] text-gray-900 font-medium resize-none outline-none" placeholder="Nhập mục tiêu, kết quả đầu ra..."></textarea>
+                                {formErrors.mo_ta && <p className="text-red-500 text-sm mt-1">{formErrors.mo_ta}</p>}
                             </div>
                         </div>
 
                         <div className="p-5 border-t border-gray-200 bg-gray-50 rounded-b-lg shrink-0">
-                            {formError && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md text-sm font-medium border border-red-100">{formError}</div>}
+                            
                             <div className="flex justify-end gap-3">
                                 <button onClick={closeModal} className="px-5 py-2.5 border border-gray-300 bg-white rounded-md hover:bg-gray-100 font-semibold text-gray-700 transition shadow-sm">Hủy bỏ</button>
                                 <button onClick={handleSaveKhoaHoc} className="flex items-center gap-2 px-6 py-2.5 bg-[#1d4ed8] text-white rounded-md hover:bg-blue-700 font-bold shadow-sm transition">
@@ -598,7 +705,7 @@ export default function QuanLyKhoaHocPage() {
                 </div>
             )}
 
-            {/* TOAST */}
+            {/* TOAST NOTIFICATION */}
             {toast && (
                 <div className="fixed top-5 right-5 z-[70] animate-fade-in-down">
                     <div className={`flex items-center min-w-[300px] p-4 bg-white rounded shadow-xl border-l-4 ${toast.type === 'success' ? 'border-green-500' : 'border-red-500'}`}>

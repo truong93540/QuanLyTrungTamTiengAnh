@@ -36,13 +36,11 @@ export const layDanhSachHoatDong = async (filters: HoatDongFilter) => {
         where: whereClause,
         orderBy: { ngay_to_chuc: 'desc' },
         include: {
-            // Kéo danh sách Giáo viên (Theo đúng tên schema là phan_cong)
             phan_cong: { 
                 include: {
                     giao_vien: { select: { ho_ten: true, so_dien_thoai: true, email: true } }
                 }
             },
-            // Kéo danh sách Học viên tham gia & Lớp học tương ứng (Theo tên schema là tham_gia_hoc_vien)
             tham_gia_hoc_vien: {
                 include: {
                     hoc_vien: {
@@ -111,7 +109,6 @@ export const capNhatHoatDong = async (ma_hoat_dong: number, data: Partial<HoatDo
 
 // 4. XÓA HOẠT ĐỘNG
 export const xoaHoatDong = async (ma_hoat_dong: number) => {
-    // Xóa liên kết trước khi xóa bảng chính để tránh lỗi khóa ngoại (Foreign Key Constraint)
     await prisma.phanCongHoatDong.deleteMany({
         where: { ma_hoat_dong_ngoai_khoa: ma_hoat_dong }
     });

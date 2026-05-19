@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-// CHÚ Ý: Đã sửa lại đường dẫn import cho khớp với tên file service ở bước trước
 import { 
     layDanhSachHoatDong, 
     taoHoatDong, 
@@ -12,14 +11,11 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url)
         const action = searchParams.get('action')
-
-        // Trả về danh sách giáo viên để chọn khi Thêm/Sửa
         if (action === 'get_teachers') {
             const giaoVien = await layDanhSachGiaoVien()
             return NextResponse.json(giaoVien)
         }
 
-        // Trả về danh sách Hoạt động ngoại khóa (Có tìm kiếm)
         const filters = { search: searchParams.get('search') }
         const danhSach = await layDanhSachHoatDong(filters)
         return NextResponse.json(danhSach)
