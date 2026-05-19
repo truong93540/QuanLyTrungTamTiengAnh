@@ -565,10 +565,10 @@ function PhieuChiContent() {
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {/* Stat 1 */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
-                    <div className="flex-1 min-w-0 pr-2">
-                        <p className="text-slate-400 text-[11px] md:text-xs font-bold uppercase tracking-wider mb-1.5 truncate">Tổng tiền đã chi</p>
-                        <h3 className="text-lg md:text-xl font-bold text-slate-800 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrency(totalSpent)}</h3>
+                <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
+                    <div className="flex-1 min-w-0 pr-1">
+                        <p className="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-1.5">Tổng tiền đã chi</p>
+                        <h3 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrency(totalSpent)}</h3>
                     </div>
                     <div className="p-3.5 bg-emerald-50 rounded-xl text-emerald-600 flex-shrink-0 shadow-sm shadow-emerald-100/50">
                         <FaWallet size={22} />
@@ -576,10 +576,10 @@ function PhieuChiContent() {
                 </div>
 
                 {/* Stat 2 */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
-                    <div className="flex-1 min-w-0 pr-2">
-                        <p className="text-slate-400 text-[11px] md:text-xs font-bold uppercase tracking-wider mb-1.5 truncate">Chi Lương Nhân Sự</p>
-                        <h3 className="text-lg md:text-xl font-bold text-slate-800 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrency(totalSalaryExpenses)}</h3>
+                <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
+                    <div className="flex-1 min-w-0 pr-1">
+                        <p className="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-1.5">Chi Lương Nhân Viên</p>
+                        <h3 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrency(totalSalaryExpenses)}</h3>
                     </div>
                     <div className="p-3.5 bg-blue-50 rounded-xl text-blue-600 flex-shrink-0 shadow-sm shadow-blue-100/50">
                         <FaFileInvoiceDollar size={22} />
@@ -587,10 +587,10 @@ function PhieuChiContent() {
                 </div>
 
                 {/* Stat 3 */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
-                    <div className="flex-1 min-w-0 pr-2">
-                        <p className="text-slate-400 text-[11px] md:text-xs font-bold uppercase tracking-wider mb-1.5 truncate">Chi Marketing</p>
-                        <h3 className="text-lg md:text-xl font-bold text-slate-800 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrency(totalMarketingExpenses)}</h3>
+                <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
+                    <div className="flex-1 min-w-0 pr-1">
+                        <p className="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-1.5">Chi Marketing</p>
+                        <h3 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrency(totalMarketingExpenses)}</h3>
                     </div>
                     <div className="p-3.5 bg-purple-50 rounded-xl text-purple-600 flex-shrink-0 shadow-sm shadow-purple-100/50">
                         <FaBullhorn size={22} />
@@ -598,10 +598,10 @@ function PhieuChiContent() {
                 </div>
 
                 {/* Stat 4 */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
-                    <div className="flex-1 min-w-0 pr-2">
-                        <p className="text-slate-400 text-[11px] md:text-xs font-bold uppercase tracking-wider mb-1.5 truncate">Phiếu chờ duyệt</p>
-                        <h3 className="text-lg md:text-xl font-bold text-slate-800 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{pendingCount}</h3>
+                <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
+                    <div className="flex-1 min-w-0 pr-1">
+                        <p className="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-1.5">Phiếu chờ duyệt</p>
+                        <h3 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{pendingCount}</h3>
                     </div>
                     <div className="p-3.5 bg-amber-50 rounded-xl text-amber-600 flex-shrink-0 shadow-sm shadow-amber-100/50">
                         <FaHourglassHalf size={22} />

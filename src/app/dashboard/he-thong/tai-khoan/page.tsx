@@ -12,6 +12,16 @@ export default function QuanLyTaiKhoan() {
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
     const [selectedAccount, setSelectedAccount] = useState<any | null>(null)
 
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 10
+
+    const indexOfLastItem = currentPage * itemsPerPage
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage
+    const currentItems = accounts.slice(indexOfFirstItem, indexOfLastItem)
+    const totalPages = Math.ceil(accounts.length / itemsPerPage)
+
+    const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
+
     const fetchAccounts = async () => {
         setIsLoading(true)
         try {
@@ -19,6 +29,7 @@ export default function QuanLyTaiKhoan() {
             if (res.ok) {
                 const data = await res.json()
                 setAccounts(data)
+                setCurrentPage(1)
             }
         } catch (error) {
             console.error('Lỗi khi tải danh sách tài khoản:', error)
@@ -115,7 +126,7 @@ export default function QuanLyTaiKhoan() {
                                     </td>
                                 </tr>
                             ) : (
-                                accounts.map((acc) => (
+                                currentItems.map((acc) => (
                                     <tr key={acc.ma_tai_khoan} className="hover:bg-blue-50/50 transition">
                                         <td className="p-2 border border-gray-100 font-medium text-gray-900 text-center whitespace-nowrap">
                                             {acc.loai === 'Giáo viên'
@@ -145,11 +156,11 @@ export default function QuanLyTaiKhoan() {
                                         </td>
                                         <td className="p-2 border border-gray-100">
                                             {acc.trang_thai === 'Hoạt động' ? (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[8px] text-xs font-medium bg-green-100 text-green-700">
                                                     <FaCheckCircle className="text-[10px]" /> Hoạt động
                                                 </span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[8px] text-xs font-medium bg-red-100 text-red-700">
                                                     <FaTimesCircle className="text-[10px]" /> Bị khóa
                                                 </span>
                                             )}
@@ -181,6 +192,58 @@ export default function QuanLyTaiKhoan() {
                         </tbody>
                     </table>
                 </div>
+
+                {/* Phân trang tài khoản giống danh mục chức vụ */}
+                {!isLoading && accounts.length > 0 && (
+                    <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50/50 font-medium text-gray-600">
+                        <div className="text-sm">
+                            Hiển thị{' '}
+                            <span className="font-bold text-gray-800">{indexOfFirstItem + 1}</span> đến{' '}
+                            <span className="font-bold text-gray-800">
+                                {Math.min(indexOfLastItem, accounts.length)}
+                            </span>{' '}
+                            trong tổng số <span className="font-bold text-gray-800">{accounts.length}</span>{' '}
+                            tài khoản
+                        </div>
+
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className={`px-3 py-1 rounded-[8px] border text-xs font-medium transition ${
+                                    currentPage === 1 
+                                        ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' 
+                                        : 'hover:bg-gray-100 hover:cursor-pointer border-gray-300 bg-white text-gray-700'
+                                }`}>
+                                Trước
+                            </button>
+
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                                <button
+                                    key={number}
+                                    onClick={() => paginate(number)}
+                                    className={`px-3 py-1 rounded-[8px] border text-xs font-bold transition ${
+                                        currentPage === number
+                                            ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                                            : 'hover:bg-gray-100 border-gray-300 hover:cursor-pointer bg-white text-gray-700'
+                                    }`}>
+                                    {number}
+                                </button>
+                            ))}
+
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className={`px-3 py-1 rounded-[8px] border text-xs font-medium transition ${
+                                    currentPage === totalPages 
+                                        ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' 
+                                        : 'hover:bg-gray-100 hover:cursor-pointer border-gray-300 bg-white text-gray-700'
+                                }`}>
+                                Sau
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {isModalOpen && (
