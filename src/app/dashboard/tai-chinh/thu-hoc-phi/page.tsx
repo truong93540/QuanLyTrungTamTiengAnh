@@ -74,6 +74,10 @@ export default function PhieuThuHocPhiPage() {
     const [selectedClassId, setSelectedClassId] = useState<number | null>(null)
     const [classSearchQuery, setClassSearchQuery] = useState('')
     const [isLoading, setIsLoading] = useState(true)
+    const [filterCourseId, setFilterCourseId] = useState<string>('')
+    const [filterStaffId, setFilterStaffId] = useState<string>('')
+    const [filterStartDate, setFilterStartDate] = useState<string>('')
+    const [filterEndDate, setFilterEndDate] = useState<string>('')
     const [editingId, setEditingId] = useState<number | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -106,19 +110,39 @@ export default function PhieuThuHocPhiPage() {
     const itemsPerPage = 10
 
     const getFilteredData = () => {
-        if (selectedClassId === null) return data
+        let result = data
         if (selectedClassId === -1) {
-            return data.filter(row => {
-                return !lopHocList.some(lop => 
-                    lop.ma_khoa_hoc === row.ma_khoa_hoc && 
+            result = data.filter(row => {
+                return !lopHocList.some(lop =>
+                    lop.ma_khoa_hoc === row.ma_khoa_hoc &&
                     lop.tham_gia.some(tg => tg.ma_hoc_vien === row.ma_hoc_vien)
                 )
             })
+        } else if (selectedClassId !== null) {
+            const selectedClass = lopHocList.find(c => c.ma_lop_hoc === selectedClassId)
+            if (selectedClass) {
+                const studentIds = selectedClass.tham_gia.map(tg => tg.ma_hoc_vien)
+                result = data.filter(row => studentIds.includes(row.ma_hoc_vien) && row.ma_khoa_hoc === selectedClass.ma_khoa_hoc)
+            }
         }
-        const selectedClass = lopHocList.find(c => c.ma_lop_hoc === selectedClassId)
-        if (!selectedClass) return data
-        const studentIds = selectedClass.tham_gia.map(tg => tg.ma_hoc_vien)
-        return data.filter(row => studentIds.includes(row.ma_hoc_vien) && row.ma_khoa_hoc === selectedClass.ma_khoa_hoc)
+
+        // Áp dụng bộ lọc nâng cao
+        if (filterCourseId) {
+            result = result.filter(row => row.ma_khoa_hoc?.toString() === filterCourseId)
+        }
+        if (filterStaffId) {
+            result = result.filter(row => row.ma_nhan_su?.toString() === filterStaffId)
+        }
+        if (filterStartDate) {
+            result = result.filter(row => new Date(row.ngay_thu).getTime() >= new Date(filterStartDate).getTime())
+        }
+        if (filterEndDate) {
+            const end = new Date(filterEndDate)
+            end.setHours(23, 59, 59, 999)
+            result = result.filter(row => new Date(row.ngay_thu).getTime() <= end.getTime())
+        }
+
+        return result
     }
     const filteredData = getFilteredData()
 
@@ -131,7 +155,7 @@ export default function PhieuThuHocPhiPage() {
 
     useEffect(() => {
         setCurrentPage(1)
-    }, [selectedClassId])
+    }, [selectedClassId, filterCourseId, filterStaffId, filterStartDate, filterEndDate])
 
     useEffect(() => {
         const fetchData = async () => {
@@ -186,7 +210,7 @@ export default function PhieuThuHocPhiPage() {
 
         // Lấy phiếu thu gần nhất (sắp xếp giảm dần theo ngày thu từ backend)
         const latestPayment = previousPayments[0]
-        
+
         setFormData(prev => {
             const nextState = { ...prev }
             let updated = false
@@ -212,8 +236,8 @@ export default function PhieuThuHocPhiPage() {
         if (!khoaHoc) return
 
         // 1. Tìm khuyến mãi cũ từ các đợt đóng trước của học viên cho khóa học này
-        const previousPayments = data.filter(pt => 
-            pt.ma_hoc_vien.toString() === formData.ma_hoc_vien && 
+        const previousPayments = data.filter(pt =>
+            pt.ma_hoc_vien.toString() === formData.ma_hoc_vien &&
             pt.ma_khoa_hoc.toString() === formData.ma_khoa_hoc &&
             (editingId ? pt.ma_phieu_thu !== editingId : true)
         )
@@ -391,7 +415,7 @@ export default function PhieuThuHocPhiPage() {
         setIsSubmitting(true)
         try {
             const method = editingId ? 'PUT' : 'POST'
-            
+
             const response = await fetch('/api/tai-chinh/phieu-thu', {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
@@ -420,7 +444,7 @@ export default function PhieuThuHocPhiPage() {
                 const errorResponse = await response.json().catch(() => null)
                 setFormError(
                     errorResponse?.error ||
-                        `Có lỗi xảy ra khi ${editingId ? 'cập nhật' : 'thêm'} phiếu thu.`,
+                    `Có lỗi xảy ra khi ${editingId ? 'cập nhật' : 'thêm'} phiếu thu.`,
                 )
             }
         } catch (error) {
@@ -490,7 +514,7 @@ export default function PhieuThuHocPhiPage() {
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-sm min-h-screen">
-            <h1 className="text-2xl font-bold text-center text-gray-800 mb-8 uppercase">
+            <h1 className="text-2xl font-bold text-center text-gray-800 mb-1 uppercase">
                 Quản lý phiếu thu học phí
             </h1>
 
@@ -535,7 +559,7 @@ export default function PhieuThuHocPhiPage() {
                                         <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                                             Mã học viên <span className="text-red-500">*</span>
                                         </label>
-                                        
+
                                         {/* Dropdown chọn nhanh học viên thuộc lớp đang chọn */}
                                         {(() => {
                                             const selectedClass = lopHocList.find(c => c.ma_lop_hoc === selectedClassId)
@@ -606,9 +630,9 @@ export default function PhieuThuHocPhiPage() {
 
                                     {(() => {
                                         if (!formData.ma_hoc_vien || !formData.ma_khoa_hoc) return null
-                                        
-                                        const previousPaymentsForCheck = data.filter(pt => 
-                                            pt.ma_hoc_vien.toString() === formData.ma_hoc_vien && 
+
+                                        const previousPaymentsForCheck = data.filter(pt =>
+                                            pt.ma_hoc_vien.toString() === formData.ma_hoc_vien &&
                                             pt.ma_khoa_hoc.toString() === formData.ma_khoa_hoc &&
                                             (editingId ? pt.ma_phieu_thu !== editingId : true)
                                         )
@@ -616,7 +640,7 @@ export default function PhieuThuHocPhiPage() {
 
                                         const checkKhoaHoc = khoaHocList.find(kh => kh.ma_khoa_hoc.toString() === formData.ma_khoa_hoc)
                                         let checkFinalPrice = checkKhoaHoc ? Number(checkKhoaHoc.hoc_phi) : 0
-                                        
+
                                         let promoId = formData.ma_khuyen_mai
                                         if (!promoId && previousPaymentsForCheck.length > 0) {
                                             const prevWithPromo = previousPaymentsForCheck.find(pt => pt.ma_khuyen_mai != null)
@@ -635,7 +659,7 @@ export default function PhieuThuHocPhiPage() {
                                                 checkFinalPrice = checkFinalPrice * (1 - appliedDiscountPercent / 100)
                                             }
                                         }
-                                        
+
                                         const remainingDue = Math.max(0, checkFinalPrice - totalPaidBeforeCheck)
 
                                         return (
@@ -699,7 +723,7 @@ export default function PhieuThuHocPhiPage() {
                                                 onClick={() => setIsKhoaHocDropdownOpen(!isKhoaHocDropdownOpen)}
                                             >
                                                 <span className="truncate">
-                                                    {formData.ma_khoa_hoc 
+                                                    {formData.ma_khoa_hoc
                                                         ? khoaHocList.find(kh => kh.ma_khoa_hoc.toString() === formData.ma_khoa_hoc)?.ten_khoa_hoc || '-- Chọn khóa học --'
                                                         : '-- Chọn khóa học --'}
                                                 </span>
@@ -746,7 +770,7 @@ export default function PhieuThuHocPhiPage() {
                                                     onClick={() => setIsKhuyenMaiDropdownOpen(!isKhuyenMaiDropdownOpen)}
                                                 >
                                                     <span className="truncate">
-                                                        {formData.ma_khuyen_mai 
+                                                        {formData.ma_khuyen_mai
                                                             ? khuyenMaiList.find(km => km.ma_khuyen_mai.toString() === formData.ma_khuyen_mai)?.ten_chuong_trinh + ` (Giảm ${khuyenMaiList.find(km => km.ma_khuyen_mai.toString() === formData.ma_khuyen_mai)?.phan_tram_giam}%)` || '-- Không áp dụng khuyến mãi --'
                                                             : '-- Không áp dụng khuyến mãi --'}
                                                     </span>
@@ -793,7 +817,7 @@ export default function PhieuThuHocPhiPage() {
                                                 onClick={() => setIsNhanSuDropdownOpen(!isNhanSuDropdownOpen)}
                                             >
                                                 <span className="truncate">
-                                                    {formData.ma_nhan_su 
+                                                    {formData.ma_nhan_su
                                                         ? nhanSuList.find(ns => ns.ma_nhan_su.toString() === formData.ma_nhan_su)?.ho_ten || '-- Chọn người lập --'
                                                         : '-- Chọn người lập --'}
                                                 </span>
@@ -872,11 +896,11 @@ export default function PhieuThuHocPhiPage() {
             {/* end model */}
 
             {/* Bộ lọc theo lớp học */}
-            {selectedClassId === null || selectedClassId === -1 ? (
+            {selectedClassId === null ? (
                 <div className="mb-6 bg-slate-50/50 p-4 border border-gray-100 rounded-[8px]">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
                         <label className="text-sm font-semibold text-slate-700">
-                            Danh sách lớp học:
+                            Chọn lớp học:
                         </label>
                         <div className="relative w-full md:w-64">
                             <input
@@ -892,15 +916,14 @@ export default function PhieuThuHocPhiPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-80 overflow-y-auto custom-scrollbar pr-1">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-70 overflow-y-auto custom-scrollbar pr-1">
                         {/* Thẻ Tất cả các lớp */}
                         <button
                             onClick={() => setSelectedClassId(null)}
-                            className={`p-3 rounded-[8px] border text-sm font-semibold text-center transition flex flex-col justify-center items-center min-h-[96px] h-auto shadow-sm cursor-pointer ${
-                                selectedClassId === null 
-                                    ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700' 
-                                    : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/10 text-slate-700'
-                            }`}
+                            className={`p-3 rounded-[8px] border text-sm font-semibold text-center transition flex flex-col justify-center items-center min-h-[96px] h-auto shadow-sm cursor-pointer ${selectedClassId === null
+                                ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                                : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/10 text-slate-700'
+                                }`}
                         >
                             <span className="text-base mb-1">📁</span>
                             <span className="break-words w-full">Tất cả các lớp</span>
@@ -910,11 +933,10 @@ export default function PhieuThuHocPhiPage() {
                         {/* Thẻ Chưa phân lớp */}
                         <button
                             onClick={() => setSelectedClassId(-1)}
-                            className={`p-3 rounded-[8px] border text-sm text-left transition flex flex-col justify-between min-h-[96px] h-auto shadow-sm cursor-pointer ${
-                                selectedClassId === -1 
-                                    ? 'bg-amber-600 text-white border-amber-600 hover:bg-amber-700' 
-                                    : 'bg-white border-gray-200 hover:border-amber-300 hover:bg-amber-50/10 text-slate-700'
-                            }`}
+                            className={`p-3 rounded-[8px] border text-sm text-left transition flex flex-col justify-between min-h-[96px] h-auto shadow-sm cursor-pointer ${selectedClassId === -1
+                                ? 'bg-amber-600 text-white border-amber-600 hover:bg-amber-700'
+                                : 'bg-white border-gray-200 hover:border-amber-300 hover:bg-amber-50/10 text-slate-700'
+                                }`}
                         >
                             <div className="flex justify-between items-start w-full gap-2 mb-1">
                                 <span className={`font-semibold text-sm leading-snug break-words flex-1 ${selectedClassId === -1 ? 'text-white' : 'text-slate-800'}`}>
@@ -923,8 +945,8 @@ export default function PhieuThuHocPhiPage() {
                                 <span className={`px-1.5 py-0.5 rounded-[4px] text-sm font-semibold shrink-0 ${selectedClassId === -1 ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-700'}`}>
                                     {(() => {
                                         const unassignedReceipts = data.filter(row => {
-                                            return !lopHocList.some(lop => 
-                                                lop.ma_khoa_hoc === row.ma_khoa_hoc && 
+                                            return !lopHocList.some(lop =>
+                                                lop.ma_khoa_hoc === row.ma_khoa_hoc &&
                                                 lop.tham_gia.some(tg => tg.ma_hoc_vien === row.ma_hoc_vien)
                                             )
                                         })
@@ -976,8 +998,54 @@ export default function PhieuThuHocPhiPage() {
                     </div>
                 </div>
             ) : (
-                // Giao diện khi chọn một lớp học cụ thể
+                // Giao diện khi chọn một lớp học cụ thể hoặc chọn Chưa xếp lớp
                 (() => {
+                    if (selectedClassId === -1) {
+                        const unassignedReceipts = data.filter(row => {
+                            return !lopHocList.some(lop =>
+                                lop.ma_khoa_hoc === row.ma_khoa_hoc &&
+                                lop.tham_gia.some(tg => tg.ma_hoc_vien === row.ma_hoc_vien)
+                            )
+                        })
+                        const studentCount = new Set(unassignedReceipts.map(r => r.ma_hoc_vien)).size
+
+                        return (
+                            <div className="mb-6 bg-amber-50/20 border border-amber-100/60 p-4 rounded-[8px] flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setSelectedClassId(null)}
+                                        className="flex items-center justify-center w-10 h-10 rounded-[8px] bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-amber-600 transition shadow-sm cursor-pointer shrink-0"
+                                        title="Quay lại danh sách lớp học"
+                                    >
+                                        <FaArrowLeft size={16} />
+                                    </button>
+                                    <div>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="text-lg font-semibold text-amber-800">
+                                                ⚠️ Chưa xếp lớp
+                                            </span>
+                                            <span className="px-2.5 py-0.5 bg-amber-100 text-amber-700 rounded-[4px] text-sm font-semibold">
+                                                {studentCount} học viên
+                                            </span>
+                                            <span className="px-2.5 py-0.5 bg-yellow-100 text-yellow-700 rounded-[4px] text-sm font-semibold">
+                                                {unassignedReceipts.length} phiếu thu học phí
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-gray-600 mt-1 font-medium">
+                                            Danh sách học viên đã nộp học phí nhưng chưa được xếp vào lớp học tương ứng.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setSelectedClassId(null)}
+                                    className="flex items-center gap-1.5 px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-[8px] hover:bg-gray-50 font-semibold text-sm transition cursor-pointer shadow-sm"
+                                >
+                                    Xem tất cả các lớp
+                                </button>
+                            </div>
+                        )
+                    }
+
                     const lop = lopHocList.find(c => c.ma_lop_hoc === selectedClassId)
                     if (!lop) return null
 
@@ -1026,6 +1094,185 @@ export default function PhieuThuHocPhiPage() {
 
             {selectedClassId !== null && (
                 (() => {
+                    if (selectedClassId === -1) {
+                        const unassignedGrouped = (() => {
+                            const unassignedReceipts = data.filter(row => {
+                                return !lopHocList.some(lop =>
+                                    lop.ma_khoa_hoc === row.ma_khoa_hoc &&
+                                    lop.tham_gia.some(tg => tg.ma_hoc_vien === row.ma_hoc_vien)
+                                )
+                            })
+
+                            const groups: {
+                                ma_hoc_vien: number
+                                ho_ten: string
+                                ma_khoa_hoc: number
+                                ten_khoa_hoc: string
+                                baseTuition: number
+                                totalPaid: number
+                                discountPercent: number
+                                promoName: string
+                                remainingDue: number
+                                rawPromoPayment?: any
+                            }[] = []
+
+                            unassignedReceipts.forEach(pt => {
+                                let group = groups.find(g => g.ma_hoc_vien === pt.ma_hoc_vien && g.ma_khoa_hoc === pt.ma_khoa_hoc)
+                                if (!group) {
+                                    const kh = khoaHocList.find(kh => kh.ma_khoa_hoc === pt.ma_khoa_hoc)
+                                    const baseTuition = kh ? kh.hoc_phi : 0
+
+                                    const promoPayment = data.find(
+                                        p => p.ma_hoc_vien === pt.ma_hoc_vien && p.ma_khoa_hoc === pt.ma_khoa_hoc && p.ma_khuyen_mai != null
+                                    )
+                                    let discountPercent = 0
+                                    let promoName = ""
+                                    if (promoPayment && promoPayment.ma_khuyen_mai) {
+                                        const km = khuyenMaiList.find(km => km.ma_khuyen_mai === promoPayment.ma_khuyen_mai)
+                                        if (km) {
+                                            discountPercent = km.phan_tram_giam || 0
+                                            promoName = km.ten_chuong_trinh
+                                        }
+                                    }
+
+                                    group = {
+                                        ma_hoc_vien: pt.ma_hoc_vien,
+                                        ho_ten: pt.hoc_vien?.ho_ten || 'Không rõ',
+                                        ma_khoa_hoc: pt.ma_khoa_hoc,
+                                        ten_khoa_hoc: pt.khoa_hoc?.ten_khoa_hoc || 'Không rõ',
+                                        baseTuition: baseTuition,
+                                        totalPaid: 0,
+                                        discountPercent: discountPercent,
+                                        promoName: promoName,
+                                        remainingDue: 0,
+                                        rawPromoPayment: promoPayment
+                                    }
+                                    groups.push(group)
+                                }
+                                group.totalPaid += pt.so_tien
+                            })
+
+                            groups.forEach(g => {
+                                const actualTuition = g.baseTuition * (1 - g.discountPercent / 100)
+                                g.remainingDue = Math.max(0, actualTuition - g.totalPaid)
+                            })
+
+                            return groups
+                        })()
+
+                        return (
+                            <div className="mb-8 bg-white border border-gray-200 rounded-[8px] p-5 shadow-sm">
+                                <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2 tracking-wider">
+                                    <span className="w-1.5 h-4 bg-amber-600 rounded-sm"></span>
+                                    Bảng tổng hợp học phí & Công nợ học viên chưa xếp lớp
+                                </h3>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full border-collapse border border-gray-300 text-sm text-center">
+                                        <thead className="bg-gray-50 text-gray-700">
+                                            <tr>
+                                                <th className="border border-gray-300 p-2.5 min-w-[80px] whitespace-nowrap">Mã HV</th>
+                                                <th className="border border-gray-300 p-2.5 min-w-[160px] text-left whitespace-nowrap">Học viên</th>
+                                                <th className="border border-gray-300 p-2.5 min-w-[180px] text-left whitespace-nowrap">Khóa học đăng ký</th>
+                                                <th className="border border-gray-300 p-2.5 min-w-[120px] whitespace-nowrap">Học phí gốc</th>
+                                                <th className="border border-gray-300 p-2.5 min-w-[150px] whitespace-nowrap">Khuyến mãi</th>
+                                                <th className="border border-gray-300 p-2.5 min-w-[120px] whitespace-nowrap">Đã đóng</th>
+                                                <th className="border border-gray-300 p-2.5 min-w-[120px] whitespace-nowrap">Còn thiếu</th>
+                                                <th className="border border-gray-300 p-2.5 min-w-[110px] whitespace-nowrap">Trạng thái</th>
+                                                <th className="border border-gray-300 p-2.5 min-w-[110px] whitespace-nowrap">Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {unassignedGrouped.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={9} className="border border-gray-300 py-10 text-gray-500 font-medium bg-gray-50 text-center">
+                                                        Chưa có học viên nào chưa xếp lớp đã đóng học phí
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                unassignedGrouped.map(g => (
+                                                    <tr key={`${g.ma_hoc_vien}-${g.ma_khoa_hoc}`} className="hover:bg-slate-50 transition text-gray-700">
+                                                        <td className="border border-gray-300 p-2.5">
+                                                            {g.ma_hoc_vien}
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5 text-left font-semibold text-slate-800 whitespace-nowrap">
+                                                            {g.ho_ten}
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5 text-left text-slate-600 font-medium">
+                                                            {g.ten_khoa_hoc}
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5 text-slate-600 font-medium">
+                                                            {new Intl.NumberFormat('vi-VN').format(g.baseTuition)} đ
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5 text-slate-600 font-medium">
+                                                            {g.discountPercent > 0 ? (
+                                                                <span className="text-emerald-600 font-semibold" title={g.promoName}>
+                                                                    -{g.discountPercent}% ({g.promoName})
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-gray-400">Không có</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5 text-blue-600 font-semibold">
+                                                            {new Intl.NumberFormat('vi-VN').format(g.totalPaid)} đ
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5 font-bold">
+                                                            {g.remainingDue > 0 ? (
+                                                                <span className="text-rose-600">
+                                                                    {new Intl.NumberFormat('vi-VN').format(g.remainingDue)} đ
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-green-600 font-semibold">Đã đóng đủ</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5">
+                                                            {g.remainingDue > 0 ? (
+                                                                <span className="px-2.5 py-0.5 bg-amber-100 text-amber-800 rounded-[4px] text-sm font-semibold whitespace-nowrap">
+                                                                    Còn thiếu
+                                                                </span>
+                                                            ) : (
+                                                                <span className="px-2.5 py-0.5 bg-green-100 text-green-700 rounded-[4px] text-sm font-semibold whitespace-nowrap">
+                                                                    Hoàn thành
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                        <td className="border border-gray-300 p-2.5">
+                                                            {g.remainingDue > 0 ? (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        // Mở modal thêm phiếu thu, tự động điền sẵn học viên
+                                                                        setEditingId(null)
+                                                                        setFormData({
+                                                                            ma_phieu_thu: '',
+                                                                            so_tien: g.remainingDue.toString(),
+                                                                            ngay_thu: new Date().toISOString().split('T')[0],
+                                                                            ma_hoc_vien: g.ma_hoc_vien.toString(),
+                                                                            ma_nhan_su: '',
+                                                                            noi_dung: `Thu học phí đợt tiếp theo khóa ${g.ten_khoa_hoc}`,
+                                                                            ten_hoc_vien: g.ho_ten,
+                                                                            ma_khoa_hoc: g.ma_khoa_hoc.toString(),
+                                                                            ma_khuyen_mai: g.rawPromoPayment?.ma_khuyen_mai ? g.rawPromoPayment.ma_khuyen_mai.toString() : '',
+                                                                        })
+                                                                        setFormError(null)
+                                                                        setIsModalOpen(true)
+                                                                    }}
+                                                                    className="px-2.5 py-1 bg-amber-600 text-white rounded-[8px] hover:bg-amber-700 text-sm font-bold transition shadow-sm cursor-pointer whitespace-nowrap"
+                                                                >
+                                                                    Thu học phí
+                                                                </button>
+                                                            ) : (
+                                                                <span className="text-gray-400 text-sm font-medium whitespace-nowrap">Đã thu đủ</span>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )
+                    }
+
                     const lop = lopHocList.find(c => c.ma_lop_hoc === selectedClassId)
                     if (!lop) return null
 
@@ -1172,200 +1419,301 @@ export default function PhieuThuHocPhiPage() {
                     </div>
                 </div>
             )}
-
-            <div className="flex justify-between items-end gap-4 mb-8 border-b pb-6">
-                <div className="flex-1">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                        Tìm kiếm theo tên học viên:
-                    </label>
-                    <div className="flex gap-2">
-                        <input
-                            type="text"
-                            name="ten_hoc_vien"
-                            value={formData.ten_hoc_vien}
-                            onChange={handleChange}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                            placeholder="Nhập tên học viên..."
-                            className="border border-gray-300 rounded-[8px] p-2 focus:outline-blue-500 text-gray-800 text-sm font-medium"
-                        />
+            {/* Khối Quản lý & Danh sách Phiếu thu (Gom tìm kiếm, bộ lọc và bảng dữ liệu vào 1 vùng) */}
+            <div className="bg-white border border-gray-200 rounded-[12px] p-6 shadow-sm mt-6">
+                {/* Bộ Tìm kiếm & Bộ lọc nâng cao */}
+                <div className="mb-6 pb-6 border-b border-gray-200">
+                    {/* Hàng 1: Tìm kiếm tên & Thêm mới */}
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4">
+                        <div className="flex-1 max-w-xl">
+                            <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                                Tìm kiếm theo tên học viên
+                            </label>
+                            <div className="flex gap-2">
+                                <div className="relative flex-1">
+                                    <input
+                                        type="text"
+                                        name="ten_hoc_vien"
+                                        value={formData.ten_hoc_vien}
+                                        onChange={handleChange}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                                        placeholder="Nhập tên học viên cần tìm..."
+                                        className="w-full border border-gray-300 rounded-[8px] py-2 pl-9 pr-3 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-gray-800 text-sm font-medium bg-white"
+                                    />
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm">
+                                        <FaSearch />
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={handleSearch}
+                                    className="flex items-center gap-2 px-5 py-2 font-semibold transition shadow-sm cursor-pointer bg-blue-600 text-white rounded-[8px] hover:bg-blue-700 text-sm shrink-0">
+                                    Tìm kiếm
+                                </button>
+                            </div>
+                        </div>
                         <button
-                            onClick={handleSearch}
-                            className="flex items-center gap-2 px-6 py-2 font-semibold transition shadow-sm cursor-pointer bg-blue-600 text-white rounded-[8px] hover:bg-blue-700 text-sm">
-                            <FaSearch /> Tìm kiếm
+                            onClick={openModalForAdd}
+                            className="flex items-center justify-center gap-2 px-5 py-2 font-semibold transition shadow-sm cursor-pointer bg-blue-600 text-white rounded-[8px] hover:bg-blue-700 text-sm shrink-0 h-[38px] md:self-end">
+                            <FaPlus /> Thêm mới
                         </button>
                     </div>
-                </div>
-                <button
-                    onClick={openModalForAdd}
-                    className="flex items-center gap-2 px-6 py-2 font-semibold transition shadow-sm cursor-pointer bg-blue-600 text-white rounded-[8px] hover:bg-blue-700 text-sm">
-                    <FaPlus /> Thêm mới
-                </button>
-            </div>
 
-            <div className="overflow-x-auto">
-                {isLoading ? (
-                    <div className="text-center py-10 text-gray-500 font-medium">
-                        Đang tải dữ liệu từ CSDL...
+                    {/* Hàng 2: Bộ lọc nâng cao */}
+                    <div className="mt-1">
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="text-sm font-bold tracking-wider text-gray-700 flex items-center gap-1.5">
+                                <span className="w-1.5 h-3 bg-blue-500 rounded-sm"></span>
+                                Bộ lọc
+                            </span>
+                            {(filterCourseId || filterStaffId || filterStartDate || filterEndDate) && (
+                                <button
+                                    onClick={() => {
+                                        setFilterCourseId('')
+                                        setFilterStaffId('')
+                                        setFilterStartDate('')
+                                        setFilterEndDate('')
+                                    }}
+                                    className="text-xs font-bold text-red-500 hover:text-red-700 transition flex items-center gap-1 cursor-pointer bg-red-50 hover:bg-red-100/60 px-2.5 py-1 rounded-[6px] border border-red-200/50"
+                                >
+                                    <FaTimes size={10} /> Đặt lại bộ lọc
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {/* Bộ lọc Khóa học */}
+                            <div className="flex flex-col">
+                                <label className="text-sm font-semibold text-gray-700 mb-1">Khóa học đăng ký</label>
+                                <select
+                                    value={filterCourseId}
+                                    onChange={(e) => setFilterCourseId(e.target.value)}
+                                    className="border border-gray-300 rounded-[8px] p-2 text-sm bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer font-medium"
+                                >
+                                    <option value="">-- Tất cả khóa học --</option>
+                                    {khoaHocList.map(kh => (
+                                        <option key={kh.ma_khoa_hoc} value={kh.ma_khoa_hoc}>
+                                            {kh.ten_khoa_hoc}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Bộ lọc Nhân sự lập */}
+                            <div className="flex flex-col">
+                                <label className="text-sm font-semibold text-gray-700 mb-1">Người lập phiếu</label>
+                                <select
+                                    value={filterStaffId}
+                                    onChange={(e) => setFilterStaffId(e.target.value)}
+                                    className="border border-gray-300 rounded-[8px] p-2 text-sm bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer font-medium"
+                                >
+                                    <option value="">-- Tất cả người lập --</option>
+                                    {nhanSuList.map(ns => (
+                                        <option key={ns.ma_nhan_su} value={ns.ma_nhan_su}>
+                                            {ns.ho_ten}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Bộ lọc Từ ngày */}
+                            <div className="flex flex-col">
+                                <label className="text-sm font-semibold text-gray-700 mb-1">Từ ngày thu</label>
+                                <input
+                                    type="date"
+                                    value={filterStartDate}
+                                    onChange={(e) => setFilterStartDate(e.target.value)}
+                                    className="border border-gray-300 rounded-[8px] p-2 text-sm bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 [&::-webkit-calendar-picker-indicator]:cursor-pointer font-medium"
+                                />
+                            </div>
+
+                            {/* Bộ lọc Đến ngày */}
+                            <div className="flex flex-col">
+                                <label className="text-sm font-semibold text-gray-700 mb-1">Đến ngày thu</label>
+                                <input
+                                    type="date"
+                                    value={filterEndDate}
+                                    onChange={(e) => setFilterEndDate(e.target.value)}
+                                    className="border border-gray-300 rounded-[8px] p-2 text-sm bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 [&::-webkit-calendar-picker-indicator]:cursor-pointer font-medium"
+                                />
+                            </div>
+                        </div>
                     </div>
-                ) : (
-                    <table className="w-full border-collapse border border-gray-300 text-sm text-center">
-                        <thead className="bg-gray-100 text-gray-700">
-                            <tr>
-                                <th className="border border-gray-300 p-2.5 min-w-[90px] whitespace-nowrap">Mã phiếu</th>
-                                <th className="border border-gray-300 p-2.5 min-w-[120px] whitespace-nowrap">Số tiền</th>
-                                <th className="border border-gray-300 p-2.5 min-w-[110px] whitespace-nowrap">Ngày thu</th>
-                                <th className="border border-gray-300 p-2.5 min-w-[85px] whitespace-nowrap">Mã HV</th>
-                                <th className="border border-gray-300 p-2.5 min-w-[170px] whitespace-nowrap">Tên HV</th>
-                                {(selectedClassId === null || selectedClassId === -1) && (
-                                    <th className="border border-gray-300 p-2.5 min-w-[200px]">Khóa học</th>
-                                )}
-                                {(selectedClassId === null || selectedClassId === -1) && (
-                                    <th className="border border-gray-300 p-2.5 min-w-[120px] whitespace-nowrap">Còn thiếu</th>
-                                )}
-                                <th className="border border-gray-300 p-2.5 min-w-[170px] whitespace-nowrap">Người lập</th>
-                                <th className="border border-gray-300 p-2.5 min-w-[260px]">Nội dung</th>
-                                <th className="border border-gray-300 p-2.5 min-w-[100px] whitespace-nowrap">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {currentItems.length === 0 ? (
+                </div>
+
+                <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2 tracking-wider mt-2">
+                    <span className={`w-1.5 h-4 rounded-sm ${selectedClassId === -1 ? 'bg-amber-600' : 'bg-blue-600'}`}></span>
+                    {(() => {
+                        if (selectedClassId === null) return "Danh sách các phiếu thu học phí"
+                        if (selectedClassId === -1) return "Danh sách phiếu thu học viên chưa xếp lớp"
+                        const lop = lopHocList.find(c => c.ma_lop_hoc === selectedClassId)
+                        return `Danh sách phiếu thu lớp ${lop ? lop.ten_lop : ''}`
+                    })()}
+                </h3>
+
+                <div className="overflow-x-auto">
+                    {isLoading ? (
+                        <div className="text-center py-10 text-gray-500 font-medium">
+                            Đang tải dữ liệu từ CSDL...
+                        </div>
+                    ) : (
+                        <table className="w-full border-collapse border border-gray-300 text-sm text-center">
+                            <thead className="bg-gray-100 text-gray-700">
                                 <tr>
-                                    <td colSpan={(selectedClassId === null || selectedClassId === -1) ? 10 : 8} className="border border-gray-300 py-10 text-gray-500 font-medium bg-gray-50 text-center text-sm">
-                                        {selectedClassId === -1 
-                                            ? "Không tìm thấy học viên chưa xếp lớp nào đã đóng học phí"
-                                            : selectedClassId !== null 
-                                                ? "Chưa có học viên nào đóng học phí" 
-                                                : "Không tìm thấy phiếu thu nào"}
-                                    </td>
+                                    <th className="border border-gray-300 p-2.5 min-w-[90px] whitespace-nowrap">Mã phiếu</th>
+                                    <th className="border border-gray-300 p-2.5 min-w-[120px] whitespace-nowrap">Số tiền</th>
+                                    <th className="border border-gray-300 p-2.5 min-w-[110px] whitespace-nowrap">Ngày thu</th>
+                                    <th className="border border-gray-300 p-2.5 min-w-[85px] whitespace-nowrap">Mã HV</th>
+                                    <th className="border border-gray-300 p-2.5 min-w-[170px] whitespace-nowrap">Tên HV</th>
+                                    {(selectedClassId === null || selectedClassId === -1) && (
+                                        <th className="border border-gray-300 p-2.5 min-w-[200px]">Khóa học</th>
+                                    )}
+                                    {(selectedClassId === null || selectedClassId === -1) && (
+                                        <th className="border border-gray-300 p-2.5 min-w-[120px] whitespace-nowrap">Còn thiếu</th>
+                                    )}
+                                    <th className="border border-gray-300 p-2.5 min-w-[170px] whitespace-nowrap">Người lập</th>
+                                    <th className="border border-gray-300 p-2.5 min-w-[260px]">Nội dung</th>
+                                    <th className="border border-gray-300 p-2.5 min-w-[100px] whitespace-nowrap">Hành động</th>
                                 </tr>
-                            ) : (
-                                currentItems.map((row) => (
-                                    <tr
-                                        key={row.ma_phieu_thu}
-                                        className={`transition text-gray-700 ${editingId === row.ma_phieu_thu ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'}`}>
-                                        <td className="border border-gray-300 p-2.5">
-                                            {row.ma_phieu_thu}
-                                        </td>
-                                        <td className="border border-gray-300 p-2.5 font-semibold text-blue-600">
-                                            {new Intl.NumberFormat('vi-VN').format(row.so_tien)}
-                                        </td>
-                                        <td className="border border-gray-300 p-2.5">
-                                            {new Date(row.ngay_thu).toLocaleDateString('vi-VN')}
-                                        </td>
-                                        <td className="border border-gray-300 p-2.5">
-                                            {row.ma_hoc_vien}
-                                        </td>
-                                        <td className="border border-gray-300 p-2.5 font-semibold text-left text-slate-800 whitespace-nowrap">
-                                            {row.hoc_vien?.ho_ten || 'Không rõ'}
-                                        </td>
-                                        {(selectedClassId === null || selectedClassId === -1) && (
-                                            <td className="border border-gray-300 p-2.5 text-left text-slate-700">
-                                                {row.khoa_hoc?.ten_khoa_hoc || 'Không rõ'}
-                                            </td>
-                                        )}
-                                        {(selectedClassId === null || selectedClassId === -1) && (
-                                            <td className="border border-gray-300 p-2.5 text-center font-medium">
-                                                {(() => {
-                                                    const totalPaid = data
-                                                        .filter(pt => pt.ma_hoc_vien === row.ma_hoc_vien && pt.ma_khoa_hoc === row.ma_khoa_hoc)
-                                                        .reduce((sum, pt) => sum + pt.so_tien, 0)
-                                                    
-                                                    const promoPayment = data.find(
-                                                        pt => pt.ma_hoc_vien === row.ma_hoc_vien && pt.ma_khoa_hoc === row.ma_khoa_hoc && pt.khuyen_mai
-                                                    )
-                                                    const discountPercent = promoPayment?.khuyen_mai?.phan_tram_giam || 0
-                                                    
-                                                    const baseTuition = row.khoa_hoc?.hoc_phi || 0
-                                                    const actualTuition = baseTuition * (1 - discountPercent / 100)
-                                                    const conThieu = Math.max(0, actualTuition - totalPaid)
-                                                    
-                                                    if (conThieu > 0) {
-                                                        return (
-                                                            <span className="text-amber-600 text-sm font-semibold">
-                                                                {new Intl.NumberFormat('vi-VN').format(conThieu)} đ
-                                                            </span>
-                                                        )
-                                                    }
-                                                    return (
-                                                        <span className="text-green-600 text-sm font-semibold">
-                                                            Đã đóng đủ
-                                                        </span>
-                                                    )
-                                                })()}
-                                            </td>
-                                        )}
-                                        <td className="border border-gray-300 p-2.5 text-left text-slate-700 whitespace-nowrap">
-                                            {row.nhan_su?.ho_ten || 'Không rõ'}
-                                        </td>
-                                        <td className="border border-gray-300 p-2.5 text-left text-slate-600">
-                                            {row.noi_dung}
-                                        </td>
-                                        <td className="border border-gray-300 p-2.5">
-                                            <div className="flex justify-center gap-1">
-                                                <button
-                                                    onClick={() => openModalForEdit(row)}
-                                                    className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-yellow-100 hover:text-yellow-600 transition cursor-pointer"
-                                                    title="Sửa phiếu thu">
-                                                    <FaEdit />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteClick(row.ma_phieu_thu)}
-                                                    className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-red-100 hover:text-red-600 transition cursor-pointer"
-                                                    title="Xóa phiếu thu">
-                                                    <FaTrash />
-                                                </button>
-                                            </div>
+                            </thead>
+                            <tbody>
+                                {currentItems.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={(selectedClassId === null || selectedClassId === -1) ? 10 : 8} className="border border-gray-300 py-10 text-gray-500 font-medium bg-gray-50 text-center text-sm">
+                                            {selectedClassId === -1
+                                                ? "Không tìm thấy học viên chưa xếp lớp nào đã đóng học phí"
+                                                : selectedClassId !== null
+                                                    ? "Chưa có học viên nào đóng học phí"
+                                                    : "Không tìm thấy phiếu thu nào"}
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                )}
-            </div>
+                                ) : (
+                                    currentItems.map((row) => (
+                                        <tr
+                                            key={row.ma_phieu_thu}
+                                            className={`transition text-gray-700 ${editingId === row.ma_phieu_thu ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'}`}>
+                                            <td className="border border-gray-300 p-2.5">
+                                                {row.ma_phieu_thu}
+                                            </td>
+                                            <td className="border border-gray-300 p-2.5 font-semibold text-blue-600">
+                                                {new Intl.NumberFormat('vi-VN').format(row.so_tien)}
+                                            </td>
+                                            <td className="border border-gray-300 p-2.5">
+                                                {new Date(row.ngay_thu).toLocaleDateString('vi-VN')}
+                                            </td>
+                                            <td className="border border-gray-300 p-2.5">
+                                                {row.ma_hoc_vien}
+                                            </td>
+                                            <td className="border border-gray-300 p-2.5 font-semibold text-left text-slate-800 whitespace-nowrap">
+                                                {row.hoc_vien?.ho_ten || 'Không rõ'}
+                                            </td>
+                                            {(selectedClassId === null || selectedClassId === -1) && (
+                                                <td className="border border-gray-300 p-2.5 text-left text-slate-700">
+                                                    {row.khoa_hoc?.ten_khoa_hoc || 'Không rõ'}
+                                                </td>
+                                            )}
+                                            {(selectedClassId === null || selectedClassId === -1) && (
+                                                <td className="border border-gray-300 p-2.5 text-center font-medium">
+                                                    {(() => {
+                                                        const totalPaid = data
+                                                            .filter(pt => pt.ma_hoc_vien === row.ma_hoc_vien && pt.ma_khoa_hoc === row.ma_khoa_hoc)
+                                                            .reduce((sum, pt) => sum + pt.so_tien, 0)
 
-            {!isLoading && data.length > 0 && (
-                <div className="flex justify-between items-center mt-6 font-medium text-gray-600">
-                    <div className="text-sm">
-                        Hiển thị{' '}
-                        <span className="font-bold text-gray-800">{indexOfFirstItem + 1}</span> đến{' '}
-                        <span className="font-bold text-gray-800">
-                            {Math.min(indexOfLastItem, data.length)}
-                        </span>{' '}
-                        trong tổng số <span className="font-bold text-gray-800">{data.length}</span>{' '}
-                        phiếu thu
-                    </div>
+                                                        const promoPayment = data.find(
+                                                            pt => pt.ma_hoc_vien === row.ma_hoc_vien && pt.ma_khoa_hoc === row.ma_khoa_hoc && pt.khuyen_mai
+                                                        )
+                                                        const discountPercent = promoPayment?.khuyen_mai?.phan_tram_giam || 0
 
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                            disabled={currentPage === 1}
-                            className={`px-3 py-1 rounded border ${currentPage === 1 ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' : 'hover:bg-gray-100 border-gray-300'}`}>
-                            Trước
-                        </button>
+                                                        const baseTuition = row.khoa_hoc?.hoc_phi || 0
+                                                        const actualTuition = baseTuition * (1 - discountPercent / 100)
+                                                        const conThieu = Math.max(0, actualTuition - totalPaid)
 
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                                                        if (conThieu > 0) {
+                                                            return (
+                                                                <span className="text-amber-600 text-sm font-semibold">
+                                                                    {new Intl.NumberFormat('vi-VN').format(conThieu)} đ
+                                                                </span>
+                                                            )
+                                                        }
+                                                        return (
+                                                            <span className="text-green-600 text-sm font-semibold">
+                                                                Đã đóng đủ
+                                                            </span>
+                                                        )
+                                                    })()}
+                                                </td>
+                                            )}
+                                            <td className="border border-gray-300 p-2.5 text-left text-slate-700 whitespace-nowrap">
+                                                {row.nhan_su?.ho_ten || 'Không rõ'}
+                                            </td>
+                                            <td className="border border-gray-300 p-2.5 text-left text-slate-600">
+                                                {row.noi_dung}
+                                            </td>
+                                            <td className="border border-gray-300 p-2.5">
+                                                <div className="flex justify-center gap-1">
+                                                    <button
+                                                        onClick={() => openModalForEdit(row)}
+                                                        className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-yellow-100 hover:text-yellow-600 transition cursor-pointer"
+                                                        title="Sửa phiếu thu">
+                                                        <FaEdit />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteClick(row.ma_phieu_thu)}
+                                                        className="p-1.5 bg-gray-100 border border-gray-300 rounded hover:bg-red-100 hover:text-red-600 transition cursor-pointer"
+                                                        title="Xóa phiếu thu">
+                                                        <FaTrash />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+
+                {!isLoading && data.length > 0 && (
+                    <div className="flex justify-between items-center mt-6 font-medium text-gray-600">
+                        <div className="text-sm">
+                            Hiển thị{' '}
+                            <span className="font-bold text-gray-800">{indexOfFirstItem + 1}</span> đến{' '}
+                            <span className="font-bold text-gray-800">
+                                {Math.min(indexOfLastItem, data.length)}
+                            </span>{' '}
+                            trong tổng số <span className="font-bold text-gray-800">{data.length}</span>{' '}
+                            phiếu thu
+                        </div>
+
+                        <div className="flex gap-2">
                             <button
-                                key={number}
-                                onClick={() => paginate(number)}
-                                className={`px-3 py-1 rounded border ${
-                                    currentPage === number
+                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className={`px-3 py-1 rounded border ${currentPage === 1 ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' : 'hover:bg-gray-100 border-gray-300'}`}>
+                                Trước
+                            </button>
+
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                                <button
+                                    key={number}
+                                    onClick={() => paginate(number)}
+                                    className={`px-3 py-1 rounded border ${currentPage === number
                                         ? 'bg-blue-600 text-white border-blue-600'
                                         : 'hover:bg-gray-100 border-gray-300'
-                                }`}>
-                                {number}
-                            </button>
-                        ))}
+                                        }`}>
+                                    {number}
+                                </button>
+                            ))}
 
-                        <button
-                            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                            disabled={currentPage === totalPages}
-                            className={`px-3 py-1 rounded border ${currentPage === totalPages ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' : 'hover:bg-gray-100 border-gray-300'}`}>
-                            Sau
-                        </button>
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className={`px-3 py-1 rounded border ${currentPage === totalPages ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' : 'hover:bg-gray-100 border-gray-300'}`}>
+                                Sau
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
             {/* Alert */}
             {alert && (

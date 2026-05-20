@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { 
-    FaChartPie, FaWallet, FaHourglassHalf, FaCalendarAlt, 
+import {
+    FaChartPie, FaWallet, FaHourglassHalf, FaCalendarAlt,
     FaArrowUp, FaArrowDown, FaInfoCircle, FaFileInvoiceDollar,
     FaArrowLeft, FaCheckCircle, FaTimesCircle
 } from 'react-icons/fa'
@@ -50,7 +50,7 @@ export default function FinancialReportPage() {
     const [activeTab, setActiveTab] = useState<'ALL' | 'REVENUE' | 'EXPENSE'>('ALL')
     const [hoveredMonth, setHoveredMonth] = useState<number | null>(null)
     const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
-    
+
     // States for custom transaction log limit
     const [limitInput, setLimitInput] = useState<string>('10')
     const [transactionLimit, setTransactionLimit] = useState<number>(10)
@@ -126,13 +126,13 @@ export default function FinancialReportPage() {
                         Biểu đồ, phân tích doanh thu học phí, các khoản chi phí và dòng tiền trung tâm
                     </p>
                 </div>
-                
+
                 {/* Year Filter */}
                 <div className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-lg border border-slate-200 shadow-sm focus-within:border-blue-500 transition-all shrink-0">
                     <FaCalendarAlt className="text-slate-400" />
-                    <span className="text-sm font-bold text-slate-600 uppercase tracking-wider">Xem năm:</span>
-                    <select 
-                        value={selectedYear} 
+                    <span className="text-sm font-bold text-slate-600 tracking-wider">Xem năm:</span>
+                    <select
+                        value={selectedYear}
                         onChange={(e) => setSelectedYear(e.target.value)}
                         className="bg-transparent font-bold text-slate-800 outline-none cursor-pointer text-sm"
                     >
@@ -224,15 +224,15 @@ export default function FinancialReportPage() {
                                         const labelVal = maxMonthlyVal * (1 - ratio)
                                         return (
                                             <g key={index}>
-                                                <line 
-                                                    x1="50" y1={y} x2="680" y2={y} 
-                                                    stroke="#f1f5f9" strokeWidth="1" 
-                                                    strokeDasharray="4 4" 
+                                                <line
+                                                    x1="50" y1={y} x2="680" y2={y}
+                                                    stroke="#f1f5f9" strokeWidth="1"
+                                                    strokeDasharray="4 4"
                                                 />
-                                                <text 
-                                                    x="45" y={y + 4} 
-                                                    textAnchor="end" 
-                                                    className="fill-slate-400 font-bold" 
+                                                <text
+                                                    x="45" y={y + 4}
+                                                    textAnchor="end"
+                                                    className="fill-slate-500 font-bold"
                                                     style={{ fontSize: '12px' }}
                                                 >
                                                     {labelVal >= 1000000 ? `${(labelVal / 1000000).toFixed(1)}M` : formatCurrency(labelVal)}
@@ -258,7 +258,7 @@ export default function FinancialReportPage() {
                                         const isHovered = hoveredMonth === idx
 
                                         return (
-                                            <g 
+                                            <g
                                                 key={idx}
                                                 onMouseEnter={(e) => {
                                                     setHoveredMonth(idx)
@@ -272,37 +272,37 @@ export default function FinancialReportPage() {
                                                 className="cursor-pointer group"
                                             >
                                                 {/* Background Highlight on Hover */}
-                                                <rect 
-                                                    x={xStart - 8} y="15" 
-                                                    width={groupWidth + 16} height="195" 
-                                                    fill={isHovered ? '#f8fafc' : 'transparent'} 
-                                                    rx="6" 
+                                                <rect
+                                                    x={xStart - 8} y="15"
+                                                    width={groupWidth + 16} height="195"
+                                                    fill={isHovered ? '#f8fafc' : 'transparent'}
+                                                    rx="6"
                                                     className="transition-all duration-200"
                                                 />
 
                                                 {/* Revenue Bar */}
-                                                <rect 
-                                                    x={xStart} y={revY} 
-                                                    width={barWidth} height={Math.max(revHeight, 2)} 
-                                                    fill="url(#revGrad)" 
+                                                <rect
+                                                    x={xStart} y={revY}
+                                                    width={barWidth} height={Math.max(revHeight, 2)}
+                                                    fill="url(#revGrad)"
                                                     rx="3"
                                                     className="transition-all duration-300"
                                                 />
 
                                                 {/* Expense Bar */}
-                                                <rect 
-                                                    x={xStart + barWidth + gap} y={expY} 
-                                                    width={barWidth} height={Math.max(expHeight, 2)} 
-                                                    fill="url(#expGrad)" 
+                                                <rect
+                                                    x={xStart + barWidth + gap} y={expY}
+                                                    width={barWidth} height={Math.max(expHeight, 2)}
+                                                    fill="url(#expGrad)"
                                                     rx="3"
                                                     className="transition-all duration-300"
                                                 />
 
                                                 {/* Month Label */}
-                                                <text 
-                                                    x={xStart + groupWidth / 2} y="222" 
-                                                    textAnchor="middle" 
-                                                    className={`font-bold transition-all ${isHovered ? 'fill-blue-600 scale-105' : 'fill-slate-400'}`}
+                                                <text
+                                                    x={xStart + groupWidth / 2} y="222"
+                                                    textAnchor="middle"
+                                                    className={`font-bold transition-all ${isHovered ? 'fill-blue-600 scale-105' : 'fill-slate-500'}`}
                                                     style={{ fontSize: '12px' }}
                                                 >
                                                     {`T${idx + 1}`}
@@ -327,24 +327,24 @@ export default function FinancialReportPage() {
 
                             {/* Dynamic Custom Chart Tooltip */}
                             {!isLoading && hoveredMonth !== null && monthlyData[hoveredMonth] && (
-                                <div 
-                                    className="fixed bg-slate-900/95 text-white p-3 rounded-lg text-xs shadow-xl pointer-events-none z-50 border border-slate-800 -translate-x-1/2 flex flex-col gap-1.5 animate-in fade-in zoom-in-95 duration-150"
+                                <div
+                                    className="fixed bg-white/95 text-slate-800 p-3 rounded-lg text-sm shadow-xl pointer-events-none z-50 border border-slate-200/80 -translate-x-1/2 flex flex-col gap-1.5 animate-in fade-in zoom-in-95 duration-150"
                                     style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
                                 >
-                                    <p className="font-bold text-center border-b border-slate-700/50 pb-1 mb-1 text-slate-300">
+                                    <p className="font-bold text-center border-b border-slate-100 pb-1 mb-1 text-slate-600">
                                         {monthlyData[hoveredMonth].month}
                                     </p>
                                     <div className="flex justify-between gap-5">
-                                        <span className="text-emerald-400 font-medium">Thu học phí:</span>
-                                        <span className="font-bold">{formatCurrency(monthlyData[hoveredMonth].revenue)}</span>
+                                        <span className="text-emerald-600 font-semibold">Thu học phí:</span>
+                                        <span className="font-bold text-slate-900">{formatCurrency(monthlyData[hoveredMonth].revenue)}</span>
                                     </div>
                                     <div className="flex justify-between gap-5">
-                                        <span className="text-rose-400 font-medium">Tổng chi:</span>
-                                        <span className="font-bold">{formatCurrency(monthlyData[hoveredMonth].expense)}</span>
+                                        <span className="text-rose-600 font-semibold">Tổng chi:</span>
+                                        <span className="font-bold text-slate-900">{formatCurrency(monthlyData[hoveredMonth].expense)}</span>
                                     </div>
-                                    <div className="flex justify-between gap-5 border-t border-slate-700/50 pt-1 mt-0.5">
-                                        <span className="text-slate-300 font-medium">Lợi nhuận:</span>
-                                        <span className={`font-bold ${monthlyData[hoveredMonth].net >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                    <div className="flex justify-between gap-5 border-t border-slate-100 pt-1 mt-0.5">
+                                        <span className="text-slate-500 font-semibold">Lợi nhuận:</span>
+                                        <span className={`font-bold ${monthlyData[hoveredMonth].net >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                                             {formatCurrency(monthlyData[hoveredMonth].net)}
                                         </span>
                                     </div>
@@ -369,18 +369,18 @@ export default function FinancialReportPage() {
                             <div className="flex flex-col gap-6">
                                 {/* Beautiful Horizontal Segmented Bar */}
                                 <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
-                                    <div 
-                                        style={{ width: `${(categoryStats.salary / totalCategoryExpense) * 100}%` }} 
+                                    <div
+                                        style={{ width: `${(categoryStats.salary / totalCategoryExpense) * 100}%` }}
                                         className="h-full bg-blue-500 transition-all duration-500"
                                         title={`Lương: ${((categoryStats.salary / totalCategoryExpense) * 100).toFixed(1)}%`}
                                     ></div>
-                                    <div 
-                                        style={{ width: `${(categoryStats.marketing / totalCategoryExpense) * 100}%` }} 
+                                    <div
+                                        style={{ width: `${(categoryStats.marketing / totalCategoryExpense) * 100}%` }}
                                         className="h-full bg-purple-500 transition-all duration-500"
                                         title={`Marketing: ${((categoryStats.marketing / totalCategoryExpense) * 100).toFixed(1)}%`}
                                     ></div>
-                                    <div 
-                                        style={{ width: `${(categoryStats.other / totalCategoryExpense) * 100}%` }} 
+                                    <div
+                                        style={{ width: `${(categoryStats.other / totalCategoryExpense) * 100}%` }}
                                         className="h-full bg-amber-500 transition-all duration-500"
                                         title={`Chi khác: ${((categoryStats.other / totalCategoryExpense) * 100).toFixed(1)}%`}
                                     ></div>
@@ -457,7 +457,7 @@ export default function FinancialReportPage() {
                                         </td>
                                         <td className="py-3.5 px-4 text-center">
                                             {row.revenue === 0 && row.expense === 0 ? (
-                                                <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-[8px]">Chưa phát sinh</span>
+                                                <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-[8px]">Chưa phát sinh</span>
                                             ) : row.net >= 0 ? (
                                                 <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-[8px]">Lãi</span>
                                             ) : (
@@ -476,13 +476,13 @@ export default function FinancialReportPage() {
                     <div>
                         <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
                             <h2 className="text-lg font-bold text-slate-800 tracking-tight">Nhật ký giao dịch gần đây</h2>
-                            
+
                             {/* Interactive Transaction Limit Input */}
                             <div className="flex items-center gap-1.5">
                                 <span className="text-sm font-semibold text-slate-500">Số lượng:</span>
-                                <input 
-                                    type="number" 
-                                    min="1" 
+                                <input
+                                    type="number"
+                                    min="1"
                                     max="200"
                                     className="w-16 px-2 py-1 bg-slate-50 hover:bg-slate-100/50 border border-slate-200 rounded-[6px] text-sm font-bold text-slate-700 focus:outline-none focus:border-indigo-500 focus:bg-white text-center transition-all duration-150"
                                     value={limitInput}
@@ -506,19 +506,19 @@ export default function FinancialReportPage() {
 
                         {/* Transaction Tabs */}
                         <div className="flex bg-slate-100 p-0.5 rounded-lg mb-4 text-sm font-bold">
-                            <button 
+                            <button
                                 onClick={() => setActiveTab('ALL')}
                                 className={`flex-1 py-2 text-center rounded-md cursor-pointer transition ${activeTab === 'ALL' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 Tất cả
                             </button>
-                            <button 
+                            <button
                                 onClick={() => setActiveTab('REVENUE')}
                                 className={`flex-1 py-2 text-center rounded-md cursor-pointer transition ${activeTab === 'REVENUE' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-emerald-600'}`}
                             >
                                 Thu học phí
                             </button>
-                            <button 
+                            <button
                                 onClick={() => setActiveTab('EXPENSE')}
                                 className={`flex-1 py-2 text-center rounded-md cursor-pointer transition ${activeTab === 'EXPENSE' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500 hover:text-rose-600'}`}
                             >
@@ -535,8 +535,8 @@ export default function FinancialReportPage() {
                         ) : (
                             <div className="flex flex-col gap-3.5 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
                                 {filteredTransactions.map((tx) => (
-                                    <div 
-                                        key={tx.id} 
+                                    <div
+                                        key={tx.id}
                                         className="p-4 bg-white hover:bg-slate-50/70 rounded-xl border border-slate-100 flex flex-col gap-3 transition-all duration-200 shadow-sm"
                                     >
                                         {/* Row 1: Status Tags, Date & Amount (Amount placed directly below the THU/CHI badge) */}
@@ -547,7 +547,7 @@ export default function FinancialReportPage() {
                                                 ) : (
                                                     <span className="px-2 py-0.5 bg-rose-50 text-rose-600 rounded-[6px] font-bold uppercase tracking-wider text-xs border border-rose-100">CHI</span>
                                                 )}
-                                                <span className="text-sm font-bold text-slate-400">
+                                                <span className="text-sm font-bold text-gray-500">
                                                     {new Date(tx.date).toLocaleDateString('vi-VN')}
                                                 </span>
                                             </div>
@@ -570,13 +570,13 @@ export default function FinancialReportPage() {
 
                                         {/* Row 3: Metadata Stack - Clean vertical stack to guarantee no squishing */}
                                         <div className="flex flex-col gap-1.5 bg-slate-50 p-2.5 rounded-lg border border-slate-100/50 text-sm">
-                                            <div className="text-slate-600">
-                                                <span className="text-slate-500 font-semibold">{tx.type === 'REVENUE' ? 'Học viên: ' : 'Người nhận: '}</span>
-                                                <span className="text-slate-800 font-bold">{tx.partner}</span>
+                                            <div className="text-gray-600">
+                                                <span className="text-gray-500 font-semibold">{tx.type === 'REVENUE' ? 'Học viên: ' : 'Người nhận: '}</span>
+                                                <span className="text-gray-800 font-bold">{tx.partner}</span>
                                             </div>
-                                            <div className="text-slate-600 border-t border-slate-200/50 pt-1.5 mt-0.5">
-                                                <span className="text-slate-500 font-semibold">Người lập: </span>
-                                                <span className="text-slate-700 font-semibold">{tx.creator}</span>
+                                            <div className="text-gray-600 border-t border-gray-200/50 pt-1.5 mt-0.5">
+                                                <span className="text-gray-500 font-semibold">Người lập: </span>
+                                                <span className="text-gray-800 font-semibold">{tx.creator}</span>
                                             </div>
                                         </div>
                                     </div>
