@@ -100,7 +100,7 @@ const menuItems = [
             },
             {
                 title: '4.2 Chương trình học',
-                href: '/dashboard/dao-tao/chuong-trinh',
+                href: '/dashboard/dao-tao/chuong-trinh-hoc',
                 role: 'Quản lý chương trình học',
             },
             {

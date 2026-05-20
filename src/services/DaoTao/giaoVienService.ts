@@ -34,15 +34,13 @@ export const layDanhSachGiaoVien = async (filters: GiaoVienFilter = {}) => {
     if (so_dien_thoai) whereClause.so_dien_thoai = { contains: so_dien_thoai, mode: 'insensitive' as const }
     if (ma_phong_ban) whereClause.ma_phong_ban = Number(ma_phong_ban)
 
-    return prisma.giaoVien.findMany({
+    return await prisma.giaoVien.findMany({
         where: whereClause,
-        // Chú ý: Tên quan hệ (chucVu, phongBan) phải khớp với schema.prisma của bạn
         include: {
-            chucVu: true,
-            phongBan: true,
+            chuc_vu: true,    
+            phong_ban: true,  
         },
-        orderBy: { ma_giao_vien: 'desc' },
-    })
+        });
 }
 
 export const taoGiaoVienMoi = async (data: GiaoVienPayload) => {
