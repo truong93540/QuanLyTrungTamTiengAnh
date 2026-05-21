@@ -65,7 +65,11 @@ export default function QuanLyMarketingPage() {
     const [isLoading, setIsLoading] = useState(true)
     
     const [searchTerm, setSearchTerm] = useState('')
-    const [selectedMonth, setSelectedMonth] = useState<string>('all') 
+    
+    // Mặc định chọn Tháng và Năm hiện tại
+    const [selectedMonth, setSelectedMonth] = useState<string>(String(new Date().getMonth() + 1)) 
+    const [selectedYear, setSelectedYear] = useState<string>(String(new Date().getFullYear())) 
+    
     const [tuKhoaNhanSu, setTuKhoaNhanSu] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 5
@@ -91,7 +95,6 @@ export default function QuanLyMarketingPage() {
         danh_sach_nhan_su: [] as PhanCongForm[] 
     })
     
-    // STATE LƯU TRỮ LỖI CHO TỪNG TRƯỜNG
     const [formErrors, setFormErrors] = useState<Record<string, string>>({})
     const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
 
@@ -147,7 +150,6 @@ export default function QuanLyMarketingPage() {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
         
-        // Tự động xóa lỗi của trường đang gõ
         if (formErrors[name]) {
             setFormErrors(prev => ({ ...prev, [name]: '' }));
         }
@@ -178,7 +180,7 @@ export default function QuanLyMarketingPage() {
         setEditingId(null)
         setFormData({ ten_chuong_trinh_marketing: '', ma_khoa_hoc: '', noi_dung: '', ngay_bat_dau: '', ngay_ket_thuc: '', ngan_sach: '', danh_sach_nhan_su: [] })
         setTuKhoaNhanSu('')
-        setFormErrors({}) // Xóa toàn bộ lỗi cũ
+        setFormErrors({}) 
         setIsModalOpen(true)
     }
 
@@ -195,7 +197,7 @@ export default function QuanLyMarketingPage() {
             ngan_sach: row.ngan_sach?.toString() || '',
             danh_sach_nhan_su: row.phan_cong?.map(pc => ({ ma_nhan_su: pc.ma_nhan_su, vai_tro: pc.vai_tro || '' })) || []
         })
-        setFormErrors({}) // Xóa toàn bộ lỗi cũ
+        setFormErrors({}) 
         setIsModalOpen(true)
     }
 
@@ -236,9 +238,7 @@ export default function QuanLyMarketingPage() {
         }
     }
 
-    // --- HÀM KIỂM TRA NGÀY HỢP LỆ (Bắt lỗi người dùng nhập 30/2, 31/4...) ---
     const isValidDateInput = (dateString: string) => {
-        // DateString từ input type="date" thường có dạng yyyy-mm-dd
         const dateObj = new Date(dateString);
         return dateObj instanceof Date && !isNaN(dateObj.getTime());
     }
@@ -246,11 +246,9 @@ export default function QuanLyMarketingPage() {
     const handleSave = async () => {
         const errors: Record<string, string> = {};
 
-        // 1. Kiểm tra Text và Khóa học
         if (!formData.ten_chuong_trinh_marketing.trim()) errors.ten_chuong_trinh_marketing = 'Vui lòng nhập tên chương trình';
         if (!formData.ma_khoa_hoc) errors.ma_khoa_hoc = 'Vui lòng chọn khóa học áp dụng';
         
-        // 2. Kiểm tra Ngân sách
         if (!formData.ngan_sach || formData.ngan_sach.toString().trim() === '') {
             errors.ngan_sach = 'Vui lòng nhập ngân sách dự kiến';
         } else if (Number(formData.ngan_sach) < 0) {
@@ -323,13 +321,22 @@ export default function QuanLyMarketingPage() {
             pc.nhan_su?.ho_ten.toLowerCase().includes(lowerSearch)
         ) || false;
         const matchSearch = matchProgram || matchStaff;
-        let matchMonth = true;
-        if (selectedMonth !== 'all') {
-            const startMonth = new Date(item.ngay_bat_dau).getMonth() + 1;
-            matchMonth = startMonth.toString() === selectedMonth;
+        
+        let matchDate = true;
+        const startDate = new Date(item.ngay_bat_dau);
+        const startMonth = (startDate.getMonth() + 1).toString();
+        const startYear = startDate.getFullYear().toString();
+
+        if (selectedMonth !== 'all' && startMonth !== selectedMonth) {
+            matchDate = false;
+        }
+        
+        // Nếu người dùng nhập năm (selectedYear không rỗng) và nó khác với startYear thì loại bỏ
+        if (selectedYear.trim() !== '' && startYear !== selectedYear.trim()) {
+            matchDate = false;
         }
 
-        return matchSearch && matchMonth;
+        return matchSearch && matchDate;
     }).sort((a, b) => b.ma_chuong_trinh_marketing - a.ma_chuong_trinh_marketing);
 
     const indexOfLastItem = currentPage * itemsPerPage
@@ -356,8 +363,8 @@ export default function QuanLyMarketingPage() {
                     </button>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-4 mb-6 w-full lg:w-2/3">
-                    <div className="relative flex-1 md:max-w-md">
+                <div className="flex flex-col md:flex-row gap-4 mb-6 w-full items-center">
+                    <div className="relative flex-1 md:max-w-md w-full">
                         <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
                             <FaSearch className="text-gray-400 text-sm" />
                         </div>
@@ -369,22 +376,35 @@ export default function QuanLyMarketingPage() {
                             className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400" 
                         />
                     </div>
-                    <div className="relative w-full md:w-36 shrink-0 group">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <FaFilter className="text-gray-400 text-[11px]" />
+                    
+                    {/* KHỐI LỌC THEO THÁNG VÀ NĂM ĐÃ ĐƯỢC CẬP NHẬT */}
+                    <div className="flex items-center bg-white border border-gray-300 rounded-lg shadow-sm h-[42px] overflow-hidden shrink-0 w-full md:w-auto">
+                        <div className="relative flex-1 md:w-[130px]">
+                            <select 
+                                value={selectedMonth}
+                                onChange={(e) => { setSelectedMonth(e.target.value); setCurrentPage(1); }}
+                                className="appearance-none w-full bg-transparent py-2.5 pl-4 pr-8 text-sm font-semibold text-gray-700 cursor-pointer outline-none focus:bg-gray-50 transition-colors"
+                            >
+                                <option value="all">Tất cả tháng</option>
+                                {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                                    <option key={month} value={month.toString()}>Tháng {month}</option>
+                                ))}
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <FaChevronDown className="text-gray-500 text-[10px]" />
+                            </div>
                         </div>
-                        <select 
-                            value={selectedMonth}
-                            onChange={(e) => setSelectedMonth(e.target.value)}
-                            className="block w-full appearance-none rounded-lg border border-gray-300 bg-white py-2.5 pl-8 pr-7 text-sm font-semibold text-gray-700 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 cursor-pointer transition-all hover:bg-gray-50"
-                        >
-                            <option value="all">Tất cả</option>
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
-                                <option key={month} value={month.toString()}>Tháng {month}</option>
-                            ))}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <FaChevronDown className="text-gray-400 text-[10px] transition-transform group-hover:text-gray-600" />
+
+                        <div className="w-[1px] h-6 bg-gray-200"></div>
+
+                        <div className="relative flex-1 md:w-[130px]">
+                            <input 
+                                type="number" 
+                                placeholder="Tất cả năm"
+                                value={selectedYear}
+                                onChange={(e) => { setSelectedYear(e.target.value); setCurrentPage(1); }}
+                                className="w-full bg-transparent py-2.5 px-4 text-sm font-semibold text-gray-700 outline-none focus:bg-gray-50 transition-colors placeholder-gray-500 appearance-none"
+                            />
                         </div>
                     </div>
                 </div>

@@ -23,7 +23,6 @@ import {
     FaFilter, 
     FaChevronDown, 
     FaChevronUp, 
-    
     FaBookOpen 
 } from 'react-icons/fa'
 
@@ -65,9 +64,11 @@ export default function QuanLyCamKetPage() {
     const [showStudentInfo, setShowStudentInfo] = useState(false)
     const [showCourseInfo, setShowCourseInfo] = useState(false)
     
-    // Tìm kiếm và Lọc
+    // TÌM KIẾM VÀ LỌC (Mặc định lấy tháng và năm hiện tại)
+    const currentDate = new Date();
     const [searchTerm, setSearchTerm] = useState('')
-    const [selectedMonth, setSelectedMonth] = useState<string>('all') 
+    const [selectedMonth, setSelectedMonth] = useState<string>((currentDate.getMonth() + 1).toString()) 
+    const [selectedYear, setSelectedYear] = useState<string>(currentDate.getFullYear().toString())
     
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingId, setEditingId] = useState<number | null>(null)
@@ -76,7 +77,6 @@ export default function QuanLyCamKetPage() {
     
     const [activeTab, setActiveTab] = useState<'info' | 'violation'>('info')
     const [violationStats, setViolationStats] = useState({ vang: 0, muon: 0, thieu_bt: 0, bo_thi: false })
-    const [dateError, setDateError] = useState('');
 
     const [formData, setFormData] = useState({
         ma_cam_ket: '', ngay_ky: '', ngay_het_han: '',
@@ -86,7 +86,7 @@ export default function QuanLyCamKetPage() {
         bi_vi_pham: false, ly_do_vi_pham: ''
     })
     
-    // STATE MỚI: Quản lý lỗi cho từng trường dữ liệu
+    // STATE Quản lý lỗi cho từng trường dữ liệu
     const [formErrors, setFormErrors] = useState<Record<string, string>>({})
     const [newStudentErrors, setNewStudentErrors] = useState<Record<string, string>>({})
 
@@ -144,7 +144,6 @@ export default function QuanLyCamKetPage() {
     const handleNewStudentChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { 
         const { name, value } = e.target;
         setNewStudentData({ ...newStudentData, [name]: value }); 
-        // Xóa lỗi của trường này khi người dùng bắt đầu nhập lại
         if (newStudentErrors[name]) {
             setNewStudentErrors(prev => ({ ...prev, [name]: '' }));
         }
@@ -193,9 +192,11 @@ export default function QuanLyCamKetPage() {
             setFormData({ ...formData, [name]: value })
         }
 
-        // Tự động xóa thông báo lỗi của trường đang được nhập
         if (formErrors[name]) {
             setFormErrors(prev => ({ ...prev, [name]: '' }));
+        }
+        if (name === 'ngay_het_han' || name === 'ngay_ky') {
+            setFormErrors(prev => ({ ...prev, ngay_het_han: '', ngay_ky: '' }));
         }
     }
 
@@ -272,9 +273,15 @@ export default function QuanLyCamKetPage() {
     }
 
     const openViewModal = async (row: CamKet) => { 
-        fillFormData(row); setIsViewMode(true); setEditingId(row.ma_cam_ket); 
-        setActiveTab('info'); setIsModalOpen(true); setIsLoadingDetails(true); 
-        setShowStudentInfo(false); setShowCourseInfo(false); setFormErrors({});
+        fillFormData(row); 
+        setIsViewMode(true); 
+        setEditingId(row.ma_cam_ket); 
+        setActiveTab('info'); 
+        setIsModalOpen(true); 
+        setIsLoadingDetails(true); 
+        setShowStudentInfo(false); 
+        setShowCourseInfo(false);
+        setFormErrors({});
 
         try {
             const [resStudent, resCourse] = await Promise.all([
@@ -310,50 +317,55 @@ export default function QuanLyCamKetPage() {
         setActiveTab('info'); setIsModalOpen(true); setFormErrors({});
     }
 
-    const closeModal = () => { setIsModalOpen(false); setEditingId(null); setIsViewMode(false); setShowStudentInfo(false); setShowCourseInfo(false); setFormErrors({}); }
+    const closeModal = () => { 
+        setIsModalOpen(false); 
+        setEditingId(null); 
+        setIsViewMode(false); 
+        setShowStudentInfo(false); 
+        setShowCourseInfo(false); 
+        setFormErrors({}); 
+    }
+
     const openDeleteModal = (id: number) => { setDeletingId(id); setIsDeleteModalOpen(true) }
     const closeDeleteModal = () => { setIsDeleteModalOpen(false); setDeletingId(null) }
 
     const confirmDelete = async () => { if (!deletingId) return; try { const response = await fetch(`/api/tuyen-sinh/cam-ket?id=${deletingId}`, { method: 'DELETE' }); if (response.ok) { setData(data.filter((item) => item.ma_cam_ket !== deletingId)); showToast('Đã xóa bản cam kết thành công!', 'success') } else showToast('Có lỗi xảy ra khi xóa.', 'error') } catch (error) { showToast('Không thể kết nối đến máy chủ.', 'error') } finally { closeDeleteModal() } }
 
-    // HÀM KIỂM TRA LỖI TỪNG TRƯỜNG DỮ LIỆU
     const handleSaveCamKet = async () => {
-        const newErrors: Record<string, string> = {};
+        const errors: Record<string, string> = {};
 
         // 1. Kiểm tra Dữ liệu trống
-        if (!formData.ten_hoc_vien.trim()) newErrors.ten_hoc_vien = 'Vui lòng nhập tên học viên';
-        if (!formData.ma_hoc_vien) newErrors.ma_hoc_vien = 'Vui lòng chọn học viên hợp lệ';
-        if (!formData.ma_khoa_hoc) newErrors.ma_khoa_hoc = 'Vui lòng chọn khóa học cam kết';
-        if (!formData.ngay_ky) newErrors.ngay_ky = 'Vui lòng chọn ngày ký cam kết';
-        if (!formData.noi_dung_cam_ket.trim()) newErrors.noi_dung_cam_ket = 'Nội dung hợp đồng không được để trống';
+        if (!formData.ten_hoc_vien.trim()) errors.ten_hoc_vien = 'Vui lòng nhập tên học viên';
+        if (!formData.ma_hoc_vien) errors.ma_hoc_vien = 'Vui lòng chọn học viên hợp lệ';
+        if (!formData.ma_khoa_hoc) errors.ma_khoa_hoc = 'Vui lòng chọn khóa học cam kết';
+        if (!formData.ngay_ky) errors.ngay_ky = 'Vui lòng chọn ngày ký cam kết';
+        if (!formData.noi_dung_cam_ket.trim()) errors.noi_dung_cam_ket = 'Nội dung hợp đồng không được để trống';
 
         // 2. Kiểm tra Số âm
-        if (formData.so_buoi_vang_cho_phep === '' || Number(formData.so_buoi_vang_cho_phep) < 0) newErrors.so_buoi_vang_cho_phep = 'Nhập số hợp lệ';
-        if (formData.so_buoi_di_muon === '' || Number(formData.so_buoi_di_muon) < 0) newErrors.so_buoi_di_muon = 'Nhập số hợp lệ';
-        if (formData.so_lan_thieu_bai_tap === '' || Number(formData.so_lan_thieu_bai_tap) < 0) newErrors.so_lan_thieu_bai_tap = 'Nhập số hợp lệ';
+        if (formData.so_buoi_vang_cho_phep === '' || Number(formData.so_buoi_vang_cho_phep) < 0) errors.so_buoi_vang_cho_phep = 'Nhập số hợp lệ';
+        if (formData.so_buoi_di_muon === '' || Number(formData.so_buoi_di_muon) < 0) errors.so_buoi_di_muon = 'Nhập số hợp lệ';
+        if (formData.so_lan_thieu_bai_tap === '' || Number(formData.so_lan_thieu_bai_tap) < 0) errors.so_lan_thieu_bai_tap = 'Nhập số hợp lệ';
 
-        // 3. Kiểm tra Ngày tháng (Logic ngày kết thúc)
+        // 3. Kiểm tra Ngày tháng
         if (formData.ngay_het_han && formData.ngay_ky) { 
             const today = new Date(); today.setHours(0, 0, 0, 0); 
             const expirationDate = new Date(formData.ngay_het_han); expirationDate.setHours(0, 0, 0, 0); 
             const signDate = new Date(formData.ngay_ky); signDate.setHours(0, 0, 0, 0);
 
             if (expirationDate < signDate) {
-                newErrors.ngay_het_han = 'Ngày hết hạn không được trước ngày ký';
+                errors.ngay_het_han = 'Ngày hết hạn không được trước ngày ký';
             } else if (formData.trang_thai === 'Đang hiệu lực' && expirationDate < today) { 
-                newErrors.ngay_het_han = 'Cam kết này đã qua ngày hết hạn so với hôm nay'; 
+                errors.ngay_het_han = 'Cam kết này đã qua ngày hết hạn so với hôm nay'; 
             } else if (formData.trang_thai === 'Đã hết hạn' && expirationDate >= today) { 
-                newErrors.ngay_het_han = 'Ngày hết hạn vẫn còn ở tương lai'; 
+                errors.ngay_het_han = 'Ngày hết hạn vẫn còn ở tương lai'; 
             } 
         }
 
-        // NẾU CÓ LỖI -> DỪNG VÀ HIỂN THỊ
-        if (Object.keys(newErrors).length > 0) {
-            setFormErrors(newErrors);
+        if (Object.keys(errors).length > 0) {
+            setFormErrors(errors);
             return; 
         }
 
-        // NẾU KHÔNG CÓ LỖI -> GỌI API LƯU DATA
         try {
             const method = editingId ? 'PUT' : 'POST'
             const payload = { 
@@ -400,6 +412,7 @@ export default function QuanLyCamKetPage() {
         } catch (error) { showToast('Lỗi mạng khi kiểm tra', 'error') } finally { setIsChecking(false); }
     }
 
+    // TÍNH TOÁN BỘ LỌC KẾT HỢP (THÁNG + NĂM)
     const filteredData = data.filter(item => {
         const lowerSearch = searchTerm.toLowerCase();
         const matchSearch = (item.hoc_vien?.ho_ten || '').toLowerCase().includes(lowerSearch) || 
@@ -407,13 +420,22 @@ export default function QuanLyCamKetPage() {
                             (item.khoa_hoc?.ten_khoa_hoc || '').toLowerCase().includes(lowerSearch);
         
         let matchMonth = true;
-        if (selectedMonth !== 'all') {
+        let matchYear = true;
+
+        if (item.ngay_ky) {
             const dateKy = new Date(item.ngay_ky);
             const month = (dateKy.getMonth() + 1).toString();
-            matchMonth = month === selectedMonth;
+            const year = dateKy.getFullYear().toString();
+
+            if (selectedMonth !== 'all') {
+                matchMonth = month === selectedMonth;
+            }
+            if (selectedYear.trim() !== '') {
+                matchYear = year === selectedYear.trim();
+            }
         }
 
-        return matchSearch && matchMonth;
+        return matchSearch && matchMonth && matchYear;
     }).sort((a, b) => b.ma_cam_ket - a.ma_cam_ket);
 
     const indexOfLastItem = currentPage * itemsPerPage
@@ -434,7 +456,9 @@ export default function QuanLyCamKetPage() {
                     </button>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-4 mb-6 w-full lg:w-2/3">
+                {/* THANH TÌM KIẾM & BỘ LỌC KÉP */}
+                <div className="flex flex-col md:flex-row gap-4 mb-6 w-full">
+                    {/* Box Tìm Kiếm */}
                     <div className="relative flex-1 md:max-w-md">
                         <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
                             <FaSearch className="text-gray-400 text-sm" />
@@ -447,22 +471,36 @@ export default function QuanLyCamKetPage() {
                             className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400" 
                         />
                     </div>
-                    <div className="relative w-full md:w-36 shrink-0 group">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <FaFilter className="text-gray-400 text-xs" />
+                    
+                    {/* Group Lọc Tháng & Năm */}
+                    <div className="flex gap-2 w-full md:w-auto">
+                        <div className="relative w-full md:w-32 shrink-0 group">
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <FaFilter className="text-gray-400 text-xs" />
+                            </div>
+                            <select 
+                                value={selectedMonth} 
+                                onChange={(e) => { setSelectedMonth(e.target.value); setCurrentPage(1); }}
+                                className="block w-full appearance-none rounded-lg border border-gray-300 bg-white py-2.5 pl-8 pr-7 text-sm font-semibold text-gray-700 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 cursor-pointer transition-all hover:bg-gray-50"
+                            >
+                                <option value="all">Tất cả</option>
+                                {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                                    <option key={month} value={month.toString()}>Tháng {month}</option>
+                                ))}
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <FaChevronDown className="text-gray-400 text-[10px] transition-transform group-hover:text-gray-600" />
+                            </div>
                         </div>
-                        <select 
-                            value={selectedMonth} 
-                            onChange={(e) => { setSelectedMonth(e.target.value); setCurrentPage(1); }}
-                            className="block w-full appearance-none rounded-lg border border-gray-300 bg-white py-2.5 pl-8 pr-7 text-sm font-semibold text-gray-700 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 cursor-pointer transition-all hover:bg-gray-50"
-                        >
-                            <option value="all">Tất cả</option>
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
-                                <option key={month} value={month.toString()}>Tháng {month}</option>
-                            ))}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <FaChevronDown className="text-gray-400 text-[10px] transition-transform group-hover:text-gray-600" />
+
+                        <div className="relative w-full md:w-28 shrink-0">
+                            <input 
+                                type="number" 
+                                placeholder="Năm..." 
+                                value={selectedYear}
+                                onChange={(e) => { setSelectedYear(e.target.value); setCurrentPage(1); }}
+                                className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 px-3 text-sm font-semibold text-gray-700 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all"
+                            />
                         </div>
                     </div>
                 </div>
@@ -826,10 +864,9 @@ export default function QuanLyCamKetPage() {
                                                         name="ngay_het_han" 
                                                         value={formData.ngay_het_han} 
                                                         onChange={handleChange} 
-                                                        className={`w-full border rounded-md px-3 py-2.5 outline-none text-black bg-white focus:ring-2 focus:ring-blue-500 ${formErrors.ngay_het_han || dateError ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'}`} 
+                                                        className={`w-full border rounded-md px-3 py-2.5 outline-none text-black bg-white focus:ring-2 focus:ring-blue-500 ${formErrors.ngay_het_han ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'}`} 
                                                     />
                                                     {formErrors.ngay_het_han && <p className="text-red-500 text-xs italic mt-1 font-medium">{formErrors.ngay_het_han}</p>}
-                                                    {dateError && !formErrors.ngay_het_han && <p className="text-red-500 text-xs italic mt-1 font-medium">{dateError}</p>}
                                                 </div>
                                             </div>
 
@@ -983,6 +1020,7 @@ export default function QuanLyCamKetPage() {
 
                         {/* Footer Modal */}
                         <div className="p-5 border-t border-gray-200 bg-gray-50 rounded-b-lg flex justify-end gap-3 shrink-0">
+                            {Object.keys(formErrors).length > 0 && <div className="mr-auto text-red-600 font-bold self-center text-sm"><FaExclamationTriangle className="inline mr-1" /> Vui lòng kiểm tra lại các trường bị báo đỏ!</div>}
                             <button onClick={closeModal} className="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-100 font-semibold transition">Đóng</button>
                             {(!isViewMode && activeTab === 'info') && (
                                 <button onClick={handleSaveCamKet} className="flex items-center gap-2 px-8 py-2.5 bg-[#1d4ed8] text-white rounded-md hover:bg-blue-700 font-semibold transition shadow-sm">
