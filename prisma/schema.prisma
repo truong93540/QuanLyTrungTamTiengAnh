@@ -340,10 +340,22 @@ model KhoaHoc {
   chuong_trinh    ChuongTrinhHoc         @relation(fields: [ma_chuong_trinh], references: [ma_chuong_trinh])
 
   cam_ket         CamKet[]
-  marketing       ChuongTrinhMarketing[]
   ke_hoach_day    KeHoachGiangDay[]
   lop_hoc         LopHoc[]
   phieu_thu       PhieuThu[]
+  chi_tiet_marketing ChiTietMarketing[]
+}
+
+model ChiTietMarketing {
+  ma_chi_tiet_marketing     Int                  @id @default(autoincrement())
+  ma_khoa_hoc               Int
+  ma_chuong_trinh_marketing Int
+
+  khoa_hoc                  KhoaHoc              @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
+  chuong_trinh_marketing    ChuongTrinhMarketing @relation(fields: [ma_chuong_trinh_marketing], references: [ma_chuong_trinh_marketing])
+
+  // Ràng buộc Unique: Đảm bảo 1 khóa học không bị add trùng vào 1 chiến dịch marketing nhiều lần
+  @@unique([ma_khoa_hoc, ma_chuong_trinh_marketing])
 }
 
 model LopHoc {
@@ -443,6 +455,7 @@ model KeHoachGiangDay {
   thoi_gian             String?
   ma_giao_vien          Int
   ma_khoa_hoc           Int
+  
   giao_vien             GiaoVien @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
   khoa_hoc              KhoaHoc  @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
 }
@@ -476,8 +489,8 @@ model ChuongTrinhMarketing {
   ngay_bat_dau               DateTime?
   ngay_ket_thuc              DateTime?
   ngan_sach                  Decimal?            @db.Decimal(15, 2)
-  ma_khoa_hoc                Int?
-  khoa_hoc                   KhoaHoc?            @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
+
+  chi_tiet_marketing         ChiTietMarketing[]
   phan_cong                  PhanCongMarketing[]
   phieu_chi                  PhieuChi[]
 }
