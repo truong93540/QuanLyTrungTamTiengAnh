@@ -17,14 +17,17 @@ export async function GET(request: Request) {
             include: {
                 hoc_vien: { select: { ho_ten: true } },
                 nhan_su: { select: { ho_ten: true } },
-                khoa_hoc: { select: { ten_khoa_hoc: true } }
+                khoa_hoc: { select: { ten_khoa_hoc: true, hoc_phi: true } },
+                khuyen_mai: { select: { ten_chuong_trinh: true, phan_tram_giam: true } }
             }
         })
 
         // 2. Fetch all PhieuChi (Expense)
         const phieuChi = await prisma.phieuChi.findMany({
             include: {
-                nhan_su: { select: { ho_ten: true } }
+                nhan_su: { select: { ho_ten: true } },
+                bang_luong: { select: { ky_luong: true } },
+                chuong_trinh_mkt: { select: { ten_chuong_trinh_marketing: true } }
             }
         })
 
@@ -89,7 +92,14 @@ export async function GET(request: Request) {
                 date: item.ngay_thu,
                 title: item.noi_dung || `Thu học phí khóa học ${item.khoa_hoc?.ten_khoa_hoc || ''}`,
                 partner: item.hoc_vien?.ho_ten || 'Học viên',
-                creator: item.nhan_su?.ho_ten || 'Không rõ'
+                creator: item.nhan_su?.ho_ten || 'Không rõ',
+                // Additional fields for details modal
+                courseName: item.khoa_hoc?.ten_khoa_hoc || 'Không rõ',
+                courseFee: item.khoa_hoc?.hoc_phi ? Number(item.khoa_hoc.hoc_phi) : 0,
+                promotion: item.khuyen_mai ? {
+                    name: item.khuyen_mai.ten_chuong_trinh,
+                    discountPercent: item.khuyen_mai.phan_tram_giam ? Number(item.khuyen_mai.phan_tram_giam) : 0
+                } : null
             })
         })
 
@@ -102,14 +112,29 @@ export async function GET(request: Request) {
                 title: item.noi_dung || `Phiếu chi ${item.loai_phieu_chi === 'LUONG' ? 'lương nhân viên' : item.loai_phieu_chi === 'MARKETING' ? 'chi phí Marketing' : 'chi phí khác'}`,
                 partner: item.nguoi_nhan || 'Người nhận',
                 creator: item.nhan_su?.ho_ten || 'Không rõ',
-                status: item.trang_thai
+                status: item.trang_thai,
+                // Additional fields for details modal
+                expenseType: item.loai_phieu_chi, // 'LUONG', 'MARKETING', 'KHAC'
+                paymentMethod: item.hinh_thuc_chi || 'Không rõ',
+                salaryPeriod: item.bang_luong?.ky_luong || null,
+                marketingCampaign: item.chuong_trinh_mkt?.ten_chuong_trinh_marketing || null
             })
         })
 
-        // Sort by date descending and take top N based on limit
+        // Sort by date descending and then by ID numeric part descending as tie-breaker
         const recentTransactions = unifiedTransactions
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .sort((a, b) => {
+                const timeA = new Date(a.date).getTime()
+                const timeB = new Date(b.date).getTime()
+                if (timeB !== timeA) {
+                    return timeB - timeA
+                }
+                const idA = parseInt(a.id.split('-')[1])
+                const idB = parseInt(b.id.split('-')[1])
+                return idB - idA
+            })
             .slice(0, limit)
+
 
         // 6. Calculate statistics by category for the selected year
         let salaryExpenseYear = 0

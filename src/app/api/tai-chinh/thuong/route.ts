@@ -231,6 +231,26 @@ export async function POST(request: Request) {
         // Trường hợp 1: Lưu phiếu thưởng nóng đơn lẻ
         if (isThuongNong) {
             const kiThuong = `${month}/${year}`;
+
+            // Kiểm tra xem bảng thưởng đã được chốt và khóa chưa
+            const existingBangThuong = await prisma.bangThuong.findFirst({
+                where: { ki_thuong: kiThuong }
+            });
+            if (existingBangThuong) {
+                const checkSaved = await prisma.phieuThuong.findFirst({
+                    where: {
+                        ma_bang_thuong: existingBangThuong.ma_bang_thuong,
+                        loai_thuong: { in: ["Tiền hoa hồng", "Chuyên cần"] }
+                    }
+                });
+                if (checkSaved) {
+                    return NextResponse.json(
+                        { error: "Bảng thưởng kỳ này đã được chốt và khóa, không thể thêm thưởng phát sinh!" }, 
+                        { status: 400 }
+                    );
+                }
+            }
+
             const result = await prisma.$transaction(async (tx) => {
                 let bangThuong = await tx.bangThuong.findFirst({ where: { ki_thuong: kiThuong } });
                 if (!bangThuong) {
@@ -345,6 +365,57 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, bangThuong: result });
     } catch (error: any) {
         console.error("Lỗi lưu thưởng:", error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
+
+export async function DELETE(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const month = parseInt(searchParams.get("month") || "");
+        const year = parseInt(searchParams.get("year") || "");
+
+        if (!month || !year) {
+            return NextResponse.json({ error: "Thiếu thông tin tháng/năm" }, { status: 400 });
+        }
+
+        const kiThuong = `${month}/${year}`;
+
+        // Tìm BangThuong để mở khóa
+        const bangThuong = await prisma.bangThuong.findFirst({
+            where: { ki_thuong: kiThuong }
+        });
+
+        if (!bangThuong) {
+            return NextResponse.json({ error: "Không tìm thấy bảng thưởng đã chốt" }, { status: 404 });
+        }
+
+        const result = await prisma.$transaction(async (tx) => {
+            // 1. Xóa các phiếu tự động (Hoa hồng, Chuyên cần)
+            await tx.phieuThuong.deleteMany({
+                where: {
+                    ma_bang_thuong: bangThuong.ma_bang_thuong,
+                    loai_thuong: { in: ["Tiền hoa hồng", "Chuyên cần"] }
+                }
+            });
+
+            // 2. Cập nhật lại tổng tiền bảng thưởng chỉ còn tổng thưởng nóng còn lại
+            const allPhieuRemaining = await tx.phieuThuong.findMany({
+                where: { ma_bang_thuong: bangThuong.ma_bang_thuong }
+            });
+            const newTotal = allPhieuRemaining.reduce((acc, p) => acc + Number(p.so_tien), 0);
+
+            await tx.bangThuong.update({
+                where: { ma_bang_thuong: bangThuong.ma_bang_thuong },
+                data: { so_tien_thuong: newTotal }
+            });
+
+            return bangThuong;
+        });
+
+        return NextResponse.json({ success: true, bangThuong: result });
+    } catch (error: any) {
+        console.error("Lỗi mở khóa bảng thưởng:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
