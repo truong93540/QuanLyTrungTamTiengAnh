@@ -143,6 +143,13 @@ export const taoPhieuChiMoi = async (data: PhieuChiData) => {
 }
 
 export const capNhatPhieuChi = async (ma_phieu_chi: number, data: PhieuChiData) => {
+    const current = await prisma.phieuChi.findUnique({
+        where: { ma_phieu_chi }
+    })
+    if (current && current.trang_thai === 'Đã chi') {
+        throw new PhieuChiValidationError('Không thể sửa đổi phiếu chi đã ở trạng thái Đã chi.')
+    }
+
     const maNhanSu = Number(data.ma_nhan_su)
     const maBangLuong = data.ma_bang_luong ? Number(data.ma_bang_luong) : null
     const maMarketing = data.ma_chuong_trinh_marketing ? Number(data.ma_chuong_trinh_marketing) : null
@@ -179,7 +186,75 @@ export const capNhatPhieuChi = async (ma_phieu_chi: number, data: PhieuChiData) 
 }
 
 export const xoaPhieuChi = async (ma_phieu_chi: number) => {
+    const current = await prisma.phieuChi.findUnique({
+        where: { ma_phieu_chi }
+    })
+    if (current && current.trang_thai === 'Đã chi') {
+        throw new PhieuChiValidationError('Không thể xóa phiếu chi đã ở trạng thái Đã chi.')
+    }
+
     return await prisma.phieuChi.delete({
         where: { ma_phieu_chi }
     })
+}
+
+export const layDanhSachChuongTrinhMarketing = async () => {
+    const rawList = await prisma.chuongTrinhMarketing.findMany({
+        include: {
+            chi_tiet_marketing: {
+                include: {
+                    khoa_hoc: { 
+                        select: { 
+                            ma_khoa_hoc: true, 
+                            ten_khoa_hoc: true, 
+                            hoc_phi: true, 
+                            thoi_luong: true, 
+                            trinh_do: true,
+                            trang_thai: true 
+                        } 
+                    }
+                }
+            },
+            phan_cong: {
+                include: { 
+                    nhan_su: { 
+                        select: { 
+                            ma_nhan_su: true,
+                            ho_ten: true, 
+                            so_dien_thoai: true, 
+                            email: true,
+                            phong_ban: { select: { ten_phong_ban: true } }
+                        } 
+                    } 
+                }
+            },
+            phieu_chi: {
+                select: {
+                    tong_tien: true,
+                    trang_thai: true
+                }
+            }
+        },
+        orderBy: { ngay_bat_dau: 'desc' }
+    });
+
+    return rawList.map(item => {
+        const firstDetail = item.chi_tiet_marketing[0];
+        const da_chi = item.phieu_chi
+            .filter(pc => pc.trang_thai === 'Đã chi')
+            .reduce((sum, pc) => sum + Number(pc.tong_tien), 0);
+
+        return {
+            ma_chuong_trinh_marketing: item.ma_chuong_trinh_marketing,
+            ten_chuong_trinh_marketing: item.ten_chuong_trinh_marketing,
+            noi_dung: item.noi_dung,
+            ngay_bat_dau: item.ngay_bat_dau,
+            ngay_ket_thuc: item.ngay_ket_thuc,
+            ngan_sach: item.ngan_sach ? Number(item.ngan_sach) : null,
+            da_chi: da_chi,
+            phan_cong: item.phan_cong,
+            ma_khoa_hoc: firstDetail ? firstDetail.ma_khoa_hoc : null,
+            khoa_hoc: firstDetail ? firstDetail.khoa_hoc : null
+        };
+    });
 }

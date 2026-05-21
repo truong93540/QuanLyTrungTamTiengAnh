@@ -268,7 +268,7 @@ export default function ChamCongPage() {
                                                     )}
                                                     {/* tooltip */}
                                                     {((dayData) || (expectedShifts.size > 0)) && (
-                                                        <div className={`invisible group-hover/cell:visible absolute ${rowIndex < 4 ? 'top-full mt-2' : 'bottom-full mb-2'} left-1/2 -translate-x-1/2 z-30 w-80 rounded-lg bg-white shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-slate-100 animate-in fade-in zoom-in duration-200`}>
+                                                        <div className={`invisible opacity-0 scale-95 group-hover/cell:visible group-hover/cell:opacity-100 group-hover/cell:scale-100 transition-all duration-200 delay-0 group-hover/cell:delay-[300ms] absolute ${rowIndex < 4 ? 'top-full mt-2' : 'bottom-full mb-2'} left-1/2 -translate-x-1/2 z-30 w-80 rounded-lg bg-white shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-slate-100`}>
                                                             <div className="p-4 max-h-[250px] overflow-y-auto custom-scrollbar overflow-x-hidden">
                                                                 <div className="font-black border-b border-slate-100 pb-2 mb-3 text-blue-600 flex justify-between uppercase text-xs tracking-wider">
                                                                     <span>{labelObj.thu}, {day}/{selectedMonth}</span>

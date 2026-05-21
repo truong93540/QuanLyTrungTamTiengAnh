@@ -24,6 +24,18 @@ interface RecentTransaction {
     partner: string
     creator: string
     status?: string
+    // Revenue specific
+    courseName?: string
+    courseFee?: number
+    promotion?: {
+        name: string
+        discountPercent: number
+    } | null
+    // Expense specific
+    expenseType?: string
+    paymentMethod?: string
+    salaryPeriod?: string | null
+    marketingCampaign?: string | null
 }
 
 interface CategoryStats {
@@ -50,6 +62,7 @@ export default function FinancialReportPage() {
     const [activeTab, setActiveTab] = useState<'ALL' | 'REVENUE' | 'EXPENSE'>('ALL')
     const [hoveredMonth, setHoveredMonth] = useState<number | null>(null)
     const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
+    const [selectedTx, setSelectedTx] = useState<RecentTransaction | null>(null)
 
     // States for custom transaction log limit
     const [limitInput, setLimitInput] = useState<string>('10')
@@ -564,7 +577,10 @@ export default function FinancialReportPage() {
                                         </div>
 
                                         {/* Row 2: Title - No truncate so it wraps naturally */}
-                                        <p className="text-base font-bold text-slate-800 leading-snug">
+                                        <p
+                                            onClick={() => setSelectedTx(tx)}
+                                            className="text-base font-bold text-slate-800 leading-snug cursor-pointer hover:text-blue-600 hover:underline transition-all duration-150"
+                                        >
                                             {tx.title}
                                         </p>
 
@@ -586,6 +602,172 @@ export default function FinancialReportPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Transaction Details Modal */}
+            {selectedTx && (
+                <div
+                    className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300"
+                    onClick={() => setSelectedTx(null)}
+                >
+                    <div
+                        className="bg-white w-full max-w-lg rounded-[8px] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+
+
+                        {/* Modal Header */}
+                        <div className="p-6 pb-4 border-b border-slate-100 flex items-start justify-between gap-4">
+                            <div>
+                                <span className={`inline-flex items-center gap-1 text-sm font-bold tracking-wider px-2.5 py-1 rounded-[6px] border mb-2.5 ${selectedTx.type === 'REVENUE' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
+                                    {selectedTx.type === 'REVENUE' ? 'Phiếu thu học phí' : 'Phiếu chi tiêu'}
+                                </span>
+                                <h3 className="text-lg font-bold text-slate-800 leading-snug">
+                                    Chi tiết giao dịch {selectedTx.id}
+                                </h3>
+                            </div>
+                            <button
+                                onClick={() => setSelectedTx(null)}
+                                className="p-2 hover:bg-slate-50 text-slate-400 hover:text-slate-600 rounded-lg transition-all cursor-pointer"
+                            >
+                                <FaTimesCircle size={20} />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 flex flex-col gap-5 overflow-y-auto max-h-[500px]">
+                            {/* Transaction Title & Content */}
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-sm font-bold tracking-wider text-gray-500">Nội dung giao dịch</span>
+                                <p className="text-base font-bold text-slate-800 bg-slate-50 px-4 py-3 rounded-xl border border-slate-100/80 leading-relaxed">
+                                    {selectedTx.title}
+                                </p>
+                            </div>
+
+                            {/* Key Stats: Amount & Date */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100/80 flex flex-col gap-1">
+                                    <span className="text-sm font-bold tracking-wider text-gray-500">Số tiền</span>
+                                    <span className={`text-xl font-[800] leading-none ${selectedTx.type === 'REVENUE' ? 'text-emerald-600' : 'text-rose-500'}`}>
+                                        {selectedTx.type === 'REVENUE' ? '+' : '-'}{formatCurrency(selectedTx.amount)}
+                                    </span>
+                                </div>
+                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100/80 flex flex-col gap-1">
+                                    <span className="text-sm font-bold tracking-wider text-gray-500">Ngày lập phiếu</span>
+                                    <span className="text-base font-bold text-slate-700 leading-none">
+                                        {new Date(selectedTx.date).toLocaleDateString('vi-VN')}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Basic Details: Partner & Creator */}
+                            <div className="flex flex-col gap-3.5 bg-slate-50/50 p-4 rounded-xl border border-slate-100/60 text-sm">
+                                <div className="flex justify-between items-start gap-4">
+                                    <span className="text-gray-500 font-semibold shrink-0">
+                                        {selectedTx.type === 'REVENUE' ? 'Học viên:' : 'Người nhận tiền:'}
+                                    </span>
+                                    <span className="text-slate-800 font-bold text-right leading-tight">
+                                        {selectedTx.partner}
+                                    </span>
+                                </div>
+                                <div className="h-px bg-slate-100" />
+                                <div className="flex justify-between items-center gap-4">
+                                    <span className="text-slate-500 font-semibold shrink-0">Người lập phiếu:</span>
+                                    <span className="text-slate-800 font-bold text-right leading-tight">
+                                        {selectedTx.creator}
+                                    </span>
+                                </div>
+                                {selectedTx.status && (
+                                    <>
+                                        <div className="h-px bg-slate-100" />
+                                        <div className="flex justify-between items-center gap-4">
+                                            <span className="text-slate-500 font-semibold shrink-0">Trạng thái:</span>
+                                            <span className={`px-2.5 py-0.5 text-xs font-bold rounded-[6px] ${selectedTx.status === 'Đã chi' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : selectedTx.status === 'Chờ duyệt' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
+                                                {selectedTx.status}
+                                            </span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Dynamic Details based on transaction type */}
+                            {selectedTx.type === 'REVENUE' ? (
+                                <div className="flex flex-col gap-3.5 bg-emerald-50/20 p-4 rounded-xl border border-emerald-100/50 text-sm">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-emerald-700 font-semibold">Khóa học đăng ký:</span>
+                                        <span className="text-slate-800 font-bold leading-normal">
+                                            {selectedTx.courseName}
+                                        </span>
+                                    </div>
+                                    <div className="h-px bg-emerald-100/40" />
+                                    <div className="flex justify-between items-center gap-4">
+                                        <span className="text-emerald-700 font-semibold shrink-0">Học phí gốc:</span>
+                                        <span className="text-slate-800 font-bold text-right">
+                                            {formatCurrency(selectedTx.courseFee || 0)}
+                                        </span>
+                                    </div>
+                                    {selectedTx.promotion && (
+                                        <>
+                                            <div className="h-px bg-emerald-100/40" />
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-emerald-700 font-semibold">Khuyến mãi áp dụng:</span>
+                                                <div>
+                                                    <span className="text-slate-800 font-bold block leading-normal">
+                                                        {selectedTx.promotion.name}
+                                                    </span>
+                                                    <span className="text-xs font-bold text-emerald-600 mt-0.5 block">
+                                                        Giảm {selectedTx.promotion.discountPercent}% học phí
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-3.5 bg-rose-50/25 p-4 rounded-xl border border-rose-100/40 text-sm">
+                                    <div className="flex justify-between items-center gap-4">
+                                        <span className="text-rose-700 font-semibold shrink-0">Hình thức thanh toán:</span>
+                                        <span className="text-slate-800 font-bold text-right leading-tight">
+                                            {selectedTx.paymentMethod}
+                                        </span>
+                                    </div>
+                                    {selectedTx.expenseType === 'LUONG' && selectedTx.salaryPeriod && (
+                                        <>
+                                            <div className="h-px bg-rose-100/30" />
+                                            <div className="flex justify-between items-center gap-4">
+                                                <span className="text-rose-700 font-semibold shrink-0">Chi trả cho kỳ lương:</span>
+                                                <span className="text-slate-800 font-bold text-right leading-tight">
+                                                    {selectedTx.salaryPeriod}
+                                                </span>
+                                            </div>
+                                        </>
+                                    )}
+                                    {selectedTx.expenseType === 'MARKETING' && selectedTx.marketingCampaign && (
+                                        <>
+                                            <div className="h-px bg-rose-100/30" />
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-rose-700 font-semibold">Chương trình Marketing:</span>
+                                                <span className="text-slate-800 font-bold leading-normal">
+                                                    {selectedTx.marketingCampaign}
+                                                </span>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                            <button
+                                onClick={() => setSelectedTx(null)}
+                                className="px-5 py-2 bg-slate-200 hover:bg-slate-300/80 text-slate-700 font-bold text-sm rounded-xl cursor-pointer transition-all duration-150"
+                            >
+                                Đóng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

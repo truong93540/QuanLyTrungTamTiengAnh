@@ -75,6 +75,8 @@ export async function POST(request: Request) {
 
         revalidatePath('/api/tai-chinh/luong')
         revalidatePath('/dashboard/tai-chinh/bang-luong')
+        revalidatePath('/api/tai-chinh/bao-cao')
+        revalidatePath('/dashboard/bao-cao/tai-chinh')
 
         return NextResponse.json(phieuChiMoi, { status: 201 })
     } catch (error) {
@@ -104,6 +106,8 @@ export async function PUT(request: Request) {
 
         revalidatePath('/api/tai-chinh/luong')
         revalidatePath('/dashboard/tai-chinh/bang-luong')
+        revalidatePath('/api/tai-chinh/bao-cao')
+        revalidatePath('/dashboard/bao-cao/tai-chinh')
 
         return NextResponse.json(phieuChiCapNhat, { status: 200 })
     } catch (error) {
@@ -134,10 +138,15 @@ export async function DELETE(request: Request) {
 
         revalidatePath('/api/tai-chinh/luong')
         revalidatePath('/dashboard/tai-chinh/bang-luong')
+        revalidatePath('/api/tai-chinh/bao-cao')
+        revalidatePath('/dashboard/bao-cao/tai-chinh')
 
         return NextResponse.json({ message: 'Xóa thành công' }, { status: 200 })
     } catch (error) {
         console.error('Lỗi DELETE:', error)
+        if (error instanceof PhieuChiValidationError) {
+            return NextResponse.json({ error: error.message }, { status: 400 })
+        }
         return NextResponse.json({ error: 'Lỗi khi xóa khỏi cơ sở dữ liệu' }, { status: 500 })
     }
 }

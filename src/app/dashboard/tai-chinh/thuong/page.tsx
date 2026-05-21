@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-    FaCoins, 
-    FaAward, 
-    FaChartLine, 
-    FaSave, 
-    FaSync, 
+import {
+    FaCoins,
+    FaAward,
+    FaChartLine,
+    FaSave,
+    FaSync,
     FaSearch,
     FaArrowLeft,
     FaCalendarAlt,
@@ -14,7 +14,10 @@ import {
     FaTimes,
     FaEdit,
     FaTrash,
-    FaCheck
+    FaCheck,
+    FaLock,
+    FaUnlock,
+    FaExclamationTriangle
 } from "react-icons/fa";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
@@ -59,7 +62,7 @@ export default function ThuongPage() {
     const [showNgayLeModal, setShowNgayLeModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [alert, setAlert] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-    
+
     // State cho Modal thưởng phát sinh
     const [selectedNS, setSelectedNS] = useState("");
     const [soTienThuongNong, setSoTienThuongNong] = useState("");
@@ -77,6 +80,8 @@ export default function ThuongPage() {
     const [isUpdating, setIsUpdating] = useState(false);
 
     const [isSaved, setIsSaved] = useState(false);
+    const [showConfirmLockModal, setShowConfirmLockModal] = useState(false);
+    const [showConfirmUnlockModal, setShowConfirmUnlockModal] = useState(false);
 
     const fetchData = async (currentNgayLe = ngayLeText) => {
         setLoading(true);
@@ -97,9 +102,14 @@ export default function ThuongPage() {
         }
     };
 
-    const handleSave = async () => {
+    const handleLockThuong = () => {
+        if (data.length === 0 || isSaved) return;
+        setShowConfirmLockModal(true);
+    };
+
+    const executeLockThuong = async () => {
         if (data.length === 0) return;
-        
+
         setIsSaving(true);
         try {
             const res = await fetch("/api/tai-chinh/thuong", {
@@ -114,14 +124,41 @@ export default function ThuongPage() {
 
             const result = await res.json();
             if (result.success) {
-                setAlert({ message: `Đã lưu kết quả thưởng kỳ ${month}/${year} thành công!`, type: "success" });
+                setAlert({ message: `Đã chốt bảng thưởng tháng ${month}/${year} thành công!`, type: "success" });
                 setIsSaved(true);
             } else {
-                setAlert({ message: result.error || "Có lỗi xảy ra khi lưu.", type: "error" });
+                setAlert({ message: result.error || "Có lỗi xảy ra khi chốt bảng thưởng.", type: "error" });
             }
         } catch (error) {
-            console.error("Lỗi khi lưu:", error);
+            console.error("Lỗi khi chốt thưởng:", error);
             setAlert({ message: "Không thể kết nối đến máy chủ.", type: "error" });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleUnlockThuong = () => {
+        setShowConfirmUnlockModal(true);
+    };
+
+    const executeUnlockThuong = async () => {
+        setIsSaving(true);
+        try {
+            const res = await fetch(`/api/tai-chinh/thuong?month=${month}&year=${year}`, {
+                method: "DELETE"
+            });
+
+            const result = await res.json();
+            if (result.success) {
+                setAlert({ message: `Đã mở chốt bảng thưởng tháng ${month}/${year} thành công!`, type: "success" });
+                setIsSaved(false);
+                fetchData(); // Tải lại bảng tính xem trước
+            } else {
+                setAlert({ message: result.error || "Có lỗi xảy ra.", type: "error" });
+            }
+        } catch (error) {
+            console.error("Lỗi khi mở chốt:", error);
+            setAlert({ message: "Lỗi kết nối.", type: "error" });
         } finally {
             setIsSaving(false);
         }
@@ -167,7 +204,7 @@ export default function ThuongPage() {
 
     const handleDeletePhieu = async (id: number) => {
         if (!confirm("Bạn có chắc chắn muốn xóa phiếu thưởng này?")) return;
-        
+
         try {
             const res = await fetch(`/api/tai-chinh/thuong/${id}`, { method: "DELETE" });
             const result = await res.json();
@@ -195,7 +232,7 @@ export default function ThuongPage() {
 
     const handleUpdatePhieu = async (id: number) => {
         if (!editSoTien || !editNoiDung) return;
-        
+
         setIsUpdating(true);
         try {
             const res = await fetch(`/api/tai-chinh/thuong/${id}`, {
@@ -210,7 +247,7 @@ export default function ThuongPage() {
                 fetchData();
                 // Cập nhật local state của modal
                 if (selectedManageNS) {
-                    const updatedChiTiet = selectedManageNS.chi_tiet_thuong_nong?.map(p => 
+                    const updatedChiTiet = selectedManageNS.chi_tiet_thuong_nong?.map(p =>
                         p.ma_phieu_thuong === id ? { ...p, so_tien: parseFloat(editSoTien), noi_dung: editNoiDung } : p
                     ) || [];
                     const newTotal = updatedChiTiet.reduce((acc, p) => acc + p.so_tien, 0);
@@ -245,15 +282,15 @@ export default function ThuongPage() {
 
     const filteredData = data.filter(item => {
         const matchesSearch = item.ho_ten.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                             item.chuc_vu.toLowerCase().includes(searchTerm.toLowerCase());
-        
+            item.chuc_vu.toLowerCase().includes(searchTerm.toLowerCase());
+
         if (!matchesSearch) return false;
-        
+
         // Nếu là giáo viên, chỉ hiện nếu có thưởng hoặc đang tìm kiếm cụ thể
         if (item.isTeacher) {
             return item.tong_thuong > 0 || searchTerm !== "";
         }
-        
+
         return true;
     });
 
@@ -268,7 +305,7 @@ export default function ThuongPage() {
 
     const totalHoaHong = data.reduce((acc, curr) => acc + curr.tien_hoa_hong, 0);
     const totalChuyenCan = data.reduce((acc, curr) => acc + curr.thuong_chuyen_can, 0);
-    
+
     // Tìm định mức ngày công của tháng (lấy từ nhân sự hành chính đầu tiên)
     const sampleOfficeStaff = data.find(item => !item.isTeacher && item.chi_tiet_cong.has_data);
     const requiredWorkingDays = sampleOfficeStaff?.chi_tiet_cong.required_days || 0;
@@ -287,35 +324,35 @@ export default function ThuongPage() {
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2 bg-white p-2 rounded-lg shadow-sm border border-slate-200">
                         <FaCalendarAlt className="text-blue-500 ml-2" />
-                        <select 
-                            value={month} 
+                        <select
+                            value={month}
                             onChange={(e) => setMonth(parseInt(e.target.value))}
                             className="bg-transparent font-bold text-slate-700 outline-none p-1"
                         >
-                            {Array.from({length: 12}, (_, i) => (
-                                <option key={i+1} value={i+1}>Tháng {i+1}</option>
+                            {Array.from({ length: 12 }, (_, i) => (
+                                <option key={i + 1} value={i + 1}>Tháng {i + 1}</option>
                             ))}
                         </select>
-                        <select 
-                            value={year} 
+                        <select
+                            value={year}
                             onChange={(e) => setYear(parseInt(e.target.value))}
                             className="bg-transparent font-bold text-slate-700 outline-none p-1"
                         >
-                            {Array.from({length: 5}, (_, i) => (
+                            {Array.from({ length: 5 }, (_, i) => (
                                 <option key={i} value={new Date().getFullYear() - 2 + i}>{new Date().getFullYear() - 2 + i}</option>
                             ))}
                         </select>
                     </div>
-                    
-                    <button 
+
+                    <button
                         onClick={() => setShowNgayLeModal(true)}
                         className={`flex items-center gap-2 px-4 py-2 font-bold rounded-lg shadow-sm border transition-all active:scale-95 ${ngayLeText ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`}
                     >
                         <FaCalendarAlt className={ngayLeText ? "text-orange-500" : "text-blue-500"} />
                         <span>Nhập ngày lễ/tết {ngayLeText && '(Đã nhập)'}</span>
                     </button>
-                    
-                    <button 
+
+                    <button
                         onClick={() => fetchData()}
                         className="p-3 bg-white text-blue-600 rounded-lg shadow-sm border border-slate-200 hover:bg-blue-50 transition-all active:scale-90"
                     >
@@ -365,8 +402,8 @@ export default function ThuongPage() {
                 <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="relative w-full md:w-96">
                         <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             placeholder="Tìm kiếm nhân sự..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -374,21 +411,36 @@ export default function ThuongPage() {
                         />
                     </div>
                     <div className="flex gap-2">
-                        <button 
+                        <button
                             onClick={() => setShowThuongNongModal(true)}
-                            className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 shadow-lg shadow-orange-200 transition-all active:scale-95"
+                            disabled={isSaved}
+                            className={`flex items-center gap-2 px-6 py-3 font-bold rounded-lg transition-all ${isSaved
+                                ? "bg-slate-200 text-slate-400 cursor-not-allowed opacity-70"
+                                : "bg-orange-500 text-white hover:bg-orange-600 shadow-lg shadow-orange-200 active:scale-95 cursor-pointer"
+                                }`}
                         >
-                            <FaFire />
-                            <span>Thưởng phát sinh</span>
+                            {isSaved ? <FaLock /> : <FaFire />}
+                            <span>Thêm phiếu thưởng</span>
                         </button>
-                        <button 
-                            onClick={handleSave}
-                            disabled={isSaving || data.length === 0}
-                            className={`flex items-center gap-2 px-6 py-3 text-white font-bold rounded-lg shadow-lg transition-all active:scale-95 ${isSaving || data.length === 0 ? 'bg-slate-400 cursor-not-allowed shadow-none' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'}  min-w-[220px]`}
-                        >
-                            <FaSave className={isSaving ? 'animate-pulse' : ''} />
-                            <span>{isSaving ? 'Đang lưu...' : 'Chốt bảng thưởng'}</span>
-                        </button>
+                        {isSaved ? (
+                            <button
+                                onClick={handleUnlockThuong}
+                                disabled={isSaving || data.length === 0}
+                                className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 shadow-sm min-w-[220px] justify-center cursor-pointer"
+                            >
+                                <FaEdit />
+                                <span>{isSaving ? 'Đang xử lý...' : 'Chỉnh sửa bảng thưởng'}</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleLockThuong}
+                                disabled={isSaving || data.length === 0}
+                                className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 shadow-sm min-w-[220px] justify-center cursor-pointer"
+                            >
+                                <FaSave className={isSaving ? 'animate-pulse' : ''} />
+                                <span>{isSaving ? 'Đang xử lý...' : 'Chốt bảng thưởng'}</span>
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -431,8 +483,8 @@ export default function ThuongPage() {
                                             <p className="font-bold text-slate-800">{item.ho_ten}</p>
                                         </td>
                                         <td className="py-2 px-4 text-slate-500 font-medium whitespace-nowrap text-sm border-r border-slate-100">
-                                            {[2, 3, 4, 5].includes(item.ma_chuc_vu) 
-                                                ? `${item.chuc_vu} - ${item.ten_phong_ban}` 
+                                            {[2, 3, 4, 5].includes(item.ma_chuc_vu)
+                                                ? `${item.chuc_vu} - ${item.ten_phong_ban}`
                                                 : item.chuc_vu
                                             }
                                         </td>
@@ -464,12 +516,12 @@ export default function ThuongPage() {
                                                 </div>
                                             )}
                                         </td>
-                                        <td 
+                                        <td
                                             className="py-2 px-4 text-right font-bold text-orange-600 whitespace-nowrap border-r border-slate-100 relative group/tooltip cursor-pointer hover:bg-orange-50 transition-colors"
                                             onClick={() => setSelectedManageNS(item)}
                                         >
                                             {item.thuong_nong > 0 ? formatCurrency(item.thuong_nong) : formatCurrency(0)}
-                                            
+
                                             {item.chi_tiet_thuong_nong && item.chi_tiet_thuong_nong.length > 0 && (
                                                 <div className={`absolute ${index < 3 ? 'top-full mt-1' : 'bottom-full mb-1'} right-0 hidden group-hover/tooltip:block z-[100] min-w-[220px] max-w-[320px]`}>
                                                     <div className="bg-white text-slate-800 p-3 rounded-xl shadow-2xl border border-slate-200 animate-in fade-in zoom-in duration-200">
@@ -500,39 +552,39 @@ export default function ThuongPage() {
                         </tbody>
                     </table>
                 </div>
-                
+
                 {/* Pagination */}
                 {!loading && filteredData.length > 0 && (
                     <div className="p-6 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/30">
                         <div className="text-sm font-medium text-slate-500">
                             Hiển thị <span className="text-blue-600 font-bold">{indexOfFirstItem + 1}</span> - <span className="text-blue-600 font-bold">{Math.min(indexOfLastItem, filteredData.length)}</span> trong tổng số <span className="text-slate-800 font-bold">{filteredData.length}</span> nhân sự
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
-                            <button 
+                            <button
                                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                 disabled={currentPage === 1}
                                 className={`px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold transition-all ${currentPage === 1 ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'bg-white text-slate-600 hover:border-blue-500 hover:text-blue-600 shadow-sm'}`}
                             >
                                 Trước
                             </button>
-                            
+
                             <div className="flex items-center gap-1">
                                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
                                     <button
                                         key={number}
                                         onClick={() => setCurrentPage(number)}
-                                        className={`w-10 h-10 rounded-lg text-sm font-bold transition-all ${currentPage === number ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white text-slate-600 border border-slate-200 hover:border-blue-500 hover:text-blue-600 shadow-sm'}`}
+                                        className={`w-10 h-10 rounded-lg text-sm font-bold transition-all ${currentPage === number ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white text-slate-600 border border-slate-200 hover:border-blue-500 hover:text-blue-600 shadow-sm cursor-pointer'}`}
                                     >
                                         {number}
                                     </button>
                                 ))}
                             </div>
-                            
-                            <button 
+
+                            <button
                                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                                 disabled={currentPage === totalPages}
-                                className={`px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold transition-all ${currentPage === totalPages ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'bg-white text-slate-600 hover:border-blue-500 hover:text-blue-600 shadow-sm'}`}
+                                className={`px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold transition-all ${currentPage === totalPages ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'bg-white text-slate-600 hover:border-blue-500 hover:text-blue-600 shadow-sm cursor-pointer'}`}
                             >
                                 Sau
                             </button>
@@ -554,17 +606,34 @@ export default function ThuongPage() {
                         </div>
                     </div>
                     <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
-                        <Link 
-                            href="/dashboard/tai-chinh/cham-cong" 
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 hover:text-slate-800 font-bold rounded-[8px] hover:bg-slate-50 hover:shadow-md transition-all active:scale-95 text-sm"
-                        >
-                            <FaArrowLeft className="text-slate-400" /> Tính công
-                        </Link>
-                        <Link 
-                            href="/dashboard/tai-chinh/bang-luong" 
+                        <Link
+                            href="/dashboard/tai-chinh/bang-luong"
                             className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-[8px] hover:shadow-lg hover:shadow-blue-200 hover:from-blue-700 hover:to-indigo-700 transition-all active:scale-95 text-sm"
                         >
                             <span>Tính lương</span> <FaArrowLeft className="rotate-180 text-blue-200" />
+                        </Link>
+                    </div>
+                </div>
+            )}
+
+            {/* Bảng điều hướng khi CHƯA chốt thưởng — nhắc kiểm tra chấm công trước */}
+            {!isSaved && data.length > 0 && (
+                <div className="mt-6 p-5 bg-gradient-to-r from-blue-500/8 via-indigo-500/8 to-purple-500/8 border border-blue-200/60 rounded-[8px] flex flex-col md:flex-row justify-between items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-300 text-slate-800">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-[8px] bg-blue-100 flex items-center justify-center text-blue-600 shadow-sm shrink-0">
+                            <FaCalendarAlt size={20} />
+                        </div>
+                        <div>
+                            <h4 className="text-blue-800 font-bold text-base">Cần kiểm tra chấm công trước khi chốt thưởng?</h4>
+                            <p className="text-slate-500 text-sm font-medium mt-0.5">Dữ liệu chuyên cần được tính dựa trên bảng chấm công của tháng {month}/{year}.</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
+                        <Link
+                            href="/dashboard/tai-chinh/cham-cong"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-blue-200 text-blue-700 font-bold rounded-[8px] hover:bg-blue-50 hover:border-blue-400 hover:shadow-md transition-all active:scale-95 text-sm shadow-sm"
+                        >
+                            <FaCalendarAlt size={14} /> <span>Xem bảng chấm công</span>
                         </Link>
                     </div>
                 </div>
@@ -579,17 +648,17 @@ export default function ThuongPage() {
                                 <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 text-xl">
                                     <FaFire />
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-800 uppercase tracking-tight">Tạo phiếu thưởng phát sinh</h3>
+                                <h3 className="text-xl font-bold text-slate-800 tracking-tight">Tạo phiếu thưởng</h3>
                             </div>
-                            <button onClick={() => setShowThuongNongModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                            <button onClick={() => setShowThuongNongModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
                                 <FaTimes size={24} />
                             </button>
                         </div>
-                        
+
                         <div className="p-6 space-y-4">
                             <div className="space-y-1">
                                 <label className="text-sm font-bold text-slate-600 ml-1">Chọn nhân sự</label>
-                                <select 
+                                <select
                                     value={selectedNS}
                                     onChange={(e) => setSelectedNS(e.target.value)}
                                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all font-medium text-slate-800"
@@ -614,7 +683,7 @@ export default function ThuongPage() {
 
                             <div className="space-y-1">
                                 <label className="text-sm font-bold text-slate-600 ml-1">Số tiền thưởng (VNĐ)</label>
-                                <input 
+                                <input
                                     type="number"
                                     value={soTienThuongNong}
                                     onChange={(e) => setSoTienThuongNong(e.target.value)}
@@ -625,7 +694,7 @@ export default function ThuongPage() {
 
                             <div className="space-y-1">
                                 <label className="text-sm font-bold text-slate-600 ml-1">Nội dung / Lý do</label>
-                                <textarea 
+                                <textarea
                                     value={noiDungThuongNong}
                                     onChange={(e) => setNoiDungThuongNong(e.target.value)}
                                     placeholder="Nhập lý do thưởng phát sinh..."
@@ -636,16 +705,16 @@ export default function ThuongPage() {
                         </div>
 
                         <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
-                            <button 
+                            <button
                                 onClick={() => setShowThuongNongModal(false)}
-                                className="flex-1 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-100 transition-all"
+                                className="flex-1 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-100 transition-all cursor-pointer"
                             >
                                 Hủy
                             </button>
-                            <button 
+                            <button
                                 onClick={handleSaveThuongNong}
                                 disabled={isSavingNong}
-                                className="flex-1 py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 shadow-lg shadow-orange-100 transition-all active:scale-95 disabled:bg-slate-400"
+                                className="flex-1 py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 shadow-lg shadow-orange-100 transition-all active:scale-95 disabled:bg-slate-400 cursor-pointer"
                             >
                                 {isSavingNong ? 'Đang xử lý...' : 'Xác nhận thưởng'}
                             </button>
@@ -664,11 +733,18 @@ export default function ThuongPage() {
                                     <FaAward />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-slate-800 tracking-tight">Quản lý thưởng phát sinh</h3>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-xl font-bold text-slate-800 tracking-tight">Quản lý thưởng phát sinh</h3>
+                                        {isSaved && (
+                                            <span className="text-xs font-bold px-2 py-0.5 bg-red-50 text-red-600 rounded-full border border-red-100 flex items-center gap-1">
+                                                <FaLock size={10} /> Đã khóa
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-sm text-slate-500 font-medium">{selectedManageNS.ho_ten} - Tháng {month}/{year}</p>
                                 </div>
                             </div>
-                            <button onClick={() => { setSelectedManageNS(undefined); setEditingPhieuId(undefined); }} className="text-slate-400 hover:text-slate-600 transition-colors">
+                            <button onClick={() => { setSelectedManageNS(undefined); setEditingPhieuId(undefined); }} className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
                                 <FaTimes size={24} />
                             </button>
                         </div>
@@ -687,7 +763,7 @@ export default function ThuongPage() {
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                         <div className="space-y-1">
                                                             <label className="text-sm font-bold text-slate-500 ml-1">Số tiền</label>
-                                                            <input 
+                                                            <input
                                                                 type="number"
                                                                 value={editSoTien}
                                                                 onChange={(e) => setEditSoTien(e.target.value)}
@@ -696,7 +772,7 @@ export default function ThuongPage() {
                                                         </div>
                                                         <div className="space-y-1">
                                                             <label className="text-sm font-bold text-slate-500 ml-1">Nội dung</label>
-                                                            <input 
+                                                            <input
                                                                 type="text"
                                                                 value={editNoiDung}
                                                                 onChange={(e) => setEditNoiDung(e.target.value)}
@@ -705,13 +781,13 @@ export default function ThuongPage() {
                                                         </div>
                                                     </div>
                                                     <div className="flex justify-end gap-2 pt-2">
-                                                        <button 
+                                                        <button
                                                             onClick={() => setEditingPhieuId(undefined)}
                                                             className="px-3 py-1.5 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors"
                                                         >
                                                             Hủy
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleUpdatePhieu(phieu.ma_phieu_thuong)}
                                                             disabled={isUpdating}
                                                             className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all disabled:bg-slate-400"
@@ -727,26 +803,32 @@ export default function ThuongPage() {
                                                         <p className="font-bold text-slate-800">{phieu.noi_dung}</p>
                                                         <p className="text-lg font-[600] text-orange-600">{formatCurrency(phieu.so_tien)}</p>
                                                     </div>
-                                                    <div className="flex gap-1">
-                                                        <button 
-                                                            onClick={() => {
-                                                                setEditingPhieuId(phieu.ma_phieu_thuong);
-                                                                setEditSoTien(phieu.so_tien.toString());
-                                                                setEditNoiDung(phieu.noi_dung);
-                                                            }}
-                                                            className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                                                            title="Sửa"
-                                                        >
-                                                            <FaEdit />
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => handleDeletePhieu(phieu.ma_phieu_thuong)}
-                                                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                            title="Xóa"
-                                                        >
-                                                            <FaTrash />
-                                                        </button>
-                                                    </div>
+                                                    {isSaved ? (
+                                                        <span className="text-xs font-bold px-2.5 py-1 bg-slate-100 text-slate-500 rounded-lg flex items-center gap-1.5 border border-slate-200">
+                                                            <FaLock size={10} /> Đã khóa
+                                                        </span>
+                                                    ) : (
+                                                        <div className="flex gap-1">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setEditingPhieuId(phieu.ma_phieu_thuong);
+                                                                    setEditSoTien(phieu.so_tien.toString());
+                                                                    setEditNoiDung(phieu.noi_dung);
+                                                                }}
+                                                                className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                title="Sửa"
+                                                            >
+                                                                <FaEdit />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeletePhieu(phieu.ma_phieu_thuong)}
+                                                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                                title="Xóa"
+                                                            >
+                                                                <FaTrash />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
@@ -760,9 +842,9 @@ export default function ThuongPage() {
                                 <span className="font-bold text-slate-500 text-lg">Tổng thưởng phát sinh hiện tại:</span>
                                 <span className="text-xl font-[700] text-blue-700">{formatCurrency(selectedManageNS.thuong_nong)}</span>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => { setSelectedManageNS(undefined); setEditingPhieuId(undefined); }}
-                                className="px-8 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-100 transition-all shadow-sm"
+                                className="px-8 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-100 transition-all shadow-sm cursor-pointer"
                             >
                                 Đóng
                             </button>
@@ -773,11 +855,11 @@ export default function ThuongPage() {
 
             {/* Alert Notification */}
             {alert && (
-                <Alert 
-                    message={alert.message} 
-                    type={alert.type} 
-                    onClose={() => setAlert(null)} 
-                    autoClose={3000} 
+                <Alert
+                    message={alert.message}
+                    type={alert.type}
+                    onClose={() => setAlert(null)}
+                    autoClose={3000}
                 />
             )}
             {/* Manage Nhập Ngày Lễ Modal */}
@@ -793,33 +875,33 @@ export default function ThuongPage() {
                                 <FaTimes />
                             </button>
                         </div>
-                        
+
                         <div className="p-6 space-y-4">
                             <div>
                                 <label className="block text-sm font-bold text-slate-700 mb-2">
                                     Các ngày lễ trong tháng {month}/{year}
                                 </label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     placeholder="VD: 30/4, 1/5 hoặc 30, 1"
                                     value={ngayLeText}
                                     onChange={(e) => setNgayLeText(e.target.value)}
                                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700 placeholder:text-slate-400"
                                 />
                                 <p className="text-xs text-slate-500 mt-3 leading-relaxed">
-                                    Nhập các ngày lễ cách nhau bởi dấu phẩy.<br/>Hệ thống sẽ tự động loại trừ các ngày rơi vào Chủ Nhật.
+                                    Nhập các ngày lễ cách nhau bởi dấu phẩy.<br />Hệ thống sẽ tự động loại trừ các ngày rơi vào Chủ Nhật.
                                 </p>
                             </div>
                         </div>
 
                         <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3 justify-end">
-                            <button 
+                            <button
                                 onClick={handleCancelNgayLe}
                                 className="px-5 py-2.5 font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all"
                             >
                                 Hủy bỏ
                             </button>
-                            <button 
+                            <button
                                 onClick={() => {
                                     if (typeof window !== 'undefined') {
                                         localStorage.setItem(`ngayLe_${month}_${year}`, ngayLeText);
@@ -830,6 +912,78 @@ export default function ThuongPage() {
                                 className="px-6 py-2.5 font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95"
                             >
                                 Xác nhận
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Xác nhận Chốt bảng thưởng */}
+            {showConfirmLockModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300">
+                    <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Header */}
+                        <div className="p-6 text-center text-slate-900">
+                            <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center border border-amber-100 mx-auto mb-4 text-amber-500">
+                                <FaExclamationTriangle size={32} />
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-800 mb-2">Chốt bảng thưởng chính thức</h3>
+                            <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                                Bạn có chắc chắn muốn <span className="font-bold text-slate-700">CHỐT</span> bảng thưởng tháng <span className="font-bold text-blue-600">{month}/{year}</span>? Sau khi chốt, dữ liệu sẽ được lưu chính thức và không thể chỉnh sửa.
+                            </p>
+                        </div>
+                        {/* Footer */}
+                        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                            <button
+                                onClick={() => setShowConfirmLockModal(false)}
+                                className="px-5 py-2.5 font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all active:scale-95 cursor-pointer"
+                            >
+                                Hủy bỏ
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowConfirmLockModal(false);
+                                    executeLockThuong();
+                                }}
+                                className="px-6 py-2.5 bg-blue-600 text-white font-bold text-sm rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 active:scale-95 cursor-pointer"
+                            >
+                                Xác nhận chốt
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Xác nhận Mở chốt bảng thưởng */}
+            {showConfirmUnlockModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300">
+                    <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Header */}
+                        <div className="p-6 text-center text-slate-900">
+                            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center border border-red-100 mx-auto mb-4 text-red-500 animate-pulse">
+                                <FaExclamationTriangle size={32} />
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-800 mb-2">Chỉnh sửa bảng thưởng đã chốt</h3>
+                            <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                                Bạn có chắc chắn muốn <span className="font-bold text-red-600">CHỈNH SỬA</span> bảng thưởng tháng <span className="font-bold text-blue-600">{month}/{year}</span>? Để chỉnh sửa dữ liệu và tính toán lại, hệ thống sẽ tạm thời mở khóa bảng thưởng này.
+                            </p>
+                        </div>
+                        {/* Footer */}
+                        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                            <button
+                                onClick={() => setShowConfirmUnlockModal(false)}
+                                className="px-5 py-2.5 font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all active:scale-95 cursor-pointer"
+                            >
+                                Hủy bỏ
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowConfirmUnlockModal(false);
+                                    executeUnlockThuong();
+                                }}
+                                className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl transition-colors shadow-lg shadow-red-200 active:scale-95 cursor-pointer"
+                            >
+                                Xác nhận chỉnh sửa
                             </button>
                         </div>
                     </div>

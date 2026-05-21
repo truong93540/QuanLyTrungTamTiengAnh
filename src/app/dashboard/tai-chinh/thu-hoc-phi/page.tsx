@@ -1420,7 +1420,7 @@ export default function PhieuThuHocPhiPage() {
                 </div>
             )}
             {/* Khối Quản lý & Danh sách Phiếu thu (Gom tìm kiếm, bộ lọc và bảng dữ liệu vào 1 vùng) */}
-            <div className="bg-white border border-gray-200 rounded-[12px] p-6 shadow-sm mt-6">
+            <div className="bg-white border border-gray-200 rounded-[8px] p-6 shadow-sm mt-6">
                 {/* Bộ Tìm kiếm & Bộ lọc nâng cao */}
                 <div className="mb-6 pb-6 border-b border-gray-200">
                     {/* Hàng 1: Tìm kiếm tên & Thêm mới */}

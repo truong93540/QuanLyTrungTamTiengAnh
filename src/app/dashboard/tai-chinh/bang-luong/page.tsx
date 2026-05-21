@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react';
-import { 
-    FaCalendarAlt, FaSearch, FaFileInvoiceDollar, FaCheckCircle, 
+import {
+    FaCalendarAlt, FaSearch, FaFileInvoiceDollar, FaCheckCircle,
     FaLock, FaUnlock, FaCalculator, FaSave, FaArrowLeft, FaMoneyBillWave,
     FaUserTie, FaChalkboardTeacher, FaHistory, FaCog, FaSync, FaExclamationTriangle, FaEdit
 } from 'react-icons/fa';
@@ -230,7 +230,7 @@ export default function QuanLyLuongPage() {
         };
     }, [month, year, coefNormal, coefOtNormal, coefWeekend, coefOtWeekend]);
 
-    const filteredData = data.filter(item => 
+    const filteredData = data.filter(item =>
         item.ho_ten.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.chuc_vu.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -277,8 +277,8 @@ export default function QuanLyLuongPage() {
 
                 <div className="flex flex-wrap items-center justify-end gap-3">
                     <div className="flex bg-white p-1.5 rounded-lg shadow-sm border border-slate-200">
-                        <select 
-                            value={month} 
+                        <select
+                            value={month}
                             onChange={(e) => setMonth(Number(e.target.value))}
                             className="bg-transparent px-3 py-1.5 font-bold text-slate-700 outline-none cursor-pointer border-r border-slate-100"
                         >
@@ -286,8 +286,8 @@ export default function QuanLyLuongPage() {
                                 <option key={i + 1} value={i + 1}>Tháng {i + 1}</option>
                             ))}
                         </select>
-                        <select 
-                            value={year} 
+                        <select
+                            value={year}
                             onChange={(e) => setYear(Number(e.target.value))}
                             className="bg-transparent px-3 py-1.5 font-bold text-slate-700 outline-none cursor-pointer"
                         >
@@ -297,7 +297,7 @@ export default function QuanLyLuongPage() {
                         </select>
                     </div>
 
-                    <button 
+                    <button
                         onClick={() => {
                             // Populate input states with current coef values before opening modal
                             setInputNormal(Math.round(coefNormal * 100));
@@ -306,46 +306,28 @@ export default function QuanLyLuongPage() {
                             setInputOtWeekend(Math.round(coefOtWeekend * 100));
                             setShowConfigModal(true);
                         }}
-                        className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-blue-600 font-bold rounded-lg hover:bg-blue-50/50 hover:border-blue-200 transition-all active:scale-95 shadow-sm"
+                        className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-blue-600 font-bold rounded-lg hover:bg-blue-50/50 hover:border-blue-200 transition-all active:scale-95 shadow-sm cursor-pointer"
                     >
                         <FaCog className="text-blue-500 animate-spin-slow" style={{ animationDuration: '6s' }} /> Công thức tính
                     </button>
 
-                    <button 
+                    <button
                         onClick={fetchData}
-                        className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-blue-600 font-bold rounded-lg hover:bg-blue-50/50 hover:border-blue-200 transition-all active:scale-95 shadow-sm"
+                        className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-blue-600 font-bold rounded-lg hover:bg-blue-50/50 hover:border-blue-200 transition-all active:scale-95 shadow-sm cursor-pointer"
                     >
                         <FaSync className={loading ? 'animate-spin' : ''} /> Cập nhật
                     </button>
 
-                    {isLocked ? (
-                        <button 
-                            onClick={handleUnlockPayroll}
-                            disabled={isSaving || data.length === 0}
-                            className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 shadow-sm"
-                        >
-                            <FaEdit />
-                            <span>{isSaving ? 'Đang xử lý...' : 'Chỉnh sửa bảng lương'}</span>
-                        </button>
-                    ) : (
-                        <button 
-                            onClick={handleLockPayroll}
-                            disabled={isSaving || data.length === 0}
-                            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 shadow-sm"
-                        >
-                            <FaSave />
-                            <span>{isSaving ? 'Đang xử lý...' : 'Chốt bảng lương'}</span>
-                        </button>
-                    )}
+
                 </div>
             </div>
 
             {/* Alert */}
             {alert && (
-                <Alert 
-                    type={alert.type} 
-                    message={alert.message} 
-                    onClose={() => setAlert(null)} 
+                <Alert
+                    type={alert.type}
+                    message={alert.message}
+                    onClose={() => setAlert(null)}
                 />
             )}
 
@@ -356,9 +338,9 @@ export default function QuanLyLuongPage() {
                         <div className="p-3 bg-blue-50 rounded-lg text-blue-600">
                             <FaMoneyBillWave size={24} />
                         </div>
-                        {isLocked ? <span className="text-[10px] font-bold px-2 py-1 bg-emerald-100 text-emerald-600 rounded-full uppercase">Đã chốt</span> : <span className="text-[10px] font-bold px-2 py-1 bg-orange-100 text-orange-600 rounded-full uppercase">Tạm tính</span>}
+                        {isLocked ? <span className="text-[12px] font-bold px-2 py-1 bg-emerald-100 text-emerald-600 rounded-[8px]">Đã chốt</span> : <span className="text-[10px] font-bold px-2 py-1 bg-orange-100 text-orange-600 rounded-full uppercase">Tạm tính</span>}
                     </div>
-                    <p className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">Tổng lương</p>
+                    <p className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-1">Tổng lương</p>
                     <h3 className="text-2xl font-bold text-slate-800">{formatCurrency(totalPayroll)}</h3>
                 </div>
 
@@ -367,10 +349,10 @@ export default function QuanLyLuongPage() {
                         <div className="p-3 bg-purple-50 rounded-lg text-purple-600">
                             <FaUserTie size={24} />
                         </div>
-                        <span className="text-xs font-bold text-slate-400">Nhân sự</span>
+                        <span className="text-xs font-bold text-gray-500">Nhân sự</span>
                     </div>
-                    <p className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">Tổng nhân viên</p>
-                    <h3 className="text-2xl font-bold text-slate-800">{totalStaff} <span className="text-sm font-bold text-slate-400">người</span></h3>
+                    <p className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-1">Tổng nhân viên</p>
+                    <h3 className="text-2xl font-bold text-slate-800">{totalStaff} <span className="text-sm font-bold text-gray-500">người</span></h3>
                 </div>
 
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
@@ -378,10 +360,10 @@ export default function QuanLyLuongPage() {
                         <div className="p-3 bg-amber-50 rounded-lg text-amber-600">
                             <FaChalkboardTeacher size={24} />
                         </div>
-                        <span className="text-xs font-bold text-slate-400">Giáo viên</span>
+                        <span className="text-xs font-bold text-gray-500">Giáo viên</span>
                     </div>
-                    <p className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">Tổng giáo viên</p>
-                    <h3 className="text-2xl font-bold text-slate-800">{totalTeachers} <span className="text-sm font-bold text-slate-400">người</span></h3>
+                    <p className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-1">Tổng giáo viên</p>
+                    <h3 className="text-2xl font-bold text-slate-800">{totalTeachers} <span className="text-sm font-bold text-gray-500">người</span></h3>
                 </div>
 
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-100 flex flex-col justify-between min-h-[200px]">
@@ -390,45 +372,47 @@ export default function QuanLyLuongPage() {
                             <div className={`p-3 rounded-lg ${isLocked ? (hasPhieuChi ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600') : 'bg-orange-50 text-orange-500'}`}>
                                 <FaHistory size={24} />
                             </div>
-                            <span className="text-xs font-bold text-slate-400">Kỳ {month}/{year}</span>
+                            <span className="text-xs font-bold text-gray-500">Kỳ {month}/{year}</span>
                         </div>
                         <div className="flex items-center justify-between mb-1">
-                            <span className="text-slate-400 text-sm font-bold uppercase tracking-wider">Trạng thái</span>
-                            <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${isLocked ? (hasPhieuChi ? 'bg-emerald-100 text-emerald-700 font-bold' : 'bg-amber-100 text-amber-700 font-bold') : 'bg-orange-100 text-orange-700 font-bold'}`}>
+                            <span className="text-gray-500 text-sm font-bold uppercase tracking-wider">Trạng thái</span>
+                            <span className={`text-xs font-bold px-2.5 py-0.5 rounded-[8px] ${isLocked ? (hasPhieuChi ? 'bg-emerald-100 text-emerald-700 font-bold' : 'bg-amber-100 text-amber-700 font-bold') : 'bg-orange-100 text-orange-700 font-bold'}`}>
                                 {isLocked ? (hasPhieuChi ? 'Đã chi trả' : 'Đã chốt') : 'Tạm tính'}
                             </span>
                         </div>
                     </div>
-                    {isLocked && (
-                        <div className="mt-4">
-                            {hasPhieuChi ? (
-                                <Link 
-                                    href={`/dashboard/tai-chinh/phieu-chi?search=${maPhieuChi}`}
-                                    className="w-full py-3.5 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg transition-all active:scale-95 text-sm flex items-center justify-center gap-2 border border-emerald-200 shadow-sm"
-                                >
-                                    <FaCheckCircle size={16} />
-                                    <span>Xem phiếu chi liên kết</span>
-                                </Link>
-                            ) : (
-                                <Link 
-                                    href={`/dashboard/tai-chinh/phieu-chi?action=create_luong&month=${month}&year=${year}`}
-                                    className="w-full py-4 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all active:scale-95 text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-100/50"
-                                >
-                                    <FaMoneyBillWave size={16} />
-                                    <span>Lập phiếu chi lương</span>
-                                </Link>
-                            )}
-                        </div>
-                    )}
                 </div>
             </div>
+
+            <div className="flex items-center justify-end gap-2 mb-2">
+                {isLocked ? (
+                    <button
+                        onClick={handleUnlockPayroll}
+                        disabled={isSaving || data.length === 0}
+                        className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 shadow-sm cursor-pointer"
+                    >
+                        <FaEdit />
+                        <span>{isSaving ? 'Đang xử lý...' : 'Chỉnh sửa bảng lương'}</span>
+                    </button>
+                ) : (
+                    <button
+                        onClick={handleLockPayroll}
+                        disabled={isSaving || data.length === 0}
+                        className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 shadow-sm cursor-pointer"
+                    >
+                        <FaSave />
+                        <span>{isSaving ? 'Đang xử lý...' : 'Chốt bảng lương'}</span>
+                    </button>
+                )}
+            </div>
+
 
             {/* Main Content */}
             <div className="bg-white rounded-lg shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
                 <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="relative w-full md:w-96">
                         <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input 
+                        <input
                             type="text"
                             placeholder="Tìm kiếm nhân sự, chức vụ..."
                             value={searchTerm}
@@ -436,7 +420,7 @@ export default function QuanLyLuongPage() {
                             className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-lg outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700"
                         />
                     </div>
-                    
+
                     <div className="flex items-center gap-2 text-sm font-[500] text-gray-600 italic">
                         * Bảng lương tích hợp chi tiết chấm công và các khoản lương, phụ cấp
                     </div>
@@ -447,12 +431,12 @@ export default function QuanLyLuongPage() {
                         <colgroup>
                             {/* Sticky Họ tên & Chức vụ */}
                             <col style={{ width: '240px' }} />
-                            
+
                             {/* 31 days */}
                             {Array.from({ length: daysInMonth }).map((_, idx) => (
                                 <col key={idx} style={{ width: '38px' }} />
                             ))}
-                            
+
                             {/* Thông số công */}
                             <col style={{ width: '100px' }} />
                             <col style={{ width: '60px' }} />
@@ -462,7 +446,7 @@ export default function QuanLyLuongPage() {
                             <col style={{ width: '80px' }} />
                             <col style={{ width: '100px' }} />
                             <col style={{ width: '90px' }} />
-                            
+
                             {/* Cấu phần tính lương */}
                             <col style={{ width: '120px' }} />
                             <col style={{ width: '130px' }} />
@@ -471,21 +455,21 @@ export default function QuanLyLuongPage() {
                             <col style={{ width: '140px' }} />
                             <col style={{ width: '100px' }} />
                             <col style={{ width: '100px' }} />
-                            
+
                             {/* Sticky Tổng lương */}
                             <col style={{ width: '140px' }} />
                         </colgroup>
                         <thead>
                             <tr className="bg-slate-100 text-slate-600 text-sm font-bold tracking-widest border-b border-slate-200">
-                                <th colSpan={1} className="py-1.5 px-3 sticky left-0 z-30 bg-slate-100 border-r border-slate-200 text-center w-[240px] min-w-[240px] max-w-[240px]">Nhân sự</th>
+                                <th colSpan={1} className="py-1.5 px-3 sticky left-0 z-30 bg-blue-100 border-r border-slate-200 text-center w-[240px] min-w-[240px] max-w-[240px]">Nhân sự</th>
                                 <th colSpan={daysInMonth} className="py-1.5 px-2 text-center border-r border-slate-200 bg-sky-50 text-sky-800">Số giờ làm việc các ngày trong tháng</th>
                                 <th colSpan={8} className="py-1.5 px-2 text-center border-r border-slate-200 bg-orange-50 text-orange-800">Thông số công</th>
                                 <th colSpan={8} className="py-1.5 px-2 text-center bg-blue-50 text-blue-800">Các khoản lương & phụ cấp</th>
                             </tr>
                             <tr className="bg-slate-50 text-slate-500 text-sm font-bold border-b border-slate-200">
                                 {/* Sticky column */}
-                                <th className="py-2 px-3 sticky left-0 z-20 bg-slate-50 border-r border-slate-200 w-[240px] min-w-[240px] max-w-[240px]">Họ tên & Chức vụ</th>
-                                
+                                <th className="py-2 px-3 sticky left-0 z-20 bg-blue-50 border-r border-slate-200 w-[240px] min-w-[240px] max-w-[240px]">Họ tên & Chức vụ</th>
+
                                 {/* 31 days */}
                                 {dayLabels.map((item, idx) => (
                                     <th key={idx} className={`p-1.5 text-center border-r border-slate-100 w-[38px] min-w-[38px] ${item.thu === 'CN' ? 'text-red-500 bg-red-50' : ''}`}>
@@ -537,7 +521,7 @@ export default function QuanLyLuongPage() {
                                     return (
                                         <tr key={rowIndex} className="hover:bg-slate-50/80 transition-colors group text-sm text-slate-700">
                                             {/* Sticky Họ tên & Chức vụ */}
-                                            <td className="py-2 px-3 sticky left-0 z-10 bg-white group-hover:bg-slate-50 border-r border-slate-200 w-[240px] min-w-[240px] max-w-[240px]">
+                                            <td className="py-2 px-3 sticky left-0 z-10 bg-white group-hover:bg-blue-50 border-r border-slate-200 w-[240px] min-w-[240px] max-w-[240px]">
                                                 <div className="flex flex-col gap-1 w-full whitespace-normal">
                                                     <div className="flex items-center gap-1.5">
                                                         <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-sm font-bold font-mono border border-blue-100 flex-shrink-0">
@@ -545,7 +529,7 @@ export default function QuanLyLuongPage() {
                                                         </span>
                                                         <span className="text-sm font-bold text-slate-800 truncate">{item.ho_ten}</span>
                                                     </div>
-                                                    <span className="text-sm text-slate-500 font-semibold flex items-start gap-1 w-full whitespace-normal leading-tight">
+                                                    <span className="text-sm text-slate-500 font-[500] flex items-start gap-1 w-full whitespace-normal leading-tight">
                                                         {item.loai === 'GV' ? <FaChalkboardTeacher className="text-amber-500 flex-shrink-0 mt-0.5" /> : <FaUserTie className="text-purple-500 flex-shrink-0 mt-0.5" />}
                                                         <span>
                                                             {item.chuc_vu ? (
@@ -575,7 +559,7 @@ export default function QuanLyLuongPage() {
 
                                                         {/* tooltip */}
                                                         {((dayData) || (expectedShifts.size > 0)) && (
-                                                            <div className={`invisible group-hover/cell:visible absolute ${rowIndex < 4 ? 'top-full mt-2' : 'bottom-full mb-2'} left-1/2 -translate-x-1/2 z-30 w-80 rounded-lg bg-white text-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-slate-100 animate-in fade-in zoom-in duration-200`}>
+                                                            <div className={`invisible opacity-0 scale-95 group-hover/cell:visible group-hover/cell:opacity-100 group-hover/cell:scale-100 transition-all duration-200 delay-0 group-hover/cell:delay-[300ms] absolute ${rowIndex < 4 ? 'top-full mt-2' : 'bottom-full mb-2'} left-1/2 -translate-x-1/2 z-30 w-80 rounded-lg bg-white text-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-slate-100`}>
                                                                 <div className="p-4 max-h-[250px] overflow-y-auto custom-scrollbar overflow-x-hidden text-left font-normal">
                                                                     <div className="font-black border-b border-slate-100 pb-2 mb-3 text-blue-600 flex justify-between uppercase text-xs tracking-wider">
                                                                         <span>{dayObj.thu}, {dayObj.day}/{month}/{year}</span>
@@ -585,11 +569,11 @@ export default function QuanLyLuongPage() {
                                                                             (() => {
                                                                                 const ivs = []
                                                                                 const seen = new Set()
-                                                                                for(let c=1; c<=6; c++) {
+                                                                                for (let c = 1; c <= 6; c++) {
                                                                                     const v = dayData?.[`gio_vao_${c}`]
                                                                                     const r = dayData?.[`gio_ra_${c}`]
-                                                                                    if((v || r) && !seen.has(`${v}-${r}`)) {
-                                                                                        ivs.push({v, r})
+                                                                                    if ((v || r) && !seen.has(`${v}-${r}`)) {
+                                                                                        ivs.push({ v, r })
                                                                                         seen.add(`${v}-${r}`)
                                                                                     }
                                                                                 }
@@ -627,7 +611,7 @@ export default function QuanLyLuongPage() {
                                                                                             <p className="text-[10px] font-bold text-orange-600 uppercase mb-2">Quét thẻ tự do (Không lịch)</p>
                                                                                             {ivs.map((inv, i) => (
                                                                                                 <div key={i} className="flex justify-between py-2 border-b border-slate-50 last:border-0 text-slate-800">
-                                                                                                    <span className="text-slate-400 font-bold">Lần chấm công {i+1}:</span>
+                                                                                                    <span className="text-slate-400 font-bold">Lần chấm công {i + 1}:</span>
                                                                                                     <span className={`font-black ${(!inv.v || !inv.r) ? 'text-red-600' : 'text-slate-700'}`}>
                                                                                                         {inv.v || '__:__'} - {inv.r || '__:__'}
                                                                                                     </span>
@@ -641,11 +625,11 @@ export default function QuanLyLuongPage() {
                                                                             (() => {
                                                                                 const ivs = []
                                                                                 const seen = new Set()
-                                                                                for(let c=1; c<=6; c++) {
+                                                                                for (let c = 1; c <= 6; c++) {
                                                                                     const v = dayData?.[`gio_vao_${c}`]
                                                                                     const r = dayData?.[`gio_ra_${c}`]
-                                                                                    if((v || r) && !seen.has(`${v}-${r}`)) {
-                                                                                        ivs.push({v, r})
+                                                                                    if ((v || r) && !seen.has(`${v}-${r}`)) {
+                                                                                        ivs.push({ v, r })
                                                                                         seen.add(`${v}-${r}`)
                                                                                     }
                                                                                 }
@@ -657,7 +641,7 @@ export default function QuanLyLuongPage() {
 
                                                                                     return (
                                                                                         <div key={i} className="flex justify-between py-2 border-b border-slate-50 last:border-0 text-slate-800">
-                                                                                            <span className="text-slate-400 font-[500]">Lượt chấm công {i+1}:</span>
+                                                                                            <span className="text-slate-400 font-[500]">Lượt chấm công {i + 1}:</span>
                                                                                             <span className={`font-bold ${isWarning ? 'text-red-600' : 'text-slate-700'}`}>
                                                                                                 {inv.v || '__:__'} - {inv.r || '__:__'}
                                                                                             </span>
@@ -675,117 +659,117 @@ export default function QuanLyLuongPage() {
                                                 );
                                             })}
 
-                                        {/* Thông số công */}
-                                        <td className="py-2 px-3 text-center border-r border-slate-200 bg-orange-50/10 w-[100px]">
-                                            <span className="px-2 py-0.5 bg-orange-50 text-orange-700 rounded-full font-bold text-sm">
-                                                {item.loai === 'GV' ? `${item.tong_so_gio_lam_viec || 0}h` : `${item.so_ngay_cong || 0} công`}
-                                            </span>
-                                        </td>
-                                        <td className="py-2 px-3 text-center border-r border-slate-100 bg-orange-50/10 font-bold text-red-500 w-[60px]">{item.so_lan_di_muon || 0}</td>
-                                        <td className="py-2 px-3 text-center border-r border-slate-100 bg-orange-50/10 font-bold text-red-400 w-[60px]">{item.so_lan_ve_som || 0}</td>
-                                        <td className="py-2 px-3 text-center border-r border-slate-100 bg-orange-50/10 font-medium w-[80px]">{item.so_gio_lam_viec_thuong || 0}h</td>
-                                        <td className="py-2 px-3 text-center border-r border-slate-100 bg-orange-50/10 font-medium text-emerald-600 w-[100px]">{item.so_gio_tang_ca_ngay_thuong || 0}h</td>
-                                        <td className="py-2 px-3 text-center border-r border-slate-100 bg-orange-50/10 font-medium w-[80px]">{item.so_gio_lam_viec_thuong_ngay_nghi || 0}h</td>
-                                        <td className="py-2 px-3 text-center border-r border-slate-100 bg-orange-50/10 font-medium text-purple-600 w-[100px]">{item.so_gio_tang_ca_ngay_nghi || 0}h</td>
-                                        <td className="py-2 px-3 text-center border-r border-slate-200 bg-orange-50/20 font-bold text-slate-800 w-[90px]">{item.tong_so_gio_lam_viec || 0}h</td>
+                                            {/* Thông số công */}
+                                            <td className="py-2 px-3 text-center border-r border-slate-200 bg-orange-50/10 w-[100px]">
+                                                <span className="px-2 py-0.5 bg-orange-50 text-orange-700 rounded-full font-bold text-sm">
+                                                    {item.loai === 'GV' ? `${item.tong_so_gio_lam_viec || 0}h` : `${item.so_ngay_cong || 0} công`}
+                                                </span>
+                                            </td>
+                                            <td className="py-2 px-3 text-center border-r border-slate-100 bg-orange-50/10 font-bold text-red-500 w-[60px]">{item.so_lan_di_muon || 0}</td>
+                                            <td className="py-2 px-3 text-center border-r border-slate-100 bg-orange-50/10 font-bold text-red-400 w-[60px]">{item.so_lan_ve_som || 0}</td>
+                                            <td className="py-2 px-3 text-center border-r border-slate-100 bg-orange-50/10 font-medium w-[80px]">{item.so_gio_lam_viec_thuong || 0}h</td>
+                                            <td className="py-2 px-3 text-center border-r border-slate-100 bg-orange-50/10 font-medium text-emerald-600 w-[100px]">{item.so_gio_tang_ca_ngay_thuong || 0}h</td>
+                                            <td className="py-2 px-3 text-center border-r border-slate-100 bg-orange-50/10 font-medium w-[80px]">{item.so_gio_lam_viec_thuong_ngay_nghi || 0}h</td>
+                                            <td className="py-2 px-3 text-center border-r border-slate-100 bg-orange-50/10 font-medium text-purple-600 w-[100px]">{item.so_gio_tang_ca_ngay_nghi || 0}h</td>
+                                            <td className="py-2 px-3 text-center border-r border-slate-200 bg-orange-50/20 font-bold text-slate-800 w-[90px]">{item.tong_so_gio_lam_viec || 0}h</td>
 
-                                        {/* Cấu phần lương */}
-                                        <td className="py-2 px-3 text-right border-r border-slate-100 font-bold text-slate-600 w-[120px]">{formatCurrency(item.luong_co_ban)}</td>
-                                        <td className="py-2 px-3 text-right border-r border-slate-100 font-bold text-slate-700 w-[130px]">{formatCurrency(item.luong_lam_viec_ngay_thuong || 0)}</td>
-                                        <td className="py-2 px-3 text-right border-r border-slate-100 font-bold text-emerald-600 w-[140px]">{formatCurrency(item.luong_tang_ca_ngay_thuong || 0)}</td>
-                                        <td className="py-2 px-3 text-right border-r border-slate-100 font-bold text-slate-700 w-[130px]">{formatCurrency(item.luong_lam_viec_ngay_nghi || 0)}</td>
-                                        <td className="py-2 px-3 text-right border-r border-slate-100 font-bold text-purple-600 w-[140px]">{formatCurrency(item.luong_tang_ca_ngay_nghi || 0)}</td>
-                                        <td className={`py-2 px-3 text-right border-r border-slate-100 font-bold text-emerald-600 w-[100px] relative group/bonus ${item.tong_thuong > 0 ? 'cursor-pointer' : ''}`}>
-                                            <span>{formatCurrency(item.tong_thuong || 0)}</span>
-                                            
-                                            {/* Tooltip thưởng */}
-                                            {item.tong_thuong > 0 && (
-                                                <div className={`invisible group-hover/bonus:visible absolute ${rowIndex < 4 ? 'top-full mt-2' : 'bottom-full mb-2'} right-0 z-30 w-72 rounded-lg bg-white text-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-slate-100 animate-in fade-in zoom-in duration-200 text-left font-normal`}>
-                                                <div className="p-4">
-                                                    <div className="font-bold border-b border-slate-100 pb-2 mb-3 text-emerald-600 flex justify-between text-sm tracking-wider">
-                                                        <span>Chi tiết thưởng</span>
-                                                        <span className="font-mono">{item.loai}_{item.ma_id}</span>
+                                            {/* Cấu phần lương */}
+                                            <td className="py-2 px-3 text-right border-r border-slate-100 font-bold text-slate-600 w-[120px]">{formatCurrency(item.luong_co_ban)}</td>
+                                            <td className="py-2 px-3 text-right border-r border-slate-100 font-bold text-slate-700 w-[130px]">{formatCurrency(item.luong_lam_viec_ngay_thuong || 0)}</td>
+                                            <td className="py-2 px-3 text-right border-r border-slate-100 font-bold text-emerald-600 w-[140px]">{formatCurrency(item.luong_tang_ca_ngay_thuong || 0)}</td>
+                                            <td className="py-2 px-3 text-right border-r border-slate-100 font-bold text-slate-700 w-[130px]">{formatCurrency(item.luong_lam_viec_ngay_nghi || 0)}</td>
+                                            <td className="py-2 px-3 text-right border-r border-slate-100 font-bold text-purple-600 w-[140px]">{formatCurrency(item.luong_tang_ca_ngay_nghi || 0)}</td>
+                                            <td className={`py-2 px-3 text-right border-r border-slate-100 font-bold text-emerald-600 w-[100px] relative group/bonus ${item.tong_thuong > 0 ? 'cursor-pointer' : ''}`}>
+                                                <span>{formatCurrency(item.tong_thuong || 0)}</span>
+
+                                                {/* Tooltip thưởng */}
+                                                {item.tong_thuong > 0 && (
+                                                    <div className={`invisible opacity-0 scale-95 group-hover/bonus:visible group-hover/bonus:opacity-100 group-hover/bonus:scale-100 transition-all duration-200 delay-0 group-hover/bonus:delay-[300ms] absolute ${rowIndex < 4 ? 'top-full mt-2' : 'bottom-full mb-2'} right-0 z-30 w-72 rounded-lg bg-white text-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-slate-100 text-left font-normal`}>
+                                                        <div className="p-4">
+                                                            <div className="font-bold border-b border-slate-100 pb-2 mb-3 text-emerald-600 flex justify-between text-sm tracking-wider">
+                                                                <span>Chi tiết thưởng</span>
+                                                                <span className="font-mono">{item.loai}_{item.ma_id}</span>
+                                                            </div>
+                                                            <div className="space-y-2.5 text-sm">
+                                                                {item.tong_thuong > 0 ? (
+                                                                    <>
+                                                                        {item.hoa_hong > 0 && (
+                                                                            <div className="flex justify-between">
+                                                                                <span className="text-slate-500 font-medium">Tiền hoa hồng:</span>
+                                                                                <span className="font-bold text-slate-700">{formatCurrency(item.hoa_hong || 0)}</span>
+                                                                            </div>
+                                                                        )}
+                                                                        {item.thuong_chuyen_can > 0 && (
+                                                                            <div className="flex justify-between">
+                                                                                <span className="text-slate-500 font-medium">Thưởng chuyên cần:</span>
+                                                                                <span className="font-bold text-slate-700">{formatCurrency(item.thuong_chuyen_can || 0)}</span>
+                                                                            </div>
+                                                                        )}
+                                                                        {item.chi_tiet_thuong_nong && item.chi_tiet_thuong_nong.length > 0 ? (
+                                                                            item.chi_tiet_thuong_nong.map((thuong: any, idx: number) => (
+                                                                                <div key={`thuong_${idx}`} className="flex justify-between">
+                                                                                    <span className="text-slate-500 font-medium">{thuong.noi_dung || 'Thưởng nóng'}:</span>
+                                                                                    <span className="font-bold text-slate-700">{formatCurrency(thuong.so_tien || 0)}</span>
+                                                                                </div>
+                                                                            ))
+                                                                        ) : item.thuong_nong > 0 && (
+                                                                            <div className="flex justify-between">
+                                                                                <span className="text-slate-500 font-medium">{item.noi_dung_thuong || 'Thưởng nóng'}:</span>
+                                                                                <span className="font-bold text-slate-700">{formatCurrency(item.thuong_nong || 0)}</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </>
+                                                                ) : (
+                                                                    <div className="text-slate-400 italic py-2 text-center">Không có thưởng chi tiết</div>
+                                                                )}
+                                                                <div className="border-t border-slate-100 pt-2 mt-2 flex justify-between font-bold">
+                                                                    <span className="text-slate-800">Tổng thưởng:</span>
+                                                                    <span className="text-emerald-600">{formatCurrency(item.tong_thuong || 0)}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className={`absolute right-4 border-8 border-transparent ${rowIndex < 4 ? 'bottom-full border-b-white' : 'top-full border-t-white'}`}></div>
                                                     </div>
-                                                    <div className="space-y-2.5 text-sm">
-                                                        {item.tong_thuong > 0 ? (
-                                                            <>
-                                                                {item.hoa_hong > 0 && (
-                                                                    <div className="flex justify-between">
-                                                                        <span className="text-slate-500 font-medium">Tiền hoa hồng:</span>
-                                                                        <span className="font-bold text-slate-700">{formatCurrency(item.hoa_hong || 0)}</span>
-                                                                    </div>
-                                                                )}
-                                                                {item.thuong_chuyen_can > 0 && (
-                                                                    <div className="flex justify-between">
-                                                                        <span className="text-slate-500 font-medium">Thưởng chuyên cần:</span>
-                                                                        <span className="font-bold text-slate-700">{formatCurrency(item.thuong_chuyen_can || 0)}</span>
-                                                                    </div>
-                                                                )}
-                                                                {item.chi_tiet_thuong_nong && item.chi_tiet_thuong_nong.length > 0 ? (
-                                                                    item.chi_tiet_thuong_nong.map((thuong: any, idx: number) => (
-                                                                        <div key={`thuong_${idx}`} className="flex justify-between">
-                                                                            <span className="text-slate-500 font-medium">{thuong.noi_dung || 'Thưởng nóng'}:</span>
-                                                                            <span className="font-bold text-slate-700">{formatCurrency(thuong.so_tien || 0)}</span>
+                                                )}
+                                            </td>
+                                            <td className={`py-2 px-3 text-right border-r border-slate-200 font-bold text-purple-600 w-[100px] relative group/allowance ${item.phu_cap > 0 ? 'cursor-pointer' : ''}`}>
+                                                <span>{formatCurrency(item.phu_cap || 0)}</span>
+
+                                                {/* Tooltip phụ cấp */}
+                                                {item.phu_cap > 0 && (
+                                                    <div className={`invisible opacity-0 scale-95 group-hover/allowance:visible group-hover/allowance:opacity-100 group-hover/allowance:scale-100 transition-all duration-200 delay-0 group-hover/allowance:delay-[300ms] absolute ${rowIndex < 4 ? 'top-full mt-2' : 'bottom-full mb-2'} right-0 z-30 w-72 rounded-lg bg-white text-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-slate-100 text-left font-normal`}>
+                                                        <div className="p-4">
+                                                            <div className="font-bold border-b border-slate-100 pb-2 mb-3 text-purple-600 flex justify-between text-sm tracking-wider">
+                                                                <span>Chi tiết phụ cấp</span>
+                                                                <span className="font-mono">{item.loai}_{item.ma_id}</span>
+                                                            </div>
+                                                            <div className="space-y-2.5 text-sm">
+                                                                {item.chi_tiet_phu_cap && item.chi_tiet_phu_cap.filter((pc: any) => pc.ten !== "Chuyên cần").length > 0 ? (
+                                                                    item.chi_tiet_phu_cap.filter((pc: any) => pc.ten !== "Chuyên cần").map((pc: any, i: number) => (
+                                                                        <div key={i} className="flex justify-between">
+                                                                            <span className="text-slate-500 font-medium">{pc.ten || 'Phụ cấp khác'}:</span>
+                                                                            <span className="font-bold text-slate-700">{formatCurrency(Number(pc.soTien || 0))}</span>
                                                                         </div>
                                                                     ))
-                                                                ) : item.thuong_nong > 0 && (
-                                                                    <div className="flex justify-between">
-                                                                        <span className="text-slate-500 font-medium">{item.noi_dung_thuong || 'Thưởng nóng'}:</span>
-                                                                        <span className="font-bold text-slate-700">{formatCurrency(item.thuong_nong || 0)}</span>
-                                                                    </div>
+                                                                ) : (
+                                                                    <div className="text-slate-400 italic py-2 text-center">Không có phụ cấp chi tiết</div>
                                                                 )}
-                                                            </>
-                                                        ) : (
-                                                            <div className="text-slate-400 italic py-2 text-center">Không có thưởng chi tiết</div>
-                                                        )}
-                                                        <div className="border-t border-slate-100 pt-2 mt-2 flex justify-between font-bold">
-                                                            <span className="text-slate-800">Tổng thưởng:</span>
-                                                            <span className="text-emerald-600">{formatCurrency(item.tong_thuong || 0)}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className={`absolute right-4 border-8 border-transparent ${rowIndex < 4 ? 'bottom-full border-b-white' : 'top-full border-t-white'}`}></div>
-                                            </div>
-                                            )}
-                                        </td>
-                                        <td className={`py-2 px-3 text-right border-r border-slate-200 font-bold text-purple-600 w-[100px] relative group/allowance ${item.phu_cap > 0 ? 'cursor-pointer' : ''}`}>
-                                            <span>{formatCurrency(item.phu_cap || 0)}</span>
-
-                                            {/* Tooltip phụ cấp */}
-                                            {item.phu_cap > 0 && (
-                                                <div className={`invisible group-hover/allowance:visible absolute ${rowIndex < 4 ? 'top-full mt-2' : 'bottom-full mb-2'} right-0 z-30 w-72 rounded-lg bg-white text-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-slate-100 animate-in fade-in zoom-in duration-200 text-left font-normal`}>
-                                                <div className="p-4">
-                                                    <div className="font-bold border-b border-slate-100 pb-2 mb-3 text-purple-600 flex justify-between text-sm tracking-wider">
-                                                        <span>Chi tiết phụ cấp</span>
-                                                        <span className="font-mono">{item.loai}_{item.ma_id}</span>
-                                                    </div>
-                                                    <div className="space-y-2.5 text-sm">
-                                                        {item.chi_tiet_phu_cap && item.chi_tiet_phu_cap.filter((pc: any) => pc.ten !== "Chuyên cần").length > 0 ? (
-                                                            item.chi_tiet_phu_cap.filter((pc: any) => pc.ten !== "Chuyên cần").map((pc: any, i: number) => (
-                                                                <div key={i} className="flex justify-between">
-                                                                    <span className="text-slate-500 font-medium">{pc.ten || 'Phụ cấp khác'}:</span>
-                                                                    <span className="font-bold text-slate-700">{formatCurrency(Number(pc.soTien || 0))}</span>
+                                                                <div className="border-t border-slate-100 pt-2 mt-2 flex justify-between font-bold">
+                                                                    <span className="text-slate-800">Tổng phụ cấp:</span>
+                                                                    <span className="text-purple-600">{formatCurrency(item.phu_cap || 0)}</span>
                                                                 </div>
-                                                            ))
-                                                        ) : (
-                                                            <div className="text-slate-400 italic py-2 text-center">Không có phụ cấp chi tiết</div>
-                                                        )}
-                                                        <div className="border-t border-slate-100 pt-2 mt-2 flex justify-between font-bold">
-                                                            <span className="text-slate-800">Tổng phụ cấp:</span>
-                                                            <span className="text-purple-600">{formatCurrency(item.phu_cap || 0)}</span>
+                                                            </div>
                                                         </div>
+                                                        <div className={`absolute right-4 border-8 border-transparent ${rowIndex < 4 ? 'bottom-full border-b-white' : 'top-full border-t-white'}`}></div>
                                                     </div>
-                                                </div>
-                                                <div className={`absolute right-4 border-8 border-transparent ${rowIndex < 4 ? 'bottom-full border-b-white' : 'top-full border-t-white'}`}></div>
-                                            </div>
-                                            )}
-                                        </td>
-                                        
-                                        {/* Sticky Tổng lương */}
-                                        <td className="py-2 px-4 text-right bg-blue-50 group-hover:bg-blue-100 sticky right-0 z-10 transition-colors border-l border-blue-200 w-[140px] font-black text-blue-600 text-sm">
-                                            {formatCurrency(item.thuc_linh)}
-                                        </td>
-                                    </tr>
+                                                )}
+                                            </td>
+
+                                            {/* Sticky Tổng lương */}
+                                            <td className="py-2 px-4 text-right bg-blue-50 group-hover:bg-blue-100 sticky right-0 z-10 transition-colors border-l border-blue-200 w-[140px] font-black text-blue-600 text-sm">
+                                                {formatCurrency(item.thuc_linh)}
+                                            </td>
+                                        </tr>
                                     );
                                 })
                             )}
@@ -799,16 +783,16 @@ export default function QuanLyLuongPage() {
                         <div className="text-sm font-medium text-slate-500">
                             Hiển thị <span className="text-blue-600 font-bold">{indexOfFirstItem + 1}</span> - <span className="text-blue-600 font-bold">{Math.min(indexOfLastItem, filteredData.length)}</span> trong tổng số <span className="text-slate-800 font-bold">{filteredData.length}</span> nhân sự
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
-                            <button 
+                            <button
                                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                 disabled={currentPage === 1}
                                 className={`px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold transition-all ${currentPage === 1 ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'bg-white text-slate-600 hover:border-blue-500 hover:text-blue-600 shadow-sm'}`}
                             >
                                 Trước
                             </button>
-                            
+
                             <div className="flex items-center gap-1">
                                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
                                     <button
@@ -820,8 +804,8 @@ export default function QuanLyLuongPage() {
                                     </button>
                                 ))}
                             </div>
-                            
-                            <button 
+
+                            <button
                                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                                 disabled={currentPage === totalPages}
                                 className={`px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold transition-all ${currentPage === totalPages ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'bg-white text-slate-600 hover:border-blue-500 hover:text-blue-600 shadow-sm'}`}
@@ -833,6 +817,57 @@ export default function QuanLyLuongPage() {
                 )}
             </div>
 
+            {isLocked && (
+                <div className="mt-6 flex justify-end">
+                    {hasPhieuChi ? (
+                        <Link
+                            href={`/dashboard/tai-chinh/phieu-chi?search=${maPhieuChi}`}
+                            className="flex items-center gap-2 px-6 py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg transition-all active:scale-95 text-sm border border-emerald-200 shadow-sm cursor-pointer"
+                        >
+                            <FaCheckCircle size={16} />
+                            <span>Xem phiếu chi liên kết</span>
+                        </Link>
+                    ) : (
+                        <Link
+                            href={`/dashboard/tai-chinh/phieu-chi?action=create_luong&month=${month}&year=${year}`}
+                            className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all active:scale-95 text-sm shadow-md shadow-blue-100/50 cursor-pointer"
+                        >
+                            <FaMoneyBillWave size={16} />
+                            <span>Lập phiếu chi lương</span>
+                        </Link>
+                    )}
+                </div>
+            )}
+
+            {/* Banner điều hướng khi CHƯA chốt bảng lương — nhắc kiểm tra chấm công & thưởng */}
+            {!isLocked && data.length > 0 && (
+                <div className="mt-6 p-5 bg-gradient-to-r from-blue-500/8 via-indigo-500/8 to-purple-500/8 border border-blue-200/60 rounded-[8px] flex flex-col md:flex-row justify-between items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-300 text-slate-800">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-[8px] bg-blue-100 flex items-center justify-center text-blue-600 shadow-sm shrink-0">
+                            <FaCalculator size={20} />
+                        </div>
+                        <div>
+                            <h4 className="text-blue-800 font-bold text-base">Kiểm tra dữ liệu trước khi chốt bảng lương?</h4>
+                            <p className="text-slate-500 text-sm font-medium mt-0.5">Đảm bảo bảng chấm công và bảng thưởng tháng {month}/{year} đã được xác nhận chính xác.</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
+                        <Link
+                            href="/dashboard/tai-chinh/cham-cong"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-blue-200 text-blue-700 font-bold rounded-[8px] hover:bg-blue-50 hover:border-blue-400 hover:shadow-md transition-all active:scale-95 text-sm shadow-sm whitespace-nowrap"
+                        >
+                            <FaCalendarAlt size={13} /> <span>Bảng chấm công</span>
+                        </Link>
+                        <Link
+                            href="/dashboard/tai-chinh/thuong"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-purple-200 text-purple-700 font-bold rounded-[8px] hover:bg-purple-50 hover:border-purple-400 hover:shadow-md transition-all active:scale-95 text-sm shadow-sm whitespace-nowrap"
+                        >
+                            <FaHistory size={13} /> <span>Bảng thưởng</span>
+                        </Link>
+                    </div>
+                </div>
+            )}
+
             {/* Modal Cấu hình hệ số lương */}
             {showConfigModal && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300">
@@ -842,7 +877,7 @@ export default function QuanLyLuongPage() {
                             <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2.5">
                                 <FaCog className="text-blue-600 animate-spin-slow" style={{ animationDuration: '8s' }} /> Cấu hình hệ số tính lương
                             </h3>
-                            <button 
+                            <button
                                 onClick={() => setShowConfigModal(false)}
                                 className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                             >
@@ -996,7 +1031,7 @@ export default function QuanLyLuongPage() {
                             <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center border border-amber-100 mx-auto mb-4 text-amber-500">
                                 <FaExclamationTriangle size={32} />
                             </div>
-                            <h3 className="text-xl font-black text-slate-800 mb-2">Chốt bảng lương chính thức</h3>
+                            <h3 className="text-xl font-bold text-slate-800 mb-2">Chốt bảng lương chính thức</h3>
                             <p className="text-sm text-slate-500 font-medium leading-relaxed">
                                 Bạn có chắc chắn muốn <span className="font-bold text-slate-700">CHỐT</span> bảng lương tháng <span className="font-bold text-blue-600">{month}/{year}</span>? Sau khi chốt, dữ liệu sẽ được lưu chính thức và không thể chỉnh sửa.
                             </p>
@@ -1005,7 +1040,7 @@ export default function QuanLyLuongPage() {
                         <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
                             <button
                                 onClick={() => setShowConfirmLockModal(false)}
-                                className="px-5 py-2.5 font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all active:scale-95"
+                                className="px-5 py-2.5 font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all active:scale-95 cursor-pointer"
                             >
                                 Hủy bỏ
                             </button>
@@ -1014,7 +1049,7 @@ export default function QuanLyLuongPage() {
                                     setShowConfirmLockModal(false);
                                     executeLockPayroll();
                                 }}
-                                className="px-6 py-2.5 bg-blue-600 text-white font-bold text-sm rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 active:scale-95"
+                                className="px-6 py-2.5 bg-blue-600 text-white font-bold text-sm rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 active:scale-95 cursor-pointer"
                             >
                                 Xác nhận chốt
                             </button>
@@ -1032,7 +1067,7 @@ export default function QuanLyLuongPage() {
                             <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center border border-red-100 mx-auto mb-4 text-red-500 animate-pulse">
                                 <FaExclamationTriangle size={32} />
                             </div>
-                            <h3 className="text-xl font-black text-slate-800 mb-2">Chỉnh sửa bảng lương đã chốt</h3>
+                            <h3 className="text-xl font-bold text-slate-800 mb-2">Chỉnh sửa bảng lương đã chốt</h3>
                             <p className="text-sm text-slate-500 font-medium leading-relaxed">
                                 Bạn có chắc chắn muốn <span className="font-bold text-red-600">CHỈNH SỬA</span> bảng lương tháng <span className="font-bold text-blue-600">{month}/{year}</span>? Để chỉnh sửa dữ liệu và tính toán lại, hệ thống sẽ tạm thời mở khóa bảng lương này.
                             </p>
@@ -1041,7 +1076,7 @@ export default function QuanLyLuongPage() {
                         <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
                             <button
                                 onClick={() => setShowConfirmUnlockModal(false)}
-                                className="px-5 py-2.5 font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all active:scale-95"
+                                className="px-5 py-2.5 font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all active:scale-95 cursor-pointer"
                             >
                                 Hủy bỏ
                             </button>
@@ -1050,7 +1085,7 @@ export default function QuanLyLuongPage() {
                                     setShowConfirmUnlockModal(false);
                                     executeUnlockPayroll();
                                 }}
-                                className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl transition-colors shadow-lg shadow-amber-200 active:scale-95"
+                                className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl transition-colors shadow-lg shadow-amber-200 active:scale-95 cursor-pointer"
                             >
                                 Xác nhận chỉnh sửa
                             </button>
