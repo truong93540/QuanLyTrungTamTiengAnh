@@ -1,10 +1,10 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
 }
 
 model Quyen {
@@ -62,7 +62,7 @@ model NhanSu {
   dia_chi             String?
   ma_chuc_vu          Int
   ma_phong_ban        Int
-  email               String?
+  email               String?             @unique
   cham_cong           ChiTietChamCong[]
   ho_so_bang          HoSoBangCap[]
   hop_dong            HopDongLaoDong[]
@@ -98,6 +98,7 @@ model GiaoVien {
   phan_cong_hd        PhanCongHoatDong[]
   phieu_cham_cong     PhieuChamCong[]
   phieu_luong         PhieuLuong[]
+  phieu_thuong  PhieuThuong[]
   tai_khoan           TaiKhoan?
 }
 
@@ -218,6 +219,7 @@ model ChiTietChamCong {
   phieu_cham_cong       PhieuChamCong @relation(fields: [ma_phieu_cham_cong], references: [ma_phieu_cham_cong])
 }
 
+
 model BangLuong {
   ma_bang_luong Int          @id @default(autoincrement())
   ky_luong      String
@@ -249,15 +251,28 @@ model PhieuLuong {
   danh_sach_thuong   PhieuThuong[]
 }
 
+model BangThuong {
+  ma_bang_thuong Int      @id @default(autoincrement())
+  ki_thuong      String?  // Ví dụ: "5/2026"
+  so_tien_thuong Decimal? @db.Decimal(15, 2) 
+
+  phieu_thuong   PhieuThuong[]
+}
+
 model PhieuThuong {
   ma_phieu_thuong Int         @id @default(autoincrement())
   ma_nhan_su      Int?
+  ma_giao_vien    Int?
   ma_phieu_luong  Int?
+  ma_bang_thuong  Int?
   loai_thuong     String
   so_tien         Decimal     @db.Decimal(15, 2)
   noi_dung        String?
+
+  bang_thuong     BangThuong? @relation(fields: [ma_bang_thuong], references: [ma_bang_thuong])
   nhan_su         NhanSu?     @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
-  phieu_luong     PhieuLuong? @relation(fields: [ma_phieu_luong], references: [ma_phieu_luong])
+  giao_vien       GiaoVien?   @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
+  phieu_luong PhieuLuong? @relation(fields: [ma_phieu_luong], references: [ma_phieu_luong])
 }
 
 model PhieuThu {
@@ -276,14 +291,17 @@ model PhieuThu {
 }
 
 model PhieuChi {
-  ma_phieu_chi              Int                   @id @default(autoincrement())
-  loai_phieu_chi            String
-  tong_tien                 Decimal               @db.Decimal(15, 2)
-  hinh_thuc_chi             String?
-  nguoi_nhan                String?
-  noi_dung                  String?
-  trang_thai                String?
-  ma_bang_luong             Int?                  @unique
+  ma_phieu_chi   Int     @id @default(autoincrement())
+  loai_phieu_chi String // 'LUONG', 'MARKETING', 'KHAC'
+  tong_tien      Decimal @db.Decimal(15, 2)
+  hinh_thuc_chi  String?
+  nguoi_nhan     String?
+  noi_dung       String?
+  trang_thai     String?
+  ngay_chi       DateTime @default(now())
+
+  // Khóa ngoại Nullable để linh hoạt theo loại phiếu
+  ma_bang_luong             Int? @unique
   ma_chuong_trinh_marketing Int?
   ma_nhan_su                Int
   bang_luong                BangLuong?            @relation(fields: [ma_bang_luong], references: [ma_bang_luong])
@@ -318,13 +336,26 @@ model KhoaHoc {
   trinh_do        String?
   trang_thai      String?
   ma_chuong_trinh Int
-  bai_kiem_tra    BaiKiemTra[]
-  cam_ket         CamKet[]
-  marketing       ChuongTrinhMarketing[]
-  ke_hoach_day    KeHoachGiangDay[]
+
   chuong_trinh    ChuongTrinhHoc         @relation(fields: [ma_chuong_trinh], references: [ma_chuong_trinh])
+
+  cam_ket         CamKet[]
+  ke_hoach_day    KeHoachGiangDay[]
   lop_hoc         LopHoc[]
   phieu_thu       PhieuThu[]
+  chi_tiet_marketing ChiTietMarketing[]
+}
+
+model ChiTietMarketing {
+  ma_chi_tiet_marketing     Int                  @id @default(autoincrement())
+  ma_khoa_hoc               Int
+  ma_chuong_trinh_marketing Int
+
+  khoa_hoc                  KhoaHoc              @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
+  chuong_trinh_marketing    ChuongTrinhMarketing @relation(fields: [ma_chuong_trinh_marketing], references: [ma_chuong_trinh_marketing])
+
+  // Ràng buộc Unique: Đảm bảo 1 khóa học không bị add trùng vào 1 chiến dịch marketing nhiều lần
+  @@unique([ma_khoa_hoc, ma_chuong_trinh_marketing])
 }
 
 model LopHoc {
@@ -336,11 +367,14 @@ model LopHoc {
   ma_phong_hoc        Int
   ma_khoa_hoc         Int
   lich_hoc            Json?
-  buoi_hoc            BuoiHoc[]
+
   khoa_hoc            KhoaHoc            @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
   phong_hoc           PhongHoc           @relation(fields: [ma_phong_hoc], references: [ma_phong_hoc])
+
+  buoi_hoc            BuoiHoc[]
   phan_cong_giang_day PhanCongGiangDay[]
   tham_gia            ThamGiaLop[]
+  bai_kiem_tra        BaiKiemTra[]
 }
 
 model PhanCongGiangDay {
@@ -421,6 +455,7 @@ model KeHoachGiangDay {
   thoi_gian             String?
   ma_giao_vien          Int
   ma_khoa_hoc           Int
+  
   giao_vien             GiaoVien @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
   khoa_hoc              KhoaHoc  @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
 }
@@ -454,8 +489,8 @@ model ChuongTrinhMarketing {
   ngay_bat_dau               DateTime?
   ngay_ket_thuc              DateTime?
   ngan_sach                  Decimal?            @db.Decimal(15, 2)
-  ma_khoa_hoc                Int?
-  khoa_hoc                   KhoaHoc?            @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
+
+  chi_tiet_marketing         ChiTietMarketing[]
   phan_cong                  PhanCongMarketing[]
   phieu_chi                  PhieuChi[]
 }
@@ -512,8 +547,10 @@ model BaiKiemTra {
   ma_bai_kiem_tra  Int             @id @default(autoincrement())
   ten_bai_kiem_tra String
   ngay_kiem_tra    DateTime
-  ma_khoa_hoc      Int
-  khoa_hoc         KhoaHoc         @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
+  ma_lop_hoc       Int
+
+  lop_hoc          LopHoc          @relation(fields: [ma_lop_hoc], references: [ma_lop_hoc])
+
   ket_qua          KetQuaKiemTra[]
 }
 
@@ -538,3 +575,5 @@ model NhanXet {
   buoi_hoc          BuoiHoc  @relation(fields: [ma_buoi_hoc], references: [ma_buoi_hoc])
   hoc_vien          HocVien  @relation(fields: [ma_hoc_vien], references: [ma_hoc_vien])
 }
+
+
