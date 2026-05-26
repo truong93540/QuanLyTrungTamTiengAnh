@@ -32,21 +32,6 @@ interface BuoiHoc {
   nhan_xet: NhanXet[];
 }
 
-interface KetQuaKiemTra {
-  ma_ket_qua_kiem_tra: number;
-  diem_so: number;
-  trang_thai: string | null;
-  nhan_xet: string | null;
-  hoc_vien: HocVien;
-}
-
-interface BaiKiemTra {
-  ma_bai_kiem_tra: number;
-  ten_bai_kiem_tra: string;
-  ngay_kiem_tra: string;
-  ket_qua: KetQuaKiemTra[];
-}
-
 interface LopHoc {
   ma_lop_hoc: number;
   ten_lop: string;
@@ -73,7 +58,6 @@ interface KeHoachGiangDay {
     ten_khoa_hoc: string;
     chuong_trinh: { ten_chuong_trinh: string };
     lop_hoc: LopHoc[];
-    bai_kiem_tra: BaiKiemTra[];
   };
 }
 
@@ -87,7 +71,7 @@ export default function KeHoachGiangDayDetailPage({ params }: PageProps) {
   const resolvedParams = React.use(params);
   const id = resolvedParams.id;
 
-  const [activeTab, setActiveTab] = useState<"overview" | "lessons" | "attendance" | "tests" | "comments">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "lessons" | "attendance" | "comments">("overview");
   const [data, setData] = useState<KeHoachGiangDay | null>(null);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -243,13 +227,13 @@ export default function KeHoachGiangDayDetailPage({ params }: PageProps) {
       </div>
 
       <div className="border-b bg-white px-2 rounded-xl shadow-sm border flex flex-wrap gap-2">
-        {(["overview", "lessons", "attendance", "tests", "comments"] as const).map((tab) => (
+        {(["overview", "lessons", "attendance", "comments"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`py-3 px-4 font-bold text-sm border-b-2 capitalize transition-all ${activeTab === tab ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"}`}
           >
-            {tab === "overview" ? "Tổng quan" : tab === "lessons" ? `Buổi học (${allLessons.length})` : tab === "attendance" ? "Điểm danh" : tab === "tests" ? "Bài kiểm tra" : "Nhận xét"}
+            {tab === "overview" ? "Tổng quan" : tab === "lessons" ? `Buổi học (${allLessons.length})` : tab === "attendance" ? "Điểm danh" : "Nhận xét"}
           </button>
         ))}
       </div>
@@ -369,44 +353,6 @@ export default function KeHoachGiangDayDetailPage({ params }: PageProps) {
                     ))}
                   </div>
                 )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeTab === "tests" && (
-          <div className="space-y-4">
-            <h3 className="font-bold text-slate-800 text-sm">Kết Quả Các Bài Kiểm Tra Khóa Đào Tạo</h3>
-            {data.khoa_hoc.bai_kiem_tra?.map((kt) => (
-              <div key={kt.ma_bai_kiem_tra} className="border rounded-xl overflow-hidden shadow-xs mb-4">
-                <div className="bg-slate-50 p-3 font-bold text-xs text-slate-800 border-b flex justify-between">
-                  <span>{kt.ten_bai_kiem_tra}</span>
-                  <span className="text-slate-400">Thời điểm thi: {new Date(kt.ngay_kiem_tra).toLocaleDateString("vi-VN")}</span>
-                </div>
-                <table className="w-full text-xs text-left">
-                  <thead>
-                    <tr className="bg-slate-100/40 text-slate-500 border-b font-semibold">
-                      <th className="p-2">Tên Học Viên</th>
-                      <th className="p-2 text-center">Điểm Số Đạt</th>
-                      <th className="p-2">Trạng Thái Đạt</th>
-                      <th className="p-2">Nhận Xét Hệ Thống</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {kt.ket_qua?.map((kq) => (
-                      <tr key={kq.ma_ket_qua_kiem_tra} className="border-b last:border-0">
-                        <td className="p-2 font-medium text-slate-800">{kq.hoc_vien?.ho_ten}</td>
-                        <td className="p-2 text-center font-bold text-indigo-600">{kq.diem_so}</td>
-                        <td className="p-2">
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${kq.diem_so >= 5 ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
-                            {kq.trang_thai || (kq.diem_so >= 5 ? "Đạt" : "Không đạt")}
-                          </span>
-                        </td>
-                        <td className="p-2 text-slate-400 italic">{kq.nhan_xet || "Chưa bổ sung"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
               </div>
             ))}
           </div>
