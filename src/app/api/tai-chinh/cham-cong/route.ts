@@ -101,36 +101,6 @@ export async function POST(req: Request) {
 
         const previewMap = new Map<string, any>()
 
-        if (!isPreview) {
-            const bang = await prisma.bangChamCong.findFirst({ where: { ky_cham_cong: apiMonth } })
-            if (bang) {
-                // Xoá tất cả chi tiết chấm công cũ của tháng này trước khi ghi nhận mới
-                await prisma.chiTietChamCong.deleteMany({
-                    where: {
-                        phieu_cham_cong: {
-                            ma_bang_cham_cong: bang.ma_bang_cham_cong
-                        }
-                    }
-                })
-                // Reset toàn bộ công và chỉ số tích lũy về 0
-                await prisma.phieuChamCong.updateMany({
-                    where: { ma_bang_cham_cong: bang.ma_bang_cham_cong },
-                    data: {
-                        ngay_1: 0, ngay_2: 0, ngay_3: 0, ngay_4: 0, ngay_5: 0, ngay_6: 0, ngay_7: 0, ngay_8: 0, ngay_9: 0, ngay_10: 0,
-                        ngay_11: 0, ngay_12: 0, ngay_13: 0, ngay_14: 0, ngay_15: 0, ngay_16: 0, ngay_17: 0, ngay_18: 0, ngay_19: 0, ngay_20: 0,
-                        ngay_21: 0, ngay_22: 0, ngay_23: 0, ngay_24: 0, ngay_25: 0, ngay_26: 0, ngay_27: 0, ngay_28: 0, ngay_29: 0, ngay_30: 0, ngay_31: 0,
-                        tong_so_gio_lam_viec: 0,
-                        so_lan_di_muon: 0,
-                        so_lan_ve_som: 0,
-                        so_gio_lam_viec_thuong: 0,
-                        so_gio_tang_ca_ngay_thuong: 0,
-                        so_gio_lam_viec_thuong_ngay_nghi: 0,
-                        so_gio_tang_ca_ngay_nghi: 0
-                    }
-                })
-            }
-        }
-
         for (const rowObj of jsonData) {
             const data: any = { intervals: [] }
             const tempVao: Record<number, any> = {}
@@ -183,70 +153,258 @@ export async function POST(req: Request) {
             
             data.ngay = `${ngay.getFullYear()}-${(ngay.getMonth() + 1).toString().padStart(2, '0')}-${ngay.getDate().toString().padStart(2, '0')}`
 
-            if (isPreview) {
-                const info = loai === 'NS' 
-                    ? await prisma.nhanSu.findUnique({ where: { ma_nhan_su: ma_id } }) 
-                    : await prisma.giaoVien.findUnique({ 
-                        where: { ma_giao_vien: ma_id },
-                        include: { phan_cong_giang_day: { include: { lop_hoc: true } } }
-                    })
-                
-                if (!info) continue
+            const info = loai === 'NS' 
+                ? await prisma.nhanSu.findUnique({ where: { ma_nhan_su: ma_id } }) 
+                : await prisma.giaoVien.findUnique({ 
+                    where: { ma_giao_vien: ma_id },
+                    include: { phan_cong_giang_day: { include: { lop_hoc: true } } }
+                })
+            
+            if (!info) continue
 
-                const key = `${loai}-${ma_id}`
-                if (!previewMap.has(key)) {
-                    previewMap.set(key, { 
-                        ma_nhan_su: loai === 'NS' ? ma_id : null, 
-                        ma_giao_vien: loai === 'GV' ? ma_id : null, 
-                        giao_vien: loai === 'GV' ? info : null,
-                        ho_ten: info.ho_ten || 'N/A', 
-                        chi_tiet_cham_cong: [],
-                        so_lan_di_muon: 0, so_lan_ve_som: 0, so_gio_lam_viec_thuong: 0, so_gio_tang_ca_ngay_thuong: 0,
-                        so_gio_lam_viec_thuong_ngay_nghi: 0, so_gio_tang_ca_ngay_nghi: 0, 
-                        tong_so_gio_lam_viec: 0, tong_so_ngay_cong: 0
-                    })
-                }
-                const phieu = previewMap.get(key)
-                const expectedShifts = await getExpectedShifts(prisma, loai, ma_id, ngay)
-                const metrics = calculateDayMetrics(data, expectedShifts)
-                const day = ngay.getDate()
-                
-                const totalDayWork = metrics.gio_lam_thuong + metrics.gio_tang_ca
-                phieu[`ngay_${day}`] = (phieu[`ngay_${day}`] || 0) + totalDayWork
-                
-                // Tính ngày công cho nhân sự văn phòng
-                if (loai === 'NS' && totalDayWork > 0) {
-                    phieu.tong_so_ngay_cong += 1
-                }
-                
-                let ct = phieu.chi_tiet_cham_cong.find((c: any) => c.day === day)
-                if (!ct) {
-                    ct = { day, ngay: data.ngay, ...metrics.shiftSlots }
-                    phieu.chi_tiet_cham_cong.push(ct)
-                } else {
-                    Object.assign(ct, metrics.shiftSlots)
-                }
-
-                const isW = loai === 'GV' ? false : (ngay.getDay() === 0)
-                const finalGioThuong = loai === 'GV' ? (metrics.gio_lam_thuong + metrics.gio_tang_ca) : metrics.gio_lam_thuong
-                const finalTangCa = loai === 'GV' ? 0 : metrics.gio_tang_ca
-
-                if (isW) {
-                    phieu.so_gio_lam_viec_thuong_ngay_nghi += finalGioThuong
-                    phieu.so_gio_tang_ca_ngay_nghi += finalTangCa
-                } else {
-                    phieu.so_gio_lam_viec_thuong += finalGioThuong
-                    phieu.so_gio_tang_ca_ngay_thuong += finalTangCa
-                }
-                phieu.so_lan_di_muon += metrics.so_lan_muon
-                phieu.so_lan_ve_som += metrics.so_lan_som
-                phieu.tong_so_gio_lam_viec += (metrics.gio_lam_thuong + metrics.gio_tang_ca)
-            } else {
-                await ghiNhanChamCongNgay(data)
+            const key = `${loai}-${ma_id}`
+            if (!previewMap.has(key)) {
+                previewMap.set(key, { 
+                    ma_nhan_su: loai === 'NS' ? ma_id : null, 
+                    ma_giao_vien: loai === 'GV' ? ma_id : null, 
+                    giao_vien: loai === 'GV' ? info : null,
+                    ho_ten: info.ho_ten || 'N/A', 
+                    chi_tiet_cham_cong: [],
+                    so_lan_di_muon: 0, so_lan_ve_som: 0, so_gio_lam_viec_thuong: 0, so_gio_tang_ca_ngay_thuong: 0,
+                    so_gio_lam_viec_thuong_ngay_nghi: 0, so_gio_tang_ca_ngay_nghi: 0, 
+                    tong_so_gio_lam_viec: 0, tong_so_ngay_cong: 0
+                })
             }
+            const phieu = previewMap.get(key)
+            const expectedShifts = await getExpectedShifts(prisma, loai, ma_id, ngay)
+            const metrics = calculateDayMetrics(data, expectedShifts)
+            const day = ngay.getDate()
+            
+            const totalDayWork = metrics.gio_lam_thuong + metrics.gio_tang_ca
+            phieu[`ngay_${day}`] = (phieu[`ngay_${day}`] || 0) + totalDayWork
+            
+            // Tính ngày công cho nhân sự văn phòng
+            if (loai === 'NS' && totalDayWork > 0) {
+                phieu.tong_so_ngay_cong += 1
+            }
+            
+            let ct = phieu.chi_tiet_cham_cong.find((c: any) => c.day === day)
+            if (!ct) {
+                ct = { day, ngay: data.ngay, ...metrics.shiftSlots }
+                phieu.chi_tiet_cham_cong.push(ct)
+            } else {
+                Object.assign(ct, metrics.shiftSlots)
+            }
+
+            const isW = loai === 'GV' ? false : (ngay.getDay() === 0 || ngay.getDay() === 6)
+            const finalGioThuong = loai === 'GV' ? (metrics.gio_lam_thuong + metrics.gio_tang_ca) : metrics.gio_lam_thuong
+            const finalTangCa = loai === 'GV' ? 0 : metrics.gio_tang_ca
+
+            if (isW) {
+                phieu.so_gio_lam_viec_thuong_ngay_nghi += finalGioThuong
+                phieu.so_gio_tang_ca_ngay_nghi += finalTangCa
+            } else {
+                phieu.so_gio_lam_viec_thuong += finalGioThuong
+                phieu.so_gio_tang_ca_ngay_thuong += finalTangCa
+            }
+            phieu.so_lan_di_muon += metrics.so_lan_muon
+            phieu.so_lan_ve_som += metrics.so_lan_som
+            phieu.tong_so_gio_lam_viec += (metrics.gio_lam_thuong + metrics.gio_tang_ca)
         }
 
-        return NextResponse.json({ success: true, data: isPreview ? Array.from(previewMap.values()) : undefined })
+        // --- NẾU LÀ XEM TRƯỚC ---
+        if (isPreview) {
+            // Lấy tất cả nhân sự và giáo viên từ database
+            const [allNhanSu, allGiaoVien] = await Promise.all([
+                prisma.nhanSu.findMany({ orderBy: { ho_ten: 'asc' } }),
+                prisma.giaoVien.findMany({
+                    include: { phan_cong_giang_day: { include: { lop_hoc: true } } },
+                    orderBy: { ho_ten: 'asc' }
+                })
+            ])
+
+            // Những ai đã có trong previewMap
+            const coPreviewNS = new Set<number>()
+            const coPreviewGV = new Set<number>()
+            previewMap.forEach((v) => {
+                if (v.ma_nhan_su) coPreviewNS.add(v.ma_nhan_su)
+                if (v.ma_giao_vien) coPreviewGV.add(v.ma_giao_vien)
+            })
+
+            const emptyPhieu = (ho_ten: string, ma_nhan_su: number | null, ma_giao_vien: number | null, giao_vien?: any) => ({
+                ma_phieu_cham_cong: null,
+                ho_ten,
+                ma_nhan_su,
+                ma_giao_vien,
+                ma_bang_cham_cong: null,
+                trang_thai: null,
+                so_ngay_cong: 0,
+                tong_so_gio_lam_viec: 0,
+                so_lan_di_muon: 0,
+                so_lan_ve_som: 0,
+                so_gio_lam_viec_thuong: 0,
+                so_gio_tang_ca_ngay_thuong: 0,
+                so_gio_lam_viec_thuong_ngay_nghi: 0,
+                so_gio_tang_ca_ngay_nghi: 0,
+                bao_hiem_xa_hoi: 0,
+                chi_tiet_phu_cap: null,
+                tien_hoa_hong: 0,
+                chi_tiet_cham_cong: [],
+                giao_vien: giao_vien || null,
+                ngay_1: 0, ngay_2: 0, ngay_3: 0, ngay_4: 0, ngay_5: 0, ngay_6: 0, ngay_7: 0,
+                ngay_8: 0, ngay_9: 0, ngay_10: 0, ngay_11: 0, ngay_12: 0, ngay_13: 0, ngay_14: 0,
+                ngay_15: 0, ngay_16: 0, ngay_17: 0, ngay_18: 0, ngay_19: 0, ngay_20: 0, ngay_21: 0,
+                ngay_22: 0, ngay_23: 0, ngay_24: 0, ngay_25: 0, ngay_26: 0, ngay_27: 0, ngay_28: 0,
+                ngay_29: 0, ngay_30: 0, ngay_31: 0,
+                _chuaChamCong: true
+            })
+
+            const emptyNS = allNhanSu
+                .filter(ns => !coPreviewNS.has(ns.ma_nhan_su))
+                .map(ns => emptyPhieu(ns.ho_ten, ns.ma_nhan_su, null))
+
+            const emptyGV = allGiaoVien
+                .filter(gv => !coPreviewGV.has(gv.ma_giao_vien))
+                .map(gv => emptyPhieu(gv.ho_ten, null, gv.ma_giao_vien, gv))
+
+            // Gộp và sắp xếp y hệt như GET
+            const data = [...Array.from(previewMap.values()), ...emptyNS, ...emptyGV]
+                .sort((a, b) => {
+                    const idA = a.ma_nhan_su ?? a.ma_giao_vien ?? 0
+                    const idB = b.ma_nhan_su ?? b.ma_giao_vien ?? 0
+                    const isNS_A = a.ma_nhan_su != null
+                    const isNS_B = b.ma_nhan_su != null
+                    if (isNS_A !== isNS_B) return isNS_A ? -1 : 1
+                    return idA - idB
+                })
+
+            return NextResponse.json({ success: true, data })
+        }
+
+        // --- NẾU LƯU TRỰC TIẾP ---
+        const listItems = Array.from(previewMap.values())
+        if (listItems.length > 0) {
+            await prisma.$transaction(async (tx) => {
+                // 1. Đảm bảo có Bảng chấm công cho tháng này
+                let bang = await tx.bangChamCong.findFirst({ where: { ky_cham_cong: apiMonth } })
+                if (!bang) {
+                    bang = await tx.bangChamCong.create({ 
+                        data: { ky_cham_cong: apiMonth, trang_thai: 'Đang mở' } 
+                    })
+                } else {
+                    // RESET TOÀN BỘ PHIẾU CHẤM CÔNG CỦA THÁNG VỀ 0 TRƯỚC ĐỂ XÓA RÁC VÀ PHÒNG TRỪ CÔNG CŨ
+                    await tx.phieuChamCong.updateMany({
+                        where: { ma_bang_cham_cong: bang.ma_bang_cham_cong },
+                        data: {
+                            ngay_1: 0, ngay_2: 0, ngay_3: 0, ngay_4: 0, ngay_5: 0, ngay_6: 0, ngay_7: 0, ngay_8: 0, ngay_9: 0, ngay_10: 0,
+                            ngay_11: 0, ngay_12: 0, ngay_13: 0, ngay_14: 0, ngay_15: 0, ngay_16: 0, ngay_17: 0, ngay_18: 0, ngay_19: 0, ngay_20: 0,
+                            ngay_21: 0, ngay_22: 0, ngay_23: 0, ngay_24: 0, ngay_25: 0, ngay_26: 0, ngay_27: 0, ngay_28: 0, ngay_29: 0, ngay_30: 0, ngay_31: 0,
+                            tong_so_gio_lam_viec: 0,
+                            so_lan_di_muon: 0,
+                            so_lan_ve_som: 0,
+                            so_gio_lam_viec_thuong: 0,
+                            so_gio_tang_ca_ngay_thuong: 0,
+                            so_gio_lam_viec_thuong_ngay_nghi: 0,
+                            so_gio_tang_ca_ngay_nghi: 0
+                        }
+                    })
+                }
+
+                // 2. Xử lý từng nhân sự
+                for (const item of listItems) {
+                    const person = item.ma_nhan_su 
+                        ? await tx.nhanSu.findUnique({ where: { ma_nhan_su: item.ma_nhan_su } })
+                        : await tx.giaoVien.findUnique({ where: { ma_giao_vien: item.ma_giao_vien } })
+
+                    if (!person) {
+                        console.log(`Skip Save: Không tìm thấy mã ${item.ma_nhan_su || item.ma_giao_vien}`)
+                        continue
+                    }
+
+                    const ngayFields: Record<string, number> = {}
+                    for (let i = 1; i <= 31; i++) {
+                        ngayFields[`ngay_${i}`] = 0
+                    }
+
+                    Object.entries(item).forEach(([key, val]) => {
+                        if (key.startsWith('ngay_') && val !== undefined && val !== null) {
+                            ngayFields[key] = Number(val)
+                        }
+                    })
+
+                    // Tìm hoặc tạo Phiếu chấm công
+                    let phieu = await tx.phieuChamCong.findFirst({
+                        where: { 
+                            ma_bang_cham_cong: bang.ma_bang_cham_cong, 
+                            ma_nhan_su: item.ma_nhan_su || null, 
+                            ma_giao_vien: item.ma_giao_vien || null 
+                        }
+                    })
+
+                    // Cập nhật hoặc tạo mới Phiếu chấm công
+                    if (phieu) {
+                        phieu = await tx.phieuChamCong.update({
+                            where: { ma_phieu_cham_cong: phieu.ma_phieu_cham_cong },
+                            data: {
+                                ...ngayFields,
+                                so_lan_di_muon: item.so_lan_di_muon || 0,
+                                so_lan_ve_som: item.so_lan_ve_som || 0,
+                                so_gio_lam_viec_thuong: item.so_gio_lam_viec_thuong || 0,
+                                so_gio_tang_ca_ngay_thuong: item.so_gio_tang_ca_ngay_thuong || 0,
+                                so_gio_lam_viec_thuong_ngay_nghi: item.so_gio_lam_viec_thuong_ngay_nghi || 0,
+                                so_gio_tang_ca_ngay_nghi: item.so_gio_tang_ca_ngay_nghi || 0,
+                                tong_so_gio_lam_viec: item.tong_so_gio_lam_viec || 0
+                            }
+                        })
+                    } else {
+                        phieu = await tx.phieuChamCong.create({
+                            data: {
+                                ma_bang_cham_cong: bang.ma_bang_cham_cong,
+                                ma_nhan_su: item.ma_nhan_su || null,
+                                ma_giao_vien: item.ma_giao_vien || null,
+                                ho_ten: item.ho_ten || 'N/A',
+                                ...ngayFields,
+                                so_lan_di_muon: item.so_lan_di_muon || 0,
+                                so_lan_ve_som: item.so_lan_ve_som || 0,
+                                so_gio_lam_viec_thuong: item.so_gio_lam_viec_thuong || 0,
+                                so_gio_tang_ca_ngay_thuong: item.so_gio_tang_ca_ngay_thuong || 0,
+                                so_gio_lam_viec_thuong_ngay_nghi: item.so_gio_lam_viec_thuong_ngay_nghi || 0,
+                                so_gio_tang_ca_ngay_nghi: item.so_gio_tang_ca_ngay_nghi || 0,
+                                tong_so_gio_lam_viec: item.tong_so_gio_lam_viec || 0
+                            }
+                        })
+                    }
+
+                    // LƯU CHI TIẾT CHẤM CÔNG (Để Tooltip hiển thị)
+                    if (item.chi_tiet_cham_cong && Array.isArray(item.chi_tiet_cham_cong)) {
+                        await tx.chiTietChamCong.deleteMany({
+                            where: { ma_phieu_cham_cong: phieu.ma_phieu_cham_cong }
+                        })
+
+                        await tx.chiTietChamCong.createMany({
+                            data: item.chi_tiet_cham_cong.map((ct: any) => ({
+                                ma_phieu_cham_cong: phieu.ma_phieu_cham_cong,
+                                ma_nhan_su: item.ma_nhan_su || null,
+                                ma_giao_vien: item.ma_giao_vien || null,
+                                ngay: (() => {
+                                    const d = new Date(ct.ngay)
+                                    d.setHours(12, 0, 0, 0)
+                                    return d
+                                })(),
+                                gio_vao_1: ct.gio_vao_1, gio_ra_1: ct.gio_ra_1,
+                                gio_vao_2: ct.gio_vao_2, gio_ra_2: ct.gio_ra_2,
+                                gio_vao_3: ct.gio_vao_3, gio_ra_3: ct.gio_ra_3,
+                                gio_vao_4: ct.gio_vao_4, gio_ra_4: ct.gio_ra_4,
+                                gio_vao_5: ct.gio_vao_5, gio_ra_5: ct.gio_ra_5,
+                                gio_vao_6: ct.gio_vao_6, gio_ra_6: ct.gio_ra_6
+                            }))
+                        })
+                    }
+                }
+            })
+        }
+
+        return NextResponse.json({ success: true })
     } catch (error) {
         console.error(error)
         return NextResponse.json({ error: 'Lỗi server' }, { status: 500 })
@@ -258,14 +416,79 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url)
         const month = searchParams.get('month')
         if (!month) return NextResponse.json({ error: 'Thiếu tháng' }, { status: 400 })
-        const data = await prisma.phieuChamCong.findMany({
+
+        // 1. Lấy các phiếu chấm công đã có
+        const phieuList = await prisma.phieuChamCong.findMany({
             where: { bang_cham_cong: { ky_cham_cong: month } },
-            include: { 
+            include: {
                 chi_tiet_cham_cong: { orderBy: { ngay: 'asc' } },
                 giao_vien: { include: { phan_cong_giang_day: { include: { lop_hoc: true } } } }
             },
             orderBy: { ho_ten: 'asc' }
         })
+
+        // 2. Lấy tất cả nhân sự và giáo viên trong DB
+        const [allNhanSu, allGiaoVien] = await Promise.all([
+            prisma.nhanSu.findMany({ orderBy: { ho_ten: 'asc' } }),
+            prisma.giaoVien.findMany({
+                include: { phan_cong_giang_day: { include: { lop_hoc: true } } },
+                orderBy: { ho_ten: 'asc' }
+            })
+        ])
+
+        // 3. Tạo set mã những người đã có phiếu chấm công
+        const coPhieuNS = new Set(phieuList.filter(p => p.ma_nhan_su).map(p => p.ma_nhan_su))
+        const coPhieuGV = new Set(phieuList.filter(p => p.ma_giao_vien).map(p => p.ma_giao_vien))
+
+        // 4. Tạo phiếu giả (rỗng) cho những người chưa có dữ liệu chấm công
+        const emptyPhieu = (ho_ten: string, ma_nhan_su: number | null, ma_giao_vien: number | null, giao_vien?: any) => ({
+            ma_phieu_cham_cong: null,
+            ho_ten,
+            ma_nhan_su,
+            ma_giao_vien,
+            ma_bang_cham_cong: null,
+            trang_thai: null,
+            so_ngay_cong: 0,
+            tong_so_gio_lam_viec: 0,
+            so_lan_di_muon: 0,
+            so_lan_ve_som: 0,
+            so_gio_lam_viec_thuong: 0,
+            so_gio_tang_ca_ngay_thuong: 0,
+            so_gio_lam_viec_thuong_ngay_nghi: 0,
+            so_gio_tang_ca_ngay_nghi: 0,
+            bao_hiem_xa_hoi: 0,
+            chi_tiet_phu_cap: null,
+            tien_hoa_hong: 0,
+            chi_tiet_cham_cong: [],
+            giao_vien: giao_vien || null,
+            ngay_1: 0, ngay_2: 0, ngay_3: 0, ngay_4: 0, ngay_5: 0, ngay_6: 0, ngay_7: 0,
+            ngay_8: 0, ngay_9: 0, ngay_10: 0, ngay_11: 0, ngay_12: 0, ngay_13: 0, ngay_14: 0,
+            ngay_15: 0, ngay_16: 0, ngay_17: 0, ngay_18: 0, ngay_19: 0, ngay_20: 0, ngay_21: 0,
+            ngay_22: 0, ngay_23: 0, ngay_24: 0, ngay_25: 0, ngay_26: 0, ngay_27: 0, ngay_28: 0,
+            ngay_29: 0, ngay_30: 0, ngay_31: 0,
+            _chuaChamCong: true // đánh dấu chưa có dữ liệu
+        })
+
+        const emptyNS = allNhanSu
+            .filter(ns => !coPhieuNS.has(ns.ma_nhan_su))
+            .map(ns => emptyPhieu(ns.ho_ten, ns.ma_nhan_su, null))
+
+        const emptyGV = allGiaoVien
+            .filter(gv => !coPhieuGV.has(gv.ma_giao_vien))
+            .map(gv => emptyPhieu(gv.ho_ten, null, gv.ma_giao_vien, gv))
+
+        // 5. Gộp: phiếu đã có + phiếu rỗng, sắp xếp theo mã ID tăng dần (NS trước, GV sau)
+        const data = [...phieuList, ...emptyNS, ...emptyGV]
+            .sort((a, b) => {
+                const idA = a.ma_nhan_su ?? a.ma_giao_vien ?? 0
+                const idB = b.ma_nhan_su ?? b.ma_giao_vien ?? 0
+                const isNS_A = a.ma_nhan_su != null
+                const isNS_B = b.ma_nhan_su != null
+                // Nhân sự luôn xếp trước giáo viên, rồi mới sort theo mã tăng dần
+                if (isNS_A !== isNS_B) return isNS_A ? -1 : 1
+                return idA - idB
+            })
+
         return NextResponse.json({ data })
     } catch (error) {
         return NextResponse.json({ error: 'Lỗi server' }, { status: 500 })
