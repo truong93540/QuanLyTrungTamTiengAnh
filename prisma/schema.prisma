@@ -129,7 +129,7 @@ model HopDongLaoDong {
   ten_cong_viec      String?
   tg_thu_viec        String?
   update_at          DateTime  @updatedAt
-  chi_tiet_phu_cap   Json?
+  chi_tiet_phu_cap   Json?  // [ { ten: "Đi lại", soTien: 500000 }, { ten: "Chuyên cần", soTien: 300000 } ]
   dong_bao_hiem      Boolean?  @default(false)
   luong_co_ban       Decimal?  @db.Decimal(15, 2)
   phan_tram_hoa_hong Float?    @default(0)
@@ -242,8 +242,9 @@ model PhieuLuong {
   trang_thai         String?
   ma_phieu_cham_cong Int           @unique
   bao_hiem_xa_hoi    Decimal?      @default(0) @db.Decimal(15, 2)
-  chi_tiet_phu_cap   Json?
+  chi_tiet_phu_cap   Json? // [ { ten: "Đi lại", soTien: 500000 }, { ten: "Chuyên cần", soTien: 300000 } ]
   tien_hoa_hong      Decimal?      @default(0) @db.Decimal(15, 2)
+  tien_phat          Decimal?      @default(0) @db.Decimal(15, 2)
   bang_luong         BangLuong     @relation(fields: [ma_bang_luong], references: [ma_bang_luong])
   giao_vien          GiaoVien?     @relation(fields: [ma_giao_vien], references: [ma_giao_vien])
   nhan_su            NhanSu?       @relation(fields: [ma_nhan_su], references: [ma_nhan_su])
@@ -314,7 +315,7 @@ model CongNo {
   so_tien_no     Decimal   @db.Decimal(15, 2)
   ngay_phat_sinh DateTime  @default(now())
   han_thanh_toan DateTime?
-  trang_thai     String?
+  trang_thai     String? // 'Chưa trả', 'Đã trả', 'Quá hạn'
   ma_hoc_vien    Int
   hoc_vien       HocVien   @relation(fields: [ma_hoc_vien], references: [ma_hoc_vien])
 }
@@ -366,7 +367,7 @@ model LopHoc {
   ngay_ket_thuc       DateTime?
   ma_phong_hoc        Int
   ma_khoa_hoc         Int
-  lich_hoc            Json?
+  lich_hoc            Json? // Ví dụ: [{"thu": 2, "ca": 1}, {"thu": 3, "ca": 2}]
 
   khoa_hoc            KhoaHoc            @relation(fields: [ma_khoa_hoc], references: [ma_khoa_hoc])
   phong_hoc           PhongHoc           @relation(fields: [ma_phong_hoc], references: [ma_phong_hoc])
@@ -575,5 +576,3 @@ model NhanXet {
   buoi_hoc          BuoiHoc  @relation(fields: [ma_buoi_hoc], references: [ma_buoi_hoc])
   hoc_vien          HocVien  @relation(fields: [ma_hoc_vien], references: [ma_hoc_vien])
 }
-
-

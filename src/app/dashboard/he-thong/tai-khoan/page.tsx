@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
+import React, { useState, useEffect, useMemo } from 'react'
+import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaSearch } from 'react-icons/fa'
 import AccountModal from '@/components/admin/AccountModal'
 import ChangePasswordModal from '@/components/admin/ChangePasswordModal'
 
@@ -13,14 +13,37 @@ export default function QuanLyTaiKhoan() {
     const [selectedAccount, setSelectedAccount] = useState<any | null>(null)
 
     const [currentPage, setCurrentPage] = useState(1)
+    const [searchText, setSearchText] = useState('')
+    const [filterStatus, setFilterStatus] = useState('')
     const itemsPerPage = 10
+
+    const filteredAccounts = useMemo(() => {
+        return accounts.filter((acc) => {
+            const keyword = searchText.toLowerCase()
+            const matchText =
+                acc.ho_ten?.toLowerCase().includes(keyword) ||
+                acc.ten_dang_nhap?.toLowerCase().includes(keyword)
+            const matchStatus = filterStatus === '' || acc.trang_thai === filterStatus
+            return matchText && matchStatus
+        })
+    }, [accounts, searchText, filterStatus])
 
     const indexOfLastItem = currentPage * itemsPerPage
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
-    const currentItems = accounts.slice(indexOfFirstItem, indexOfLastItem)
-    const totalPages = Math.ceil(accounts.length / itemsPerPage)
+    const currentItems = filteredAccounts.slice(indexOfFirstItem, indexOfLastItem)
+    const totalPages = Math.ceil(filteredAccounts.length / itemsPerPage)
 
     const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchText(e.target.value)
+        setCurrentPage(1)
+    }
+
+    const handleFilterStatus = (status: string) => {
+        setFilterStatus(status)
+        setCurrentPage(1)
+    }
 
     const fetchAccounts = async () => {
         setIsLoading(true)
@@ -99,6 +122,38 @@ export default function QuanLyTaiKhoan() {
                 </button>
             </div>
 
+            {/* Thanh tìm kiếm & bộ lọc */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <div className="relative w-72">
+                    <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                    <input
+                        type="text"
+                        placeholder="Tìm tên nhân sự, tên đăng nhập..."
+                        value={searchText}
+                        onChange={handleSearchChange}
+                        className="w-full pl-9 pr-4 py-2 text-sm text-gray-800 placeholder-gray-400 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    />
+                </div>
+                <div className="flex gap-2">
+                    {['', 'Hoạt động', 'Bị khóa'].map((status) => (
+                        <button
+                            key={status}
+                            onClick={() => handleFilterStatus(status)}
+                            className={`px-3 py-2 rounded-lg text-xs font-medium border transition cursor-pointer ${
+                                filterStatus === status
+                                    ? status === 'Hoạt động'
+                                        ? 'bg-green-600 text-white border-green-600'
+                                        : status === 'Bị khóa'
+                                        ? 'bg-red-500 text-white border-red-500'
+                                        : 'bg-blue-600 text-white border-blue-600'
+                                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                            }`}>
+                            {status === '' ? 'Tất cả' : status}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm text-gray-600">
@@ -119,10 +174,12 @@ export default function QuanLyTaiKhoan() {
                                         Đang tải dữ liệu...
                                     </td>
                                 </tr>
-                            ) : accounts.length === 0 ? (
+                            ) : filteredAccounts.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="p-4 text-center text-gray-500 border border-gray-100">
-                                        Chưa có tài khoản nào trong hệ thống.
+                                        {accounts.length === 0
+                                            ? 'Chưa có tài khoản nào trong hệ thống.'
+                                            : 'Không tìm thấy tài khoản phù hợp với bộ lọc.'}
                                     </td>
                                 </tr>
                             ) : (
@@ -194,16 +251,16 @@ export default function QuanLyTaiKhoan() {
                 </div>
 
                 {/* Phân trang tài khoản giống danh mục chức vụ */}
-                {!isLoading && accounts.length > 0 && (
+                {!isLoading && filteredAccounts.length > 0 && (
                     <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50/50 font-medium text-gray-600">
                         <div className="text-sm">
                             Hiển thị{' '}
                             <span className="font-bold text-gray-800">{indexOfFirstItem + 1}</span> đến{' '}
                             <span className="font-bold text-gray-800">
-                                {Math.min(indexOfLastItem, accounts.length)}
+                                {Math.min(indexOfLastItem, filteredAccounts.length)}
                             </span>{' '}
-                            trong tổng số <span className="font-bold text-gray-800">{accounts.length}</span>{' '}
-                            tài khoản
+                            trong tổng số <span className="font-bold text-gray-800">{filteredAccounts.length}</span>{' '}
+                            tài khoản{searchText || filterStatus ? ' (đã lọc)' : ''}
                         </div>
 
                         <div className="flex gap-2">

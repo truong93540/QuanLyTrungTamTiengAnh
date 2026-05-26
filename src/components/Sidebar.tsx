@@ -215,8 +215,8 @@ export default function Sidebar() {
             }
 
             // Nếu là menu có con
-            const filteredChildren = item.children?.filter((child) =>
-                userRoles.includes(child.role),
+            const filteredChildren = item.children?.filter((child: any) =>
+                !child.role || userRoles.includes(child.role),
             )
             if (filteredChildren && filteredChildren.length > 0) {
                 return { ...item, children: filteredChildren }

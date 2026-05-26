@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { FaUserCircle, FaKey, FaChevronDown } from 'react-icons/fa'
+import { FaUserCircle, FaKey, FaChevronDown, FaFileInvoiceDollar } from 'react-icons/fa'
 
 /**
  * Tạo chuỗi chức danh hiển thị trên topbar.
@@ -82,6 +82,15 @@ export default function Topbar() {
                                         <FaKey size={14} />
                                     </div>
                                     <span className="font-medium">Đổi mật khẩu</span>
+                                </Link>
+                                <Link
+                                    href="/dashboard/ca-nhan/phieu-luong"
+                                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors mx-2 rounded-lg"
+                                    onClick={() => setIsOpen(false)}>
+                                    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                                        <FaFileInvoiceDollar size={14} />
+                                    </div>
+                                    <span className="font-medium">Tra cứu phiếu lương</span>
                                 </Link>
                             </div>
                         </>

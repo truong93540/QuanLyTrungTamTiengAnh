@@ -13,6 +13,7 @@ export async function GET(request: Request) {
         const kyCongPhu = `T${month}-${year}`;
 
         const nhanSuList = await prisma.nhanSu.findMany({
+            orderBy: { ma_nhan_su: 'asc' },
             include: {
                 chuc_vu: true,
                 phong_ban: true,
@@ -35,6 +36,7 @@ export async function GET(request: Request) {
         });
 
         const giaoVienList = await prisma.giaoVien.findMany({
+            orderBy: { ma_giao_vien: 'asc' },
             include: {
                 chuc_vu: true,
                 phong_ban: true
@@ -76,13 +78,14 @@ export async function GET(request: Request) {
             const daysInMonth = new Date(y, m, 0).getDate();
             let workingDays = 0;
             for (let i = 1; i <= daysInMonth; i++) {
-                if (new Date(y, m - 1, i).getDay() !== 0) workingDays++;
+                const dayOfWeek = new Date(y, m - 1, i).getDay();
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) workingDays++;
             }
             return workingDays;
         };
         const standardWorkingDays = getWorkingDaysInMonth(month, year);
-        
-        // Tính số ngày lễ hợp lệ (chỉ đếm các ngày thuộc tháng hiện tại và không phải Chủ Nhật)
+
+        // Tính số ngày lễ hợp lệ (chỉ đếm các ngày thuộc tháng hiện tại và không phải Thứ Bảy/Chủ Nhật)
         let countNgayLeHieuLuc = 0;
         if (ngayLeText.trim()) {
             const parsedNgayLe = ngayLeText.split(",").map(d => d.trim()).filter(d => d.length > 0);
@@ -96,13 +99,14 @@ export async function GET(request: Request) {
                     d = Number(dateStr);
                     m = month; // Nếu chỉ nhập ngày, mặc định là tháng đang chọn
                 }
-                
+
                 if (!isNaN(d) && !isNaN(m) && m === month) {
                     const daysInMonth = new Date(year, month, 0).getDate();
                     if (d >= 1 && d <= daysInMonth) {
                         const dateObj = new Date(year, m - 1, d);
-                        // Chỉ trừ đi ngày công nếu ngày lễ rơi vào ngày làm việc bình thường (khác Chủ Nhật)
-                        if (dateObj.getDay() !== 0) {
+                        const dayOfWeek = dateObj.getDay();
+                        // Chỉ trừ đi ngày công nếu ngày lễ rơi vào ngày làm việc bình thường (khác Thứ Bảy & Chủ Nhật)
+                        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
                             countNgayLeHieuLuc++;
                         }
                     }
@@ -115,7 +119,7 @@ export async function GET(request: Request) {
         const results = nhanSuList.map(ns => {
             const hopDong = ns.hop_dong[0];
             const pcc = ns.phieu_cham_cong[0];
-            
+
             // Tính hoa hồng
             const phieuThuCuaNS = phieuThuList.filter(pt => pt.ma_nhan_su === ns.ma_nhan_su);
             const tongTienThu = phieuThuCuaNS.reduce((acc, pt) => acc + Number(pt.so_tien), 0);
@@ -245,7 +249,7 @@ export async function POST(request: Request) {
                 });
                 if (checkSaved) {
                     return NextResponse.json(
-                        { error: "Bảng thưởng kỳ này đã được chốt và khóa, không thể thêm thưởng phát sinh!" }, 
+                        { error: "Bảng thưởng kỳ này đã được chốt và khóa, không thể thêm thưởng phát sinh!" },
                         { status: 400 }
                     );
                 }
@@ -301,7 +305,7 @@ export async function POST(request: Request) {
             if (bangThuong) {
                 // CHỈ XÓA các phiếu tự động (Hoa hồng, Chuyên cần) để ghi đè, GIỮ LẠI Thưởng nóng
                 await tx.phieuThuong.deleteMany({
-                    where: { 
+                    where: {
                         ma_bang_thuong: bangThuong.ma_bang_thuong,
                         loai_thuong: { in: ["Tiền hoa hồng", "Chuyên cần"] }
                     }
@@ -351,7 +355,7 @@ export async function POST(request: Request) {
             // Cập nhật lại tổng tiền của bảng thưởng bao gồm cả thưởng nóng
             const allPhieuCurrent = await tx.phieuThuong.findMany({ where: { ma_bang_thuong: bangThuong!.ma_bang_thuong } });
             const finalTotal = allPhieuCurrent.reduce((acc, p) => acc + Number(p.so_tien), 0);
-            
+
             await tx.bangThuong.update({
                 where: { ma_bang_thuong: bangThuong!.ma_bang_thuong },
                 data: {

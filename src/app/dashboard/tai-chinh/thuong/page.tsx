@@ -82,6 +82,7 @@ export default function ThuongPage() {
     const [isSaved, setIsSaved] = useState(false);
     const [showConfirmLockModal, setShowConfirmLockModal] = useState(false);
     const [showConfirmUnlockModal, setShowConfirmUnlockModal] = useState(false);
+    const [isBangLuongLocked, setIsBangLuongLocked] = useState(false);
 
     const fetchData = async (currentNgayLe = ngayLeText) => {
         setLoading(true);
@@ -267,11 +268,23 @@ export default function ThuongPage() {
         }
     };
 
+    // Kiểm tra trạng thái bảng lương đã chốt chưa
+    const fetchBangLuongStatus = async () => {
+        try {
+            const res = await fetch(`/api/tai-chinh/luong?month=${month}&year=${year}`);
+            const result = await res.json();
+            setIsBangLuongLocked(result.isLocked === true);
+        } catch {
+            setIsBangLuongLocked(false);
+        }
+    };
+
     useEffect(() => {
         // Load ngày lễ đã lưu từ localStorage để giữ lại trạng thái khi F5 hoặc đổi tháng
         const savedNgayLe = typeof window !== 'undefined' ? (localStorage.getItem(`ngayLe_${month}_${year}`) || "") : "";
         setNgayLeText(savedNgayLe);
         fetchData(savedNgayLe);
+        fetchBangLuongStatus();
     }, [month, year]);
 
     const handleCancelNgayLe = () => {
@@ -397,6 +410,29 @@ export default function ThuongPage() {
                 </div>
             </div>
 
+            {/* Bảng nhắc kiểm tra chấm công — hiện khi CHƯA chốt */}
+            {!isSaved && data.length > 0 && (
+                <div className="mb-6 p-5 bg-gradient-to-r from-blue-500/8 via-indigo-500/8 to-purple-500/8 border border-blue-200/60 rounded-[8px] flex flex-col md:flex-row justify-between items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-300 text-slate-800">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-[8px] bg-blue-100 flex items-center justify-center text-blue-600 shadow-sm shrink-0">
+                            <FaCalendarAlt size={20} />
+                        </div>
+                        <div>
+                            <h4 className="text-blue-800 font-bold text-base">Cần kiểm tra chấm công trước khi chốt thưởng!</h4>
+                            <p className="text-slate-500 text-sm font-medium mt-0.5">Dữ liệu chuyên cần được tính dựa trên bảng chấm công của tháng {month}/{year}.</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
+                        <Link
+                            href="/dashboard/tai-chinh/cham-cong"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-blue-200 text-blue-700 font-bold rounded-[8px] hover:bg-blue-50 hover:border-blue-400 hover:shadow-md transition-all active:scale-95 text-sm shadow-sm"
+                        >
+                            <FaCalendarAlt size={14} /> <span>Xem bảng chấm công</span>
+                        </Link>
+                    </div>
+                </div>
+            )}
+
             {/* Main Content */}
             <div className="bg-white rounded-lg shadow-xl shadow-slate-200 border border-slate-100 overflow-hidden">
                 <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -422,24 +458,32 @@ export default function ThuongPage() {
                             {isSaved ? <FaLock /> : <FaFire />}
                             <span>Thêm phiếu thưởng</span>
                         </button>
-                        {isSaved ? (
-                            <button
-                                onClick={handleUnlockThuong}
-                                disabled={isSaving || data.length === 0}
-                                className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 shadow-sm min-w-[220px] justify-center cursor-pointer"
-                            >
-                                <FaEdit />
-                                <span>{isSaving ? 'Đang xử lý...' : 'Chỉnh sửa bảng thưởng'}</span>
-                            </button>
-                        ) : (
-                            <button
-                                onClick={handleLockThuong}
-                                disabled={isSaving || data.length === 0}
-                                className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 shadow-sm min-w-[220px] justify-center cursor-pointer"
-                            >
-                                <FaSave className={isSaving ? 'animate-pulse' : ''} />
-                                <span>{isSaving ? 'Đang xử lý...' : 'Chốt bảng thưởng'}</span>
-                            </button>
+                        {isSaved && (
+                            <div className="relative group/unlock">
+                                <button
+                                    onClick={isBangLuongLocked ? undefined : handleUnlockThuong}
+                                    disabled={isSaving || data.length === 0 || isBangLuongLocked}
+                                    className={`flex items-center gap-2 px-6 py-3 font-bold rounded-lg transition-all shadow-sm min-w-[220px] justify-center ${isBangLuongLocked
+                                            ? 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-80'
+                                            : 'bg-red-600 hover:bg-red-700 text-white hover:shadow-lg active:scale-95 cursor-pointer'
+                                        } disabled:opacity-50`}
+                                >
+                                    {isBangLuongLocked ? <FaLock size={14} /> : <FaEdit />}
+                                    <span>{isSaving ? 'Đang xử lý...' : isBangLuongLocked ? 'Đã chốt lương' : 'Chỉnh sửa bảng thưởng'}</span>
+                                </button>
+                                {/* Tooltip giải thích khi bảng lương đã chốt */}
+                                {isBangLuongLocked && (
+                                    <div className="absolute top-full mt-2 right-0 z-[9999] w-72 invisible opacity-0 group-hover/unlock:visible group-hover/unlock:opacity-100 transition-all duration-200">
+                                        <div className="bg-white text-slate-700 text-xs font-medium px-4 py-3 rounded-xl shadow-2xl border border-slate-200 leading-relaxed">
+                                            <div className="absolute -top-1 right-6 -translate-y-1/2 rotate-45 w-2.5 h-2.5 bg-white border-l border-t border-slate-200"></div>
+                                            <div className="flex items-start gap-2">
+                                                <FaLock className="shrink-0 mt-0.5 text-amber-500" size={12} />
+                                                <span>Bảng lương tháng {month}/{year} đã được chốt. Không thể chỉnh sửa bảng thưởng. Vui lòng mở chốt bảng lương trước.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </div>
                 </div>
@@ -593,6 +637,20 @@ export default function ThuongPage() {
                 )}
             </div>
 
+            {/* Nút Chốt bảng thưởng — hiện phía dưới bảng khi chưa chốt */}
+            {!isSaved && data.length > 0 && (
+                <div className="mt-6 flex justify-end">
+                    <button
+                        onClick={handleLockThuong}
+                        disabled={isSaving || data.length === 0}
+                        className="flex items-center gap-2 px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-blue-200 transition-all active:scale-95 disabled:opacity-50 shadow-sm cursor-pointer text-sm"
+                    >
+                        <FaSave className={isSaving ? 'animate-pulse' : ''} />
+                        <span>{isSaving ? 'Đang xử lý...' : 'Chốt bảng thưởng'}</span>
+                    </button>
+                </div>
+            )}
+
             {/* Bảng điều hướng nhanh khi đã chốt thưởng */}
             {isSaved && (
                 <div className="mt-6 p-5 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-blue-500/10 border border-emerald-500/20 rounded-[8px] flex flex-col md:flex-row justify-between items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-300 backdrop-blur-sm text-slate-800">
@@ -611,29 +669,6 @@ export default function ThuongPage() {
                             className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-[8px] hover:shadow-lg hover:shadow-blue-200 hover:from-blue-700 hover:to-indigo-700 transition-all active:scale-95 text-sm"
                         >
                             <span>Tính lương</span> <FaArrowLeft className="rotate-180 text-blue-200" />
-                        </Link>
-                    </div>
-                </div>
-            )}
-
-            {/* Bảng điều hướng khi CHƯA chốt thưởng — nhắc kiểm tra chấm công trước */}
-            {!isSaved && data.length > 0 && (
-                <div className="mt-6 p-5 bg-gradient-to-r from-blue-500/8 via-indigo-500/8 to-purple-500/8 border border-blue-200/60 rounded-[8px] flex flex-col md:flex-row justify-between items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-300 text-slate-800">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-[8px] bg-blue-100 flex items-center justify-center text-blue-600 shadow-sm shrink-0">
-                            <FaCalendarAlt size={20} />
-                        </div>
-                        <div>
-                            <h4 className="text-blue-800 font-bold text-base">Cần kiểm tra chấm công trước khi chốt thưởng?</h4>
-                            <p className="text-slate-500 text-sm font-medium mt-0.5">Dữ liệu chuyên cần được tính dựa trên bảng chấm công của tháng {month}/{year}.</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
-                        <Link
-                            href="/dashboard/tai-chinh/cham-cong"
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-blue-200 text-blue-700 font-bold rounded-[8px] hover:bg-blue-50 hover:border-blue-400 hover:shadow-md transition-all active:scale-95 text-sm shadow-sm"
-                        >
-                            <FaCalendarAlt size={14} /> <span>Xem bảng chấm công</span>
                         </Link>
                     </div>
                 </div>
