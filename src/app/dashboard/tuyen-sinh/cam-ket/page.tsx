@@ -1,29 +1,29 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import {
-    FaEdit,
-    FaSearch,
-    FaPlus,
-    FaSave,
-    FaTimes,
-    FaTrash,
-    FaUserGraduate,
-    FaEye,
-    FaCheckCircle,
-    FaSpinner,
-    FaQuestionCircle,
-    FaUserPlus,
-    FaExclamationTriangle,
-    FaShieldAlt,
-    FaSync,
-    FaTasks,
-    FaClock,
-    FaFileAlt,
-    FaFilter,
-    FaChevronDown,
-    FaChevronUp,
-    FaBookOpen,
+import { 
+    FaEdit, 
+    FaSearch, 
+    FaPlus, 
+    FaSave, 
+    FaTimes, 
+    FaTrash, 
+    FaUserGraduate, 
+    FaEye, 
+    FaCheckCircle, 
+    FaSpinner, 
+    FaQuestionCircle, 
+    FaUserPlus, 
+    FaExclamationTriangle, 
+    FaShieldAlt, 
+    FaSync, 
+    FaTasks, 
+    FaClock, 
+    FaFileAlt, 
+    FaFilter, 
+    FaChevronDown, 
+    FaChevronUp, 
+    FaBookOpen 
 } from 'react-icons/fa'
 
 interface KhoaHoc {
@@ -63,11 +63,13 @@ export default function QuanLyCamKetPage() {
     // States cho Ẩn/Hiện từng khối chi tiết
     const [showStudentInfo, setShowStudentInfo] = useState(false)
     const [showCourseInfo, setShowCourseInfo] = useState(false)
-
-    // Tìm kiếm và Lọc
+    
+    // TÌM KIẾM VÀ LỌC (Mặc định lấy tháng và năm hiện tại)
+    const currentDate = new Date();
     const [searchTerm, setSearchTerm] = useState('')
-    const [selectedMonth, setSelectedMonth] = useState<string>('all')
-
+    const [selectedMonth, setSelectedMonth] = useState<string>((currentDate.getMonth() + 1).toString()) 
+    const [selectedYear, setSelectedYear] = useState<string>(currentDate.getFullYear().toString())
+    
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingId, setEditingId] = useState<number | null>(null)
     const [isViewMode, setIsViewMode] = useState(false)
@@ -260,9 +262,11 @@ export default function QuanLyCamKetPage() {
             setFormData({ ...formData, [name]: value })
         }
 
-        // Tự động xóa thông báo lỗi của trường đang được nhập
         if (formErrors[name]) {
             setFormErrors((prev) => ({ ...prev, [name]: '' }))
+        }
+        if (name === 'ngay_het_han' || name === 'ngay_ky') {
+            setFormErrors(prev => ({ ...prev, ngay_het_han: '', ngay_ky: '' }));
         }
     }
 
@@ -483,7 +487,6 @@ export default function QuanLyCamKetPage() {
         }
     }
 
-    // HÀM KIỂM TRA LỖI TỪNG TRƯỜNG DỮ LIỆU
     const handleSaveCamKet = async () => {
         const newErrors: Record<string, string> = {}
 
@@ -527,7 +530,6 @@ export default function QuanLyCamKetPage() {
             return
         }
 
-        // NẾU KHÔNG CÓ LỖI -> GỌI API LƯU DATA
         try {
             const method = editingId ? 'PUT' : 'POST'
             const payload = {
@@ -596,24 +598,31 @@ export default function QuanLyCamKetPage() {
         }
     }
 
-    const filteredData = data
-        .filter((item) => {
-            const lowerSearch = searchTerm.toLowerCase()
-            const matchSearch =
-                (item.hoc_vien?.ho_ten || '').toLowerCase().includes(lowerSearch) ||
-                item.ma_hoc_vien.toString().includes(searchTerm) ||
-                (item.khoa_hoc?.ten_khoa_hoc || '').toLowerCase().includes(lowerSearch)
+    // TÍNH TOÁN BỘ LỌC KẾT HỢP (THÁNG + NĂM)
+    const filteredData = data.filter(item => {
+        const lowerSearch = searchTerm.toLowerCase();
+        const matchSearch = (item.hoc_vien?.ho_ten || '').toLowerCase().includes(lowerSearch) || 
+                            item.ma_hoc_vien.toString().includes(searchTerm) ||
+                            (item.khoa_hoc?.ten_khoa_hoc || '').toLowerCase().includes(lowerSearch);
+        
+        let matchMonth = true;
+        let matchYear = true;
 
-            let matchMonth = true
+        if (item.ngay_ky) {
+            const dateKy = new Date(item.ngay_ky);
+            const month = (dateKy.getMonth() + 1).toString();
+            const year = dateKy.getFullYear().toString();
+
             if (selectedMonth !== 'all') {
-                const dateKy = new Date(item.ngay_ky)
-                const month = (dateKy.getMonth() + 1).toString()
-                matchMonth = month === selectedMonth
+                matchMonth = month === selectedMonth;
             }
+            if (selectedYear.trim() !== '') {
+                matchYear = year === selectedYear.trim();
+            }
+        }
 
-            return matchSearch && matchMonth
-        })
-        .sort((a, b) => b.ma_cam_ket - a.ma_cam_ket)
+        return matchSearch && matchMonth && matchYear;
+    }).sort((a, b) => b.ma_cam_ket - a.ma_cam_ket);
 
     const indexOfLastItem = currentPage * itemsPerPage
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
@@ -634,7 +643,9 @@ export default function QuanLyCamKetPage() {
                     </button>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-4 mb-6 w-full lg:w-2/3">
+                {/* THANH TÌM KIẾM & BỘ LỌC KÉP */}
+                <div className="flex flex-col md:flex-row gap-4 mb-6 w-full">
+                    {/* Box Tìm Kiếm */}
                     <div className="relative flex-1 md:max-w-md">
                         <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
                             <FaSearch className="text-gray-400 text-sm" />
@@ -650,26 +661,36 @@ export default function QuanLyCamKetPage() {
                             className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400"
                         />
                     </div>
-                    <div className="relative w-full md:w-36 shrink-0 group">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <FaFilter className="text-gray-400 text-xs" />
+                    
+                    {/* Group Lọc Tháng & Năm */}
+                    <div className="flex gap-2 w-full md:w-auto">
+                        <div className="relative w-full md:w-32 shrink-0 group">
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <FaFilter className="text-gray-400 text-xs" />
+                            </div>
+                            <select 
+                                value={selectedMonth} 
+                                onChange={(e) => { setSelectedMonth(e.target.value); setCurrentPage(1); }}
+                                className="block w-full appearance-none rounded-lg border border-gray-300 bg-white py-2.5 pl-8 pr-7 text-sm font-semibold text-gray-700 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 cursor-pointer transition-all hover:bg-gray-50"
+                            >
+                                <option value="all">Tất cả</option>
+                                {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                                    <option key={month} value={month.toString()}>Tháng {month}</option>
+                                ))}
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <FaChevronDown className="text-gray-400 text-[10px] transition-transform group-hover:text-gray-600" />
+                            </div>
                         </div>
-                        <select
-                            value={selectedMonth}
-                            onChange={(e) => {
-                                setSelectedMonth(e.target.value)
-                                setCurrentPage(1)
-                            }}
-                            className="block w-full appearance-none rounded-lg border border-gray-300 bg-white py-2.5 pl-8 pr-7 text-sm font-semibold text-gray-700 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 cursor-pointer transition-all hover:bg-gray-50">
-                            <option value="all">Tất cả</option>
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                                <option key={month} value={month.toString()}>
-                                    Tháng {month}
-                                </option>
-                            ))}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <FaChevronDown className="text-gray-400 text-[10px] transition-transform group-hover:text-gray-600" />
+
+                        <div className="relative w-full md:w-28 shrink-0">
+                            <input 
+                                type="number" 
+                                placeholder="Năm..." 
+                                value={selectedYear}
+                                onChange={(e) => { setSelectedYear(e.target.value); setCurrentPage(1); }}
+                                className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 px-3 text-sm font-semibold text-gray-700 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all"
+                            />
                         </div>
                     </div>
                 </div>

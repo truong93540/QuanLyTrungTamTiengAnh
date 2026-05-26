@@ -2,8 +2,35 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { 
-    FaEdit,  FaSearch,  FaPlus,  FaSave, FaTimes,  FaTrash, FaUserGraduate,  FaEye, FaCheckCircle, FaSpinner,  FaQuestionCircle, FaUserPlus, 
-    FaExclamationTriangle, FaShieldAlt,  FaSync, FaTasks, FaClock, FaFileAlt, FaChevronDown, FaChevronUp,FaFilter, FaBookOpen,FaBullhorn,FaMapMarkerAlt,FaCalendarAlt,FaUsers,FaChalkboardTeacher,FaWalking,FaCampground
+    FaEdit, 
+    FaSearch, 
+    FaPlus, 
+    FaSave, 
+    FaTimes, 
+    FaTrash, 
+    FaUserGraduate, 
+    FaEye, 
+    FaCheckCircle, 
+    FaSpinner, 
+    FaQuestionCircle, 
+    FaUserPlus, 
+    FaExclamationTriangle, 
+    FaShieldAlt, 
+    FaSync, 
+    FaTasks, 
+    FaClock, 
+    FaFileAlt, 
+    FaChevronDown, 
+    FaChevronUp,
+    FaFilter, 
+    FaBookOpen,
+    FaBullhorn,
+    FaMapMarkerAlt,
+    FaCalendarAlt,
+    FaUsers,
+    FaChalkboardTeacher,
+    FaWalking,
+    FaCampground
 } from 'react-icons/fa'
 
 interface GiaoVien {
@@ -55,9 +82,12 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
     const [danhSachGiaoVien, setDanhSachGiaoVien] = useState<GiaoVien[]>([])
     const [isLoading, setIsLoading] = useState(true)
     
-    // States Lọc & Tìm kiếm
+    // TÌM KIẾM VÀ LỌC (Mặc định lấy tháng và năm hiện tại)
+    const currentDate = new Date();
     const [searchTerm, setSearchTerm] = useState('')
-    const [selectedMonth, setSelectedMonth] = useState<string>('all') 
+    const [selectedMonth, setSelectedMonth] = useState<string>((currentDate.getMonth() + 1).toString()) 
+    const [selectedYear, setSelectedYear] = useState<string>(currentDate.getFullYear().toString())
+    
     const [tuKhoaGiaoVien, setTuKhoaGiaoVien] = useState("")
     
     // Modal & Form States
@@ -289,11 +319,22 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
         const matchSearch = matchActivityOrLocation || matchTeacher;
 
         let matchMonth = true;
-        if (selectedMonth !== 'all') {
-            const startMonth = new Date(item.ngay_to_chuc).getMonth() + 1;
-            matchMonth = startMonth.toString() === selectedMonth;
+        let matchYear = true;
+
+        if (item.ngay_to_chuc) {
+            const dateToChuc = new Date(item.ngay_to_chuc);
+            const month = (dateToChuc.getMonth() + 1).toString();
+            const year = dateToChuc.getFullYear().toString();
+
+            if (selectedMonth !== 'all') {
+                matchMonth = month === selectedMonth;
+            }
+            if (selectedYear.trim() !== '') {
+                matchYear = year === selectedYear.trim();
+            }
         }
-        return matchSearch && matchMonth;
+
+        return matchSearch && matchMonth && matchYear;
     }).sort((a, b) => b.ma_hoat_dong_ngoai_khoa - a.ma_hoat_dong_ngoai_khoa)
     
     const indexOfLastItem = currentPage * itemsPerPage
@@ -339,9 +380,10 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                     </button>
                 </div>
 
-                {/* THANH TÌM KIẾM & BỘ LỌC THÁNG */}
+                {/* THANH TÌM KIẾM & BỘ LỌC KÉP */}
                 <div className="flex flex-col md:flex-row gap-4 mb-6 w-full">
                     
+                    {/* Box Tìm Kiếm */}
                     <div className="relative flex-1 md:max-w-md">
                         <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
                             <FaSearch className="text-gray-400 text-sm" />
@@ -355,22 +397,34 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                         />
                     </div>
 
-                    <div className="relative w-full md:w-36 shrink-0 group">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <FaFilter className="text-gray-400 text-[11px]" />
+                    <div className="flex gap-2 w-full md:w-auto">
+                        <div className="relative w-full md:w-32 shrink-0 group">
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <FaFilter className="text-gray-400 text-xs" />
+                            </div>
+                            <select 
+                                value={selectedMonth}
+                                onChange={(e) => { setSelectedMonth(e.target.value); setCurrentPage(1); }}
+                                className="block w-full appearance-none rounded-lg border border-gray-300 bg-white py-2.5 pl-8 pr-7 text-sm font-semibold text-gray-700 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 cursor-pointer transition-all hover:bg-gray-50"
+                            >
+                                <option value="all">Tất cả</option>
+                                {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                                    <option key={month} value={month.toString()}>Tháng {month}</option>
+                                ))}
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <FaChevronDown className="text-gray-400 text-[10px] transition-transform group-hover:text-gray-600" />
+                            </div>
                         </div>
-                        <select 
-                            value={selectedMonth}
-                            onChange={(e) => setSelectedMonth(e.target.value)}
-                            className="block w-full appearance-none rounded-lg border border-gray-300 bg-white py-2.5 pl-8 pr-7 text-sm font-semibold text-gray-700 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 cursor-pointer transition-all hover:bg-gray-50"
-                        >
-                            <option value="all">Tất cả</option>
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
-                                <option key={month} value={month.toString()}>Tháng {month}</option>
-                            ))}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <FaChevronDown className="text-gray-400 text-[10px] transition-transform group-hover:text-gray-600" />
+
+                        <div className="relative w-full md:w-28 shrink-0">
+                            <input 
+                                type="number" 
+                                placeholder="Năm..." 
+                                value={selectedYear}
+                                onChange={(e) => { setSelectedYear(e.target.value); setCurrentPage(1); }}
+                                className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 px-3 text-sm font-semibold text-gray-700 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all"
+                            />
                         </div>
                     </div>
                 </div>

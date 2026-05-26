@@ -132,7 +132,11 @@ export const kiemTraVaCapNhatViPham = async (ma_cam_ket: number) => {
     let bo_thi = false;
     if (camKet.tham_gia_thi_day_du && ma_khoa_hoc) {
         const danhSachBaiKiemTra = await prisma.baiKiemTra.findMany({
-            where: { ma_khoa_hoc: ma_khoa_hoc }
+            where: { 
+            lop_hoc: {
+            ma_khoa_hoc: ma_khoa_hoc
+        }
+    }
         });
         
         for (const bkt of danhSachBaiKiemTra) {
@@ -140,7 +144,7 @@ export const kiemTraVaCapNhatViPham = async (ma_cam_ket: number) => {
                 where: { ma_bai_kiem_tra: bkt.ma_bai_kiem_tra, ma_hoc_vien: ma_hoc_vien }
             });
             
-            if (!ketQua || (ketQua.diem_so === null && ketQua.trang_thai === null)) {
+            if (!ketQua || (ketQua.diem_so === 0 && ketQua.trang_thai === 'Bỏ thi')) {
                 bo_thi = true;
                 break;
             }
