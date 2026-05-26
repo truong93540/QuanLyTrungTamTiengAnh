@@ -1,109 +1,83 @@
-import { NextResponse } from 'next/server'
-import {
-    layDanhSachGiaoVien,
-    taoGiaoVienMoi,
-    capNhatGiaoVien,
-    xoaGiaoVien,
-} from '@/services/DaoTao/giaoVienService'
+import { NextRequest, NextResponse } from 'next/server';
+import { giaoVienService } from '@/services/DaoTao/giaoVienService';
 
-function parseDate(value: unknown): Date | null | undefined {
-    if (value === undefined) return undefined
-    if (value === null || value === '') return null
-    const d = new Date(String(value))
-    return Number.isNaN(d.getTime()) ? null : d
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (id) {
+      const teacher = await giaoVienService.getById(Number(id));
+      if (!teacher) {
+        return NextResponse.json({ error: 'Không tìm thấy giáo viên này' }, { status: 404 });
+      }
+      return NextResponse.json(teacher);
+    }
+
+    // Nếu có tham số meta -> Lấy danh mục bổ trợ cho form điền
+    const meta = searchParams.get('meta');
+    if (meta === 'true') {
+      const metadata = await giaoVienService.getMetadata();
+      return NextResponse.json(metadata);
+    }
+
+    const search = searchParams.get('search') || undefined;
+    const ma_chuc_vu = searchParams.get('ma_chuc_vu') ? Number(searchParams.get('ma_chuc_vu')) : undefined;
+    const ma_phong_ban = searchParams.get('ma_phong_ban') ? Number(searchParams.get('ma_phong_ban')) : undefined;
+    const page = searchParams.get('page') ? Number(searchParams.get('page')) : 1;
+    const limit = searchParams.get('limit') ? Number(searchParams.get('limit')) : 10;
+
+    const data = await giaoVienService.getAll({ search, ma_chuc_vu, ma_phong_ban, page, limit });
+    return NextResponse.json(data);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Lỗi server phát sinh' }, { status: 500 });
+  }
 }
 
-export async function GET(request: Request) {
-    try {
-        const { searchParams } = new URL(request.url)
-        const filters = {
-            ma_giao_vien: searchParams.get('ma_giao_vien'),
-            ho_ten: searchParams.get('ho_ten'),
-            so_dien_thoai: searchParams.get('so_dien_thoai'),
-            ma_phong_ban: searchParams.get('ma_phong_ban'),
-        }
-        const danhSach = await layDanhSachGiaoVien(filters)
-        return NextResponse.json(danhSach)
-    } catch (error) {
-        console.error('Lỗi GET giáo viên:', error)
-        return NextResponse.json({ error: 'Lỗi lấy danh sách giáo viên' }, { status: 500 })
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    
+    if (!body.ho_ten || !body.ma_chuc_vu || !body.ma_phong_ban) {
+      return NextResponse.json({ error: 'Các trường Họ tên, Chức vụ và Phòng ban bắt buộc điền' }, { status: 400 });
     }
+
+    const newTeacher = await giaoVienService.create(body);
+    return NextResponse.json({ message: 'Thêm giáo viên thành công', data: newTeacher }, { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Lỗi xử lý tạo mới giáo viên' }, { status: 500 });
+  }
 }
 
-export async function POST(request: Request) {
-    try {
-        const body = await request.json()
-        if (!body.ho_ten || !String(body.ho_ten).trim()) {
-            return NextResponse.json({ error: 'Thiếu họ tên giáo viên' }, { status: 400 })
-        }
-        if (!body.ma_chuc_vu || !body.ma_phong_ban) {
-            return NextResponse.json({ error: 'Thiếu thông tin Chức vụ hoặc Phòng ban' }, { status: 400 })
-        }
+export async function PUT(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+    const body = await req.json();
 
-        const giaoVienMoi = await taoGiaoVienMoi({
-            ho_ten: String(body.ho_ten).trim(),
-            ngay_sinh: parseDate(body.ngay_sinh) ?? null,
-            gioi_tinh: body.gioi_tinh ? String(body.gioi_tinh) : null,
-            so_dien_thoai: body.so_dien_thoai ? String(body.so_dien_thoai) : null,
-            email: body.email ? String(body.email) : null,
-            dia_chi: body.dia_chi ? String(body.dia_chi) : null,
-            ma_chuc_vu: Number(body.ma_chuc_vu),
-            ma_phong_ban: Number(body.ma_phong_ban),
-        })
-        return NextResponse.json(giaoVienMoi, { status: 201 })
-    } catch (error: unknown) {
-        console.error('Lỗi POST giáo viên:', error)
-        return NextResponse.json({ error: 'Lỗi khi thêm giáo viên' }, { status: 500 })
+    if (!id) {
+      return NextResponse.json({ error: 'Thiếu mã định danh giáo viên (id)' }, { status: 400 });
     }
+
+    const updated = await giaoVienService.update(Number(id), body);
+    return NextResponse.json({ message: 'Cập nhật thông tin giáo viên thành công', data: updated });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Lỗi xử lý cập nhật giáo viên' }, { status: 500 });
+  }
 }
 
-export async function PUT(request: Request) {
-    try {
-        const body = await request.json()
-        if (!body.ma_giao_vien) {
-            return NextResponse.json({ error: 'Thiếu mã giáo viên' }, { status: 400 })
-        }
-        
-        const ma = Number(body.ma_giao_vien)
-        const duLieu: Parameters<typeof capNhatGiaoVien>[1] = {}
-        
-        if (body.ho_ten !== undefined) duLieu.ho_ten = String(body.ho_ten).trim()
-        if (body.ngay_sinh !== undefined) duLieu.ngay_sinh = parseDate(body.ngay_sinh)
-        if (body.gioi_tinh !== undefined) duLieu.gioi_tinh = body.gioi_tinh ? String(body.gioi_tinh) : null
-        if (body.so_dien_thoai !== undefined) duLieu.so_dien_thoai = body.so_dien_thoai ? String(body.so_dien_thoai) : null
-        if (body.email !== undefined) duLieu.email = body.email ? String(body.email) : null
-        if (body.dia_chi !== undefined) duLieu.dia_chi = body.dia_chi ? String(body.dia_chi) : null
-        if (body.ma_chuc_vu !== undefined) duLieu.ma_chuc_vu = Number(body.ma_chuc_vu)
-        if (body.ma_phong_ban !== undefined) duLieu.ma_phong_ban = Number(body.ma_phong_ban)
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
 
-        const updated = await capNhatGiaoVien(ma, duLieu)
-        return NextResponse.json(updated)
-    } catch (error: unknown) {
-        console.error('Lỗi PUT giáo viên:', error)
-        return NextResponse.json({ error: 'Lỗi khi cập nhật giáo viên' }, { status: 500 })
+    if (!id) {
+      return NextResponse.json({ error: 'Thiếu mã định danh giáo viên (id)' }, { status: 400 });
     }
-}
 
-export async function DELETE(request: Request) {
-    try {
-        const { searchParams } = new URL(request.url)
-        const id = searchParams.get('id')
-
-        if (!id) {
-            return NextResponse.json({ error: 'Thiếu ID giáo viên' }, { status: 400 })
-        }
-
-        await xoaGiaoVien(Number(id))
-        return NextResponse.json({ message: 'Xóa thành công' })
-    } catch (error: unknown) {
-        console.error('Lỗi khi xóa giáo viên:', error)
-        const err = error as { code?: string }
-        if (err.code === 'P2003') {
-            return NextResponse.json(
-                { error: 'Không thể xóa. Giáo viên này đang phụ trách Lớp Học hoặc có dữ liệu liên quan.' },
-                { status: 409 },
-            )
-        }
-        return NextResponse.json({ error: 'Lỗi hệ thống khi thực hiện xóa dữ liệu.' }, { status: 500 })
-    }
+    await giaoVienService.delete(Number(id));
+    return NextResponse.json({ message: 'Xoá giáo viên và các dữ liệu liên quan thành công' });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Lỗi xử lý xoá giáo viên' }, { status: 500 });
+  }
 }
