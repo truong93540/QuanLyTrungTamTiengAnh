@@ -226,15 +226,14 @@ export default function CongNoPage() {
                                         <td className="px-4 py-4 text-right whitespace-nowrap font-bold text-emerald-600">
                                             {new Intl.NumberFormat('vi-VN').format(row.da_dong)} đ
                                         </td>
-                                        <td className="px-4 py-4 text-right whitespace-nowrap font-extrabold text-rose-600">
+                                        <td className="px-4 py-4 text-right whitespace-nowrap font-bold text-rose-600">
                                             {new Intl.NumberFormat('vi-VN').format(row.con_thieu)} đ
                                         </td>
                                         <td className="px-4 py-4 text-center whitespace-nowrap">
-                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-sm font-semibold ${
-                                                row.trang_thai_hoc === 'Đang học'
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-sm font-semibold ${row.trang_thai_hoc === 'Đang học'
                                                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
                                                     : 'bg-indigo-50 text-indigo-700 border border-indigo-100'
-                                            }`}>
+                                                }`}>
                                                 {row.trang_thai_hoc}
                                             </span>
                                         </td>
@@ -265,9 +264,8 @@ export default function CongNoPage() {
                             <button
                                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                 disabled={currentPage === 1}
-                                className={`px-2.5 py-1 rounded border border-slate-300 bg-white ${
-                                    currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-50 cursor-pointer'
-                                }`}
+                                className={`px-2.5 py-1 rounded border border-slate-300 bg-white ${currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-50 cursor-pointer'
+                                    }`}
                             >
                                 Trước
                             </button>
@@ -275,11 +273,10 @@ export default function CongNoPage() {
                                 <button
                                     key={num}
                                     onClick={() => paginate(num)}
-                                    className={`px-2.5 py-1 rounded border ${
-                                        currentPage === num
+                                    className={`px-2.5 py-1 rounded border ${currentPage === num
                                             ? 'bg-blue-600 text-white border-blue-600'
                                             : 'border-slate-300 bg-white hover:bg-slate-50 cursor-pointer'
-                                    }`}
+                                        }`}
                                 >
                                     {num}
                                 </button>
@@ -287,9 +284,8 @@ export default function CongNoPage() {
                             <button
                                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                                 disabled={currentPage === totalPages}
-                                className={`px-2.5 py-1 rounded border border-slate-300 bg-white ${
-                                    currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-50 cursor-pointer'
-                                }`}
+                                className={`px-2.5 py-1 rounded border border-slate-300 bg-white ${currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-50 cursor-pointer'
+                                    }`}
                             >
                                 Sau
                             </button>

@@ -11,22 +11,28 @@ interface ChuongTrinhData {
     ngay_bat_dau: Date;
     ngay_ket_thuc: Date;
     ngan_sach?: number | null;
-    ma_khoa_hoc?: number | null;
+    danh_sach_khoa_hoc?: number[]; // <-- Sửa: Nhận một mảng các ID khóa học thay vì 1 ID
     danh_sach_nhan_su?: PhanCongData[];
 }
 
+// LẤY DANH SÁCH CHƯƠNG TRÌNH MARKETING
 export const layDanhSachChuongTrinh = async () => {
     return await prisma.chuongTrinhMarketing.findMany({
         include: {
-            khoa_hoc: { 
-                select: { 
-                    ma_khoa_hoc: true, 
-                    ten_khoa_hoc: true, 
-                    hoc_phi: true, 
-                    thoi_luong: true, 
-                    trinh_do: true,
-                    trang_thai: true 
-                } 
+            // SỬA: Đi qua bảng trung gian chi_tiet_marketing để lấy thông tin khóa học
+            chi_tiet_marketing: {
+                include: {
+                    khoa_hoc: {
+                        select: {
+                            ma_khoa_hoc: true,
+                            ten_khoa_hoc: true,
+                            hoc_phi: true,
+                            thoi_luong: true,
+                            trinh_do: true,
+                            trang_thai: true
+                        }
+                    }
+                }
             },
             phan_cong: {
                 include: { 
@@ -42,7 +48,6 @@ export const layDanhSachChuongTrinh = async () => {
                 }
             }
         },
-       
         orderBy: { ngay_bat_dau: 'desc' }
     });
 }
@@ -62,6 +67,7 @@ export const layDanhSachNhanSuMarketingVaSale = async () => {
     });
 }
 
+// TẠO MỚI
 export const taoChuongTrinhMoi = async (data: ChuongTrinhData) => {
     return await prisma.chuongTrinhMarketing.create({
         data: {
@@ -70,7 +76,14 @@ export const taoChuongTrinhMoi = async (data: ChuongTrinhData) => {
             ngay_bat_dau: data.ngay_bat_dau,
             ngay_ket_thuc: data.ngay_ket_thuc,
             ngan_sach: data.ngan_sach,
-            ma_khoa_hoc: data.ma_khoa_hoc,
+            
+            // SỬA: Lưu vào bảng trung gian ChiTietMarketing
+            chi_tiet_marketing: {
+                create: data.danh_sach_khoa_hoc?.map(id => ({
+                    ma_khoa_hoc: id
+                })) || []
+            },
+
             phan_cong: {
                 create: data.danh_sach_nhan_su?.map(item => ({
                     nhan_su: { connect: { ma_nhan_su: item.ma_nhan_su } },
@@ -79,16 +92,19 @@ export const taoChuongTrinhMoi = async (data: ChuongTrinhData) => {
             }
         },
         include: { 
-            khoa_hoc: { select: { ma_khoa_hoc: true, ten_khoa_hoc: true, hoc_phi: true, thoi_luong: true, trinh_do: true, trang_thai: true } }, 
+            chi_tiet_marketing: { include: { khoa_hoc: true } }, 
             phan_cong: { include: { nhan_su: { include: { phong_ban: true } } } } 
         }
     });
 }
 
+// CẬP NHẬT
 export const capNhatChuongTrinh = async (id: number, data: ChuongTrinhData) => {
-    await prisma.phanCongMarketing.deleteMany({
-        where: { ma_chuong_trinh_marketing: id }
-    });
+    // Xóa liên kết cũ ở cả 2 bảng trung gian trước khi tạo mới
+    await prisma.$transaction([
+        prisma.chiTietMarketing.deleteMany({ where: { ma_chuong_trinh_marketing: id } }),
+        prisma.phanCongMarketing.deleteMany({ where: { ma_chuong_trinh_marketing: id } })
+    ]);
 
     return await prisma.chuongTrinhMarketing.update({
         where: { ma_chuong_trinh_marketing: id },
@@ -98,7 +114,14 @@ export const capNhatChuongTrinh = async (id: number, data: ChuongTrinhData) => {
             ngay_bat_dau: data.ngay_bat_dau,
             ngay_ket_thuc: data.ngay_ket_thuc,
             ngan_sach: data.ngan_sach,
-            ma_khoa_hoc: data.ma_khoa_hoc,
+            
+            // SỬA: Tạo lại liên kết mới cho bảng ChiTietMarketing
+            chi_tiet_marketing: {
+                create: data.danh_sach_khoa_hoc?.map(id => ({
+                    ma_khoa_hoc: id
+                })) || []
+            },
+
             phan_cong: {
                 create: data.danh_sach_nhan_su?.map(item => ({
                     nhan_su: { connect: { ma_nhan_su: item.ma_nhan_su } },
@@ -107,13 +130,21 @@ export const capNhatChuongTrinh = async (id: number, data: ChuongTrinhData) => {
             }
         },
         include: { 
-            khoa_hoc: { select: { ma_khoa_hoc: true, ten_khoa_hoc: true, hoc_phi: true, thoi_luong: true, trinh_do: true, trang_thai: true } }, 
+            chi_tiet_marketing: { include: { khoa_hoc: true } }, 
             phan_cong: { include: { nhan_su: { include: { phong_ban: true } } } } 
         }
     });
 }
 
+// XÓA
 export const xoaChuongTrinh = async (id: number) => {
-    await prisma.phanCongMarketing.deleteMany({ where: { ma_chuong_trinh_marketing: id } });
-    return await prisma.chuongTrinhMarketing.delete({ where: { ma_chuong_trinh_marketing: id } });
+    // SỬA: Cần xóa dữ liệu ở bảng trung gian chiTietMarketing trước để tránh lỗi rác
+    await prisma.$transaction([
+        prisma.chiTietMarketing.deleteMany({ where: { ma_chuong_trinh_marketing: id } }),
+        prisma.phanCongMarketing.deleteMany({ where: { ma_chuong_trinh_marketing: id } })
+    ]);
+    
+    return await prisma.chuongTrinhMarketing.delete({ 
+        where: { ma_chuong_trinh_marketing: id } 
+    });
 }

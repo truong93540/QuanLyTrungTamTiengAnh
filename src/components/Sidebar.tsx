@@ -170,6 +170,16 @@ const menuItems = [
                 href: '/dashboard/bao-cao/tai-chinh',
                 role: 'Báo cáo thống kê',
             },
+            {
+                title: '6.2 Thống kê các chương trình marketing',
+                href: '/dashboard/bao-cao/marketing',
+                role: 'Báo cáo thống kê',
+            },
+            {
+                title: '6.3 Thống kê hoạt động ngoại khóa',
+                href: '/dashboard/bao-cao/hoat-dong',
+                role: 'Báo cáo thống kê',
+            },
         ],
     },
 ]
@@ -215,8 +225,8 @@ export default function Sidebar() {
             }
 
             // Nếu là menu có con
-            const filteredChildren = item.children?.filter((child) =>
-                userRoles.includes(child.role),
+            const filteredChildren = item.children?.filter((child: any) =>
+                !child.role || userRoles.includes(child.role),
             )
             if (filteredChildren && filteredChildren.length > 0) {
                 return { ...item, children: filteredChildren }
