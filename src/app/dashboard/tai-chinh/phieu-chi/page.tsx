@@ -4,9 +4,9 @@ import Alert from '@/components/Alert'
 import ConfirmModal from '@/components/ConfirmModal'
 import { useState, useEffect, useRef, Suspense, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { 
-    FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, 
-    FaMoneyBillWave, FaBullhorn, FaFileInvoiceDollar, FaCheckCircle, 
+import {
+    FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaLock,
+    FaMoneyBillWave, FaBullhorn, FaFileInvoiceDollar, FaCheckCircle,
     FaHourglassHalf, FaTimesCircle, FaWallet, FaUser
 } from 'react-icons/fa'
 import { formatCurrency } from "@/lib/utils"
@@ -44,6 +44,7 @@ interface MarketingCampaign {
     ma_chuong_trinh_marketing: number
     ten_chuong_trinh_marketing: string
     ngan_sach?: number | null
+    da_chi?: number | null
 }
 
 const getTodayString = () => {
@@ -79,7 +80,7 @@ function PhieuChiContent() {
     const [editingId, setEditingId] = useState<number | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
-    
+
     // Dynamic dropdown states
     const [isNhanSuDropdownOpen, setIsNhanSuDropdownOpen] = useState(false)
     const nhanSuDropdownRef = useRef<HTMLDivElement>(null)
@@ -87,7 +88,7 @@ function PhieuChiContent() {
     const bangLuongDropdownRef = useRef<HTMLDivElement>(null)
     const [isMarketingDropdownOpen, setIsMarketingDropdownOpen] = useState(false)
     const marketingDropdownRef = useRef<HTMLDivElement>(null)
-    
+
     const [alert, setAlert] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
     const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; id: number | null }>({
         isOpen: false,
@@ -139,7 +140,7 @@ function PhieuChiContent() {
                 fetch(`/api/tai-chinh/phieu-chi?${params.toString()}`, { cache: 'no-store' }),
                 fetch('/api/tai-chinh/nhan-vien', { cache: 'no-store' }),
                 fetch(`/api/tai-chinh/bang-luong?t=${Date.now()}`, { cache: 'no-store' }),
-                fetch('/api/tuyen-sinh/marketing', { cache: 'no-store' })
+                fetch(`/api/tai-chinh/marketing?t=${Date.now()}`, { cache: 'no-store' })
             ])
 
             if (phieuChiRes.ok) {
@@ -271,29 +272,28 @@ function PhieuChiContent() {
             if (campaign) {
                 setFormData(prev => ({
                     ...prev,
-                    tong_tien: campaign.ngan_sach ? campaign.ngan_sach.toString() : prev.tong_tien,
                     noi_dung: `Chi phí chiến dịch marketing: ${campaign.ten_chuong_trinh_marketing}`
                 }))
             }
         }
     }, [formData.ma_bang_luong, formData.ma_chuong_trinh_marketing, formData.loai_phieu_chi])
 
-    // Helper function to extract month and year of a voucher (ALWAYS based on actual transaction/payment date)
+
     const getItemMonthAndYear = (item: PhieuChi) => {
         const dateStr = item.ngay_chi
         if (dateStr) {
             const date = new Date(dateStr)
-            // Shift by 7 hours (Vietnam timezone UTC+7) to ensure exact local date
+
             const vnDate = new Date(date.getTime() + 7 * 60 * 60 * 1000)
             return { month: vnDate.getUTCMonth() + 1, year: vnDate.getUTCFullYear() }
         }
-        // Fallback to today if no date exists
+
         const now = new Date()
         const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000)
         return { month: vnNow.getUTCMonth() + 1, year: vnNow.getUTCFullYear() }
     }
 
-    // Dynamically calculate years that have vouchers to avoid empty selections
+
     const availableYears = useMemo(() => {
         const years = new Set<number>([new Date().getFullYear()])
         data.forEach(item => {
@@ -303,7 +303,7 @@ function PhieuChiContent() {
         return Array.from(years).sort((a, b) => b - a)
     }, [data])
 
-    // Client-side dynamic month and year filtering
+
     const filteredData = useMemo(() => {
         return data.filter(item => {
             if (filterMonth !== 'ALL' || filterYear !== 'ALL') {
@@ -348,7 +348,21 @@ function PhieuChiContent() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormError(null)
-        setFormData({ ...formData, [e.target.name]: e.target.value })
+        if (e.target.name === 'loai_phieu_chi') {
+            setFormData(prev => ({
+                ...prev,
+                loai_phieu_chi: e.target.value as any,
+                ma_bang_luong: '',
+                ma_chuong_trinh_marketing: '',
+                ma_nhan_su: '',
+
+                nguoi_nhan: prev.loai_phieu_chi === 'LUONG' || prev.nguoi_nhan === 'Tất cả giáo viên & nhân sự' ? '' : prev.nguoi_nhan,
+                tong_tien: prev.loai_phieu_chi === 'LUONG' ? '' : prev.tong_tien,
+                noi_dung: prev.loai_phieu_chi === 'LUONG' || prev.loai_phieu_chi === 'MARKETING' ? '' : prev.noi_dung,
+            }))
+        } else {
+            setFormData({ ...formData, [e.target.name]: e.target.value })
+        }
     }
 
     const handleCancelEdit = () => {
@@ -370,6 +384,11 @@ function PhieuChiContent() {
     }
 
     const handleDeleteClick = (id: number) => {
+        const row = data.find(item => item.ma_phieu_chi === id)
+        if (row && row.trang_thai === 'Đã chi') {
+            showAlert('Không thể xóa phiếu chi đã ở trạng thái Đã chi.', 'error')
+            return
+        }
         setConfirmDelete({ isOpen: true, id: id })
     }
 
@@ -384,6 +403,7 @@ function PhieuChiContent() {
             if (response.ok) {
                 setData(data.filter((item) => item.ma_phieu_chi !== confirmDelete.id))
                 showAlert('Đã xóa phiếu chi thành công!', 'success')
+                fetchAllData()
             } else {
                 const errorData = await response.json().catch(() => null)
                 showAlert(errorData?.error || 'Có lỗi xảy ra khi xóa.', 'error')
@@ -420,6 +440,7 @@ function PhieuChiContent() {
                 const saved = await response.json()
                 setData(data.map((item) => item.ma_phieu_chi === saved.ma_phieu_chi ? saved : item))
                 showAlert('Phê duyệt phiếu chi thành công!', 'success')
+                fetchAllData()
             } else {
                 const err = await response.json().catch(() => null)
                 showAlert(err?.error || 'Không thể phê duyệt phiếu chi.', 'error')
@@ -500,6 +521,10 @@ function PhieuChiContent() {
     }
 
     const openModalForEdit = (row: PhieuChi) => {
+        if (row.trang_thai === 'Đã chi') {
+            showAlert('Không thể sửa đổi phiếu chi đã ở trạng thái Đã chi.', 'error')
+            return
+        }
         setFormData({
             ma_phieu_chi: row.ma_phieu_chi.toString(),
             loai_phieu_chi: row.loai_phieu_chi,
@@ -529,12 +554,12 @@ function PhieuChiContent() {
                     </div>
                     <p className="text-slate-500 font-medium ml-9">Lập, duyệt, theo dõi và quản lý dòng tiền chi tiêu của trung tâm</p>
                 </div>
-                
+
                 <div className="flex flex-wrap items-center gap-3 shrink-0">
                     {/* Unified Month/Year Selector at Header */}
                     <div className="flex bg-white p-1 items-center h-[46px] rounded-lg border border-slate-200 focus-within:border-blue-500 transition-all shadow-sm">
-                        <select 
-                            value={filterMonth} 
+                        <select
+                            value={filterMonth}
                             onChange={(e) => setFilterMonth(e.target.value)}
                             className="bg-transparent px-3 py-1.5 font-bold text-slate-700 outline-none cursor-pointer border-r border-slate-100 text-sm"
                         >
@@ -542,8 +567,8 @@ function PhieuChiContent() {
                                 <option key={i + 1} value={(i + 1).toString()}>Tháng {i + 1}</option>
                             ))}
                         </select>
-                        <select 
-                            value={filterYear} 
+                        <select
+                            value={filterYear}
                             onChange={(e) => setFilterYear(e.target.value)}
                             className="bg-transparent px-3 py-1.5 font-bold text-slate-700 outline-none cursor-pointer text-sm"
                         >
@@ -552,125 +577,138 @@ function PhieuChiContent() {
                             ))}
                         </select>
                     </div>
-
-                    <button
-                        onClick={openModalForAdd}
-                        className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg shadow-blue-200 transition-all active:scale-95 text-sm"
-                    >
-                        <FaPlus /> Thêm phiếu chi mới
-                    </button>
                 </div>
             </div>
 
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {/* Stat 1 */}
-                <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
+                <div className="bg-white p-5 sm:p-6 rounded-lg shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
                     <div className="flex-1 min-w-0 pr-1">
                         <p className="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-1.5">Tổng tiền đã chi</p>
                         <h3 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrency(totalSpent)}</h3>
                     </div>
-                    <div className="p-3.5 bg-emerald-50 rounded-xl text-emerald-600 flex-shrink-0 shadow-sm shadow-emerald-100/50">
+                    <div className="p-3.5 bg-emerald-50 rounded-lg text-emerald-600 flex-shrink-0 shadow-sm shadow-emerald-100/50">
                         <FaWallet size={22} />
                     </div>
                 </div>
 
                 {/* Stat 2 */}
-                <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
+                <div className="bg-white p-5 sm:p-6 rounded-lg shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
                     <div className="flex-1 min-w-0 pr-1">
                         <p className="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-1.5">Chi Lương Nhân Viên</p>
                         <h3 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrency(totalSalaryExpenses)}</h3>
                     </div>
-                    <div className="p-3.5 bg-blue-50 rounded-xl text-blue-600 flex-shrink-0 shadow-sm shadow-blue-100/50">
+                    <div className="p-3.5 bg-blue-50 rounded-lg text-blue-600 flex-shrink-0 shadow-sm shadow-blue-100/50">
                         <FaFileInvoiceDollar size={22} />
                     </div>
                 </div>
 
                 {/* Stat 3 */}
-                <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
+                <div className="bg-white p-5 sm:p-6 rounded-lg shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
                     <div className="flex-1 min-w-0 pr-1">
                         <p className="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-1.5">Chi Marketing</p>
                         <h3 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrency(totalMarketingExpenses)}</h3>
                     </div>
-                    <div className="p-3.5 bg-purple-50 rounded-xl text-purple-600 flex-shrink-0 shadow-sm shadow-purple-100/50">
+                    <div className="p-3.5 bg-purple-50 rounded-lg text-purple-600 flex-shrink-0 shadow-sm shadow-purple-100/50">
                         <FaBullhorn size={22} />
                     </div>
                 </div>
 
                 {/* Stat 4 */}
-                <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
+                <div className="bg-white p-5 sm:p-6 rounded-lg shadow-sm border border-slate-100/80 flex items-center justify-between gap-4 transition-all hover:shadow-md hover:border-slate-200/50">
                     <div className="flex-1 min-w-0 pr-1">
                         <p className="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-1.5">Phiếu chờ duyệt</p>
                         <h3 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{pendingCount}</h3>
                     </div>
-                    <div className="p-3.5 bg-amber-50 rounded-xl text-amber-600 flex-shrink-0 shadow-sm shadow-amber-100/50">
+                    <div className="p-3.5 bg-amber-50 rounded-lg text-amber-600 flex-shrink-0 shadow-sm shadow-amber-100/50">
                         <FaHourglassHalf size={22} />
                     </div>
                 </div>
             </div>
 
-            {/* Filter Section */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row gap-4 justify-between items-center">
-                <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
-                    <div className="relative flex-1 md:flex-none">
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm người nhận, nội dung..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && fetchAllData()}
-                            className="w-full md:w-72 border border-slate-200 focus:border-blue-500 rounded-lg px-4 py-2.5 outline-none text-sm pr-10"
-                        />
-                        <button 
-                            onClick={fetchAllData}
-                            className="absolute right-3 top-3 text-slate-400 hover:text-blue-600"
+            {/* Main Table & Filter Controls Container */}
+            <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
+                {/* Table Header Action & Filter Bar (Gộp tìm kiếm, bộ lọc và bảng dữ liệu vào 1 vùng tương tự phiếu thu) */}
+                <div className="p-6 border-b border-slate-100 bg-slate-50/10 space-y-5">
+                    {/* Hàng 1: Tiêu đề bảng & Nút Thêm mới */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100/80">
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                                Danh sách phiếu chi
+                            </h3>
+                            <p className="text-sm font-medium text-slate-400 mt-0.5">Quản lý dòng tiền chi tiêu của trung tâm</p>
+                        </div>
+                        <button
+                            onClick={openModalForAdd}
+                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg shadow-blue-100 transition-all active:scale-95 text-sm cursor-pointer whitespace-nowrap"
                         >
-                            <FaSearch size={14} />
+                            <FaPlus /> Thêm phiếu chi mới
                         </button>
                     </div>
 
-                    {/* Filter Type */}
-                    <select
-                        value={filterType}
-                        onChange={(e) => setFilterType(e.target.value)}
-                        className="border border-slate-200 focus:border-blue-500 rounded-lg px-4 py-2.5 outline-none text-sm bg-white cursor-pointer font-bold text-slate-600"
-                    >
-                        <option value="ALL">Tất cả loại chi</option>
-                        <option value="LUONG">Chi lương</option>
-                        <option value="MARKETING">Chi Marketing</option>
-                        <option value="KHAC">Chi khác</option>
-                    </select>
+                    {/* Hàng 2: Tìm kiếm & Bộ lọc */}
+                    <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
+                        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                            {/* Ô tìm kiếm */}
+                            <div className="relative w-full sm:w-72">
+                                <input
+                                    type="text"
+                                    placeholder="Tìm kiếm người nhận, nội dung..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && fetchAllData()}
+                                    className="w-full border border-slate-200 focus:border-blue-500 rounded-lg px-4 py-2.5 outline-none text-sm pr-10 font-medium text-slate-700 bg-white"
+                                />
+                                <button
+                                    onClick={fetchAllData}
+                                    className="absolute right-3 top-3 text-slate-400 hover:text-blue-600"
+                                >
+                                    <FaSearch size={14} />
+                                </button>
+                            </div>
 
-                    {/* Filter Status */}
-                    <select
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                        className="border border-slate-200 focus:border-blue-500 rounded-lg px-4 py-2.5 outline-none text-sm bg-white cursor-pointer font-bold text-slate-600 animate-in fade-in duration-200"
-                    >
-                        <option value="ALL">Tất cả trạng thái</option>
-                        <option value="Đã chi">Đã chi</option>
-                        <option value="Chờ duyệt">Chờ duyệt</option>
-                        <option value="Đã hủy">Đã hủy</option>
-                    </select>
+                            {/* Lọc loại chi phí */}
+                            <select
+                                value={filterType}
+                                onChange={(e) => setFilterType(e.target.value)}
+                                className="w-full sm:w-auto border border-slate-200 focus:border-blue-500 rounded-lg px-4 py-2.5 outline-none text-sm bg-white cursor-pointer font-bold text-slate-600"
+                            >
+                                <option value="ALL">Tất cả loại chi</option>
+                                <option value="LUONG">Chi lương</option>
+                                <option value="MARKETING">Chi Marketing</option>
+                                <option value="KHAC">Chi khác</option>
+                            </select>
+
+                            {/* Lọc trạng thái */}
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => setFilterStatus(e.target.value)}
+                                className="w-full sm:w-auto border border-slate-200 focus:border-blue-500 rounded-lg px-4 py-2.5 outline-none text-sm bg-white cursor-pointer font-bold text-slate-600 animate-in fade-in duration-200"
+                            >
+                                <option value="ALL">Tất cả trạng thái</option>
+                                <option value="Đã chi">Đã chi</option>
+                                <option value="Chờ duyệt">Chờ duyệt</option>
+                                <option value="Đã hủy">Đã hủy</option>
+                            </select>
+                        </div>
+
+                        {/* Nút đặt lại bộ lọc */}
+                        <button
+                            onClick={() => {
+                                setFilterType('ALL')
+                                setFilterStatus('ALL')
+                                setFilterMonth((today.getMonth() + 1).toString())
+                                setFilterYear(today.getFullYear().toString())
+                                setSearchTerm('')
+                                fetchAllData()
+                            }}
+                            className="w-full lg:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap cursor-pointer"
+                        >
+                            Đặt lại bộ lọc
+                        </button>
+                    </div>
                 </div>
-
-                <button
-                    onClick={() => {
-                        setFilterType('ALL')
-                        setFilterStatus('ALL')
-                        setFilterMonth((today.getMonth() + 1).toString())
-                        setFilterYear(today.getFullYear().toString())
-                        setSearchTerm('')
-                        fetchAllData()
-                    }}
-                    className="w-full md:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap"
-                >
-                    Đặt lại bộ lọc
-                </button>
-            </div>
-
-            {/* Main Table */}
-            <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
                 {isLoading ? (
                     <div className="text-center py-16 text-slate-400 font-bold flex flex-col items-center justify-center gap-3">
                         <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -714,7 +752,7 @@ function PhieuChiContent() {
                                         <td className="py-4 px-4 text-center whitespace-nowrap">{row.hinh_thuc_chi || 'N/A'}</td>
                                         <td className="py-4 px-4 text-left font-bold text-slate-800 whitespace-nowrap">{row.nguoi_nhan || 'N/A'}</td>
                                         <td className="py-4 px-4 text-left whitespace-nowrap">{row.nhan_su?.ho_ten || 'Không rõ'}</td>
-                                        <td className="py-4 px-4 text-left max-w-xs truncate whitespace-nowrap" title={row.noi_dung || ''}>
+                                        <td className="py-4 px-4 text-left min-w-[200px] max-w-md break-words whitespace-normal text-slate-600" title={row.noi_dung || ''}>
                                             {row.noi_dung || <span className="text-slate-300 italic">Không có mô tả</span>}
                                         </td>
                                         <td className="py-4 px-4 text-center font-bold text-slate-500 whitespace-nowrap">
@@ -734,27 +772,36 @@ function PhieuChiContent() {
                                                 {row.trang_thai === 'Chờ duyệt' && (
                                                     <button
                                                         onClick={() => handleApproveClick(row.ma_phieu_chi)}
-                                                        className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-bold rounded-lg transition active:scale-90 text-sm flex items-center gap-1 border border-emerald-200"
+                                                        className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-bold rounded-lg transition active:scale-90 text-sm flex items-center gap-1 border border-emerald-200 cursor-pointer"
                                                         title="Phê duyệt phiếu chi"
                                                     >
                                                         <FaCheckCircle size={12} />
                                                         <span>Duyệt</span>
                                                     </button>
                                                 )}
-                                                <button
-                                                    onClick={() => openModalForEdit(row)}
-                                                    className="p-2 text-slate-400 hover:text-amber-500 hover:bg-slate-100 rounded-lg transition active:scale-90"
-                                                    title="Sửa phiếu chi"
-                                                >
-                                                    <FaEdit size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteClick(row.ma_phieu_chi)}
-                                                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-lg transition active:scale-90"
-                                                    title="Xóa phiếu chi"
-                                                >
-                                                    <FaTrash size={16} />
-                                                </button>
+                                                {row.trang_thai !== 'Đã chi' ? (
+                                                    <>
+                                                        <button
+                                                            onClick={() => openModalForEdit(row)}
+                                                            className="p-2 text-slate-400 hover:text-amber-500 hover:bg-slate-100 rounded-lg transition active:scale-90 cursor-pointer"
+                                                            title="Sửa phiếu chi"
+                                                        >
+                                                            <FaEdit size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteClick(row.ma_phieu_chi)}
+                                                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-lg transition active:scale-90 cursor-pointer"
+                                                            title="Xóa phiếu chi"
+                                                        >
+                                                            <FaTrash size={16} />
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1 text-xs text-slate-400 font-bold bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 shadow-sm" title="Phiếu chi đã hoàn tất và được khóa">
+                                                        <FaLock size={10} />
+                                                        <span>Đã khóa</span>
+                                                    </span>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -767,8 +814,8 @@ function PhieuChiContent() {
                 {/* Pagination Footer */}
                 {!isLoading && filteredData.length > 0 && (
                     <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in duration-200">
-                        <div className="text-sm font-bold text-slate-400 uppercase tracking-wider">
-                            Hiển thị <span className="text-slate-700">{indexOfFirstItem + 1}</span> - <span className="text-slate-700">{Math.min(indexOfLastItem, filteredData.length)}</span> của <span className="text-slate-700">{filteredData.length}</span> phiếu chi
+                        <div className="text-sm font-[500] text-gray-500 tracking-wider">
+                            Hiển thị <span className="text-blue-500 font-[700]">{indexOfFirstItem + 1}</span> - <span className="text-blue-500 font-[700]">{Math.min(indexOfLastItem, filteredData.length)}</span> của <span className="text-gray-900 font-[700]">{filteredData.length}</span> phiếu chi
                         </div>
                         <div className="flex gap-1">
                             <button
@@ -809,7 +856,7 @@ function PhieuChiContent() {
                                 <h2 className="text-xl font-bold text-slate-800">
                                     {editingId ? 'Cập nhật phiếu chi' : 'Thêm mới phiếu chi'}
                                 </h2>
-                                <p className="text-sm font-medium text-slate-400 mt-1">Lưu ý nhập các thông tin chính xác phục vụ báo cáo kế toán</p>
+                                <p className="text-sm font-medium text-red-500 mt-1">Lưu ý nhập các thông tin chính xác phục vụ báo cáo kế toán</p>
                             </div>
                             <button
                                 onClick={() => setIsModalOpen(false)}
@@ -900,26 +947,108 @@ function PhieuChiContent() {
                                                     <span className="text-slate-400 text-sm">▼</span>
                                                 </div>
                                                 {isMarketingDropdownOpen && (
-                                                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
+                                                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-56 overflow-y-auto custom-scrollbar">
                                                         {marketingList.length === 0 ? (
                                                             <div className="p-3 text-sm text-slate-400 italic text-center">Không có chiến dịch nào</div>
                                                         ) : (
-                                                            marketingList.map(m => (
-                                                                <div
-                                                                    key={m.ma_chuong_trinh_marketing}
-                                                                    onClick={() => {
-                                                                        setFormData(prev => ({ ...prev, ma_chuong_trinh_marketing: m.ma_chuong_trinh_marketing.toString() }))
-                                                                        setIsMarketingDropdownOpen(false)
-                                                                    }}
-                                                                    className={`p-3 text-sm cursor-pointer hover:bg-blue-50/50 ${formData.ma_chuong_trinh_marketing === m.ma_chuong_trinh_marketing.toString() ? 'bg-blue-50 font-bold text-blue-600' : 'text-slate-700'}`}
-                                                                >
-                                                                    {m.ten_chuong_trinh_marketing} {m.ngan_sach && `(${formatCurrency(m.ngan_sach)})`}
-                                                                </div>
-                                                            ))
+                                                            marketingList.map(m => {
+                                                                const budget = m.ngan_sach || 0;
+                                                                const spent = m.da_chi || 0;
+                                                                return (
+                                                                    <div
+                                                                        key={m.ma_chuong_trinh_marketing}
+                                                                        onClick={() => {
+                                                                            setFormData(prev => ({ ...prev, ma_chuong_trinh_marketing: m.ma_chuong_trinh_marketing.toString() }))
+                                                                            setIsMarketingDropdownOpen(false)
+                                                                        }}
+                                                                        className={`p-3 text-sm cursor-pointer hover:bg-blue-50/50 border-b border-slate-50 last:border-b-0 flex flex-col gap-0.5 transition ${formData.ma_chuong_trinh_marketing === m.ma_chuong_trinh_marketing.toString() ? 'bg-blue-50 font-bold text-blue-600' : 'text-slate-700'}`}
+                                                                    >
+                                                                        <span className="font-bold text-slate-800">{m.ten_chuong_trinh_marketing}</span>
+                                                                        <div className="flex items-center gap-2.5 text-sm text-slate-400 font-medium">
+                                                                            <span>Ngân sách: <strong className="text-slate-600">{formatCurrency(budget)}</strong></span>
+                                                                            <span>•</span>
+                                                                            <span>Đã chi: <strong className="text-red-600">{formatCurrency(spent)}</strong></span>
+                                                                        </div>
+                                                                    </div>
+                                                                )
+                                                            })
                                                         )}
                                                     </div>
                                                 )}
                                             </div>
+
+                                            {/* Thống kê ngân sách chiến dịch trực quan */}
+                                            {formData.ma_chuong_trinh_marketing && (() => {
+                                                const campaign = marketingList.find(m => m.ma_chuong_trinh_marketing.toString() === formData.ma_chuong_trinh_marketing);
+                                                if (!campaign) return null;
+                                                const nganSach = campaign.ngan_sach || 0;
+
+                                                // Tính toán số tiền đã chi trước đó (loại trừ phiếu chi hiện tại nếu đang sửa đổi và có trạng thái là Đã chi)
+                                                let daChiTruoc = campaign.da_chi || 0;
+                                                if (editingId) {
+                                                    const currentPhieu = data.find(p => p.ma_phieu_chi === editingId);
+                                                    if (currentPhieu &&
+                                                        currentPhieu.ma_chuong_trinh_marketing?.toString() === formData.ma_chuong_trinh_marketing &&
+                                                        currentPhieu.trang_thai === 'Đã chi') {
+                                                        daChiTruoc = Math.max(0, daChiTruoc - Number(currentPhieu.tong_tien));
+                                                    }
+                                                }
+
+                                                const phieuNay = Number(formData.tong_tien) || 0;
+                                                const tongDuKien = daChiTruoc + phieuNay;
+                                                const conLai = nganSach - tongDuKien;
+                                                const phanTramDaChi = nganSach > 0 ? Math.min((tongDuKien / nganSach) * 100, 100) : 0;
+
+                                                return (
+                                                    <div className="mt-2.5 p-4 rounded-xl border border-slate-200/80 bg-slate-50/50 space-y-3 animate-in slide-in-from-top-2 duration-200 shadow-sm">
+                                                        <div className="flex items-center justify-between text-sm font-bold text-gray-700 tracking-wider">
+                                                            <span className="flex items-center gap-1.5"><FaBullhorn className="text-purple-500" /> Ngân sách chiến dịch</span>
+                                                            <span className="text-slate-600 bg-white px-2.5 py-1 rounded-md border border-slate-200/60 shadow-sm font-bold text-[14px] whitespace-nowrap">{formatCurrency(nganSach)}</span>
+                                                        </div>
+
+                                                        {/* Các hàng thông số rộng rãi không lo bị nhảy chữ */}
+                                                        <div className="space-y-2">
+                                                            <div className="bg-white px-3.5 py-2.5 rounded-lg border border-slate-100 shadow-sm flex items-center justify-between">
+                                                                <span className="text-gray-500 text-[14px] font-bold tracking-wider">Đã chi trước đó</span>
+                                                                <span className="text-[15px] font-bold text-slate-600 whitespace-nowrap">{formatCurrency(daChiTruoc)}</span>
+                                                            </div>
+                                                            <div className="bg-white px-3.5 py-2.5 rounded-lg border border-slate-100 shadow-sm flex items-center justify-between">
+                                                                <span className="text-gray-500 text-[14px] font-bold tracking-wider">Phiếu chi này</span>
+                                                                <span className="text-[15px] font-bold text-blue-600 whitespace-nowrap">{formatCurrency(phieuNay)}</span>
+                                                            </div>
+                                                            <div className="bg-white px-3.5 py-2.5 rounded-lg border border-slate-100 shadow-sm flex items-center justify-between">
+                                                                <span className="text-gray-500 text-[14px] font-bold tracking-wider">Còn lại</span>
+                                                                <span className={`text-[15px] font-bold whitespace-nowrap ${conLai < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                                                                    {formatCurrency(conLai)}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {nganSach > 0 && (
+                                                            <div className="space-y-3.5 bg-white p-3.5 rounded-lg border border-slate-100 shadow-sm">
+                                                                <div className="flex flex-col gap-2 text-[14px] font-bold text-gray-500">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <span>Dự kiến chi tiêu:</span>
+                                                                        <span className="text-slate-700 font-bold whitespace-nowrap">{formatCurrency(tongDuKien)}</span>
+                                                                    </div>
+                                                                    <div className="flex items-center justify-between">
+                                                                        <span>Trạng thái ngân sách:</span>
+                                                                        <span className={`whitespace-nowrap font-bold ${tongDuKien > nganSach ? 'text-red-600 animate-pulse' : 'text-gray-500'}`}>
+                                                                            {((tongDuKien / nganSach) * 100).toFixed(1)}% {tongDuKien > nganSach ? '(Vượt ngân sách!)' : '(An toàn)'}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                                                    <div
+                                                                        className={`h-full rounded-full transition-all duration-500 ${tongDuKien > nganSach ? 'bg-rose-500 animate-pulse' : tongDuKien >= nganSach * 0.8 ? 'bg-amber-500' : 'bg-blue-600'}`}
+                                                                        style={{ width: `${phanTramDaChi}%` }}
+                                                                    ></div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                     )}
 
@@ -965,7 +1094,7 @@ function PhieuChiContent() {
                                             onChange={handleChange}
                                             placeholder="Tên nhân viên, đối tác, nhà cung cấp..."
                                             disabled={formData.loai_phieu_chi === 'LUONG'}
-                                            className={`w-full border rounded-lg px-4 py-2.5 outline-none font-medium text-slate-850 ${formData.loai_phieu_chi === 'LUONG' ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed' : 'border-slate-200 focus:border-blue-500'}`}
+                                            className={`w-full border rounded-lg px-4 py-2.5 outline-none font-medium text-slate-850 ${formData.loai_phieu_chi === 'LUONG' ? 'bg-slate-50 border-slate-200 text-gray-500 cursor-not-allowed' : 'border-slate-200 focus:border-blue-500'}`}
                                         />
                                     </div>
 
@@ -1068,14 +1197,14 @@ function PhieuChiContent() {
                         <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 shrink-0">
                             <button
                                 onClick={() => setIsModalOpen(false)}
-                                className="px-5 py-2.5 border border-slate-200 text-slate-600 bg-white rounded-lg hover:bg-slate-50 font-bold transition active:scale-95 text-sm"
+                                className="px-5 py-2.5 border border-slate-200 text-slate-600 bg-white rounded-lg hover:bg-slate-50 font-bold transition active:scale-95 text-sm cursor-pointer"
                             >
                                 Hủy bỏ
                             </button>
                             <button
                                 onClick={handleSavePhieuChi}
                                 disabled={isSubmitting}
-                                className={`flex items-center gap-2 px-6 py-2.5 text-white rounded-lg font-bold shadow-lg transition active:scale-95 text-sm ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'}`}
+                                className={`flex items-center gap-2 px-6 py-2.5 text-white rounded-lg font-bold shadow-lg transition active:scale-95 text-sm ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200 cursor-pointer'}`}
                             >
                                 <FaSave /> {isSubmitting ? 'Đang xử lý...' : (editingId ? 'Cập nhật phiếu chi' : 'Lưu phiếu chi')}
                             </button>

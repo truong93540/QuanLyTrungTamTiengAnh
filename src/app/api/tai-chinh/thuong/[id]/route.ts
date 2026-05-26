@@ -8,6 +8,26 @@ export async function DELETE(
     const { id } = await params;
     const phieuId = parseInt(id);
     try {
+        // Lấy thông tin phiếu thưởng hiện tại để kiểm tra ma_bang_thuong
+        const checkPhieu = await prisma.phieuThuong.findUnique({
+            where: { ma_phieu_thuong: phieuId }
+        });
+
+        if (checkPhieu?.ma_bang_thuong) {
+            const checkSaved = await prisma.phieuThuong.findFirst({
+                where: {
+                    ma_bang_thuong: checkPhieu.ma_bang_thuong,
+                    loai_thuong: { in: ["Tiền hoa hồng", "Chuyên cần"] }
+                }
+            });
+            if (checkSaved) {
+                return NextResponse.json(
+                    { error: "Bảng thưởng kỳ này đã được chốt và khóa, không thể chỉnh sửa hay xóa!" }, 
+                    { status: 400 }
+                );
+            }
+        }
+
         const phieu = await prisma.phieuThuong.delete({
             where: { ma_phieu_thuong: phieuId }
         });
@@ -41,6 +61,26 @@ export async function PATCH(
     const { so_tien, noi_dung } = body;
 
     try {
+        // Lấy thông tin phiếu thưởng hiện tại để kiểm tra ma_bang_thuong
+        const checkPhieu = await prisma.phieuThuong.findUnique({
+            where: { ma_phieu_thuong: phieuId }
+        });
+
+        if (checkPhieu?.ma_bang_thuong) {
+            const checkSaved = await prisma.phieuThuong.findFirst({
+                where: {
+                    ma_bang_thuong: checkPhieu.ma_bang_thuong,
+                    loai_thuong: { in: ["Tiền hoa hồng", "Chuyên cần"] }
+                }
+            });
+            if (checkSaved) {
+                return NextResponse.json(
+                    { error: "Bảng thưởng kỳ này đã được chốt và khóa, không thể chỉnh sửa hay xóa!" }, 
+                    { status: 400 }
+                );
+            }
+        }
+
         const phieu = await prisma.phieuThuong.update({
             where: { ma_phieu_thuong: phieuId },
             data: {

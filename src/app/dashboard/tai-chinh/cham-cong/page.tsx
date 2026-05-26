@@ -30,9 +30,12 @@ export default function ChamCongPage() {
     const [attendanceData, setAttendanceData] = useState<any[]>([])
     const [isPreview, setIsPreview] = useState(false)
     const [alertConfig, setAlertConfig] = useState<{ type: 'success' | 'error' | 'info', message: string } | null>(null)
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 10
 
     useEffect(() => {
         fetchAttendance()
+        setCurrentPage(1)
     }, [selectedMonth])
 
     const fetchAttendance = async () => {
@@ -86,8 +89,21 @@ export default function ChamCongPage() {
             const suffix = isGV ? ' giờ' : ' ngày'
 
             return { id, name: phieu.ho_ten || 'N/A', type: isGV ? 'Giáo viên' : 'Nhân sự', phieu, detailsMap, displayCong, suffix }
-        }).sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name))
+        }).sort((a, b) => {
+            const isNS_a = a.phieu.ma_nhan_su != null
+            const isNS_b = b.phieu.ma_nhan_su != null
+            if (isNS_a !== isNS_b) return isNS_a ? -1 : 1 // Nhân sự (Staff) trước, Giáo viên (Teacher) sau
+            
+            const idVal_a = a.phieu.ma_nhan_su ?? a.phieu.ma_giao_vien ?? 0
+            const idVal_b = b.phieu.ma_nhan_su ?? b.phieu.ma_giao_vien ?? 0
+            return idVal_a - idVal_b // Sắp xếp tăng dần theo mã ID
+        })
     }, [attendanceData])
+
+    const indexOfLastItem = currentPage * itemsPerPage
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage
+    const currentItems = groupedData.slice(indexOfFirstItem, indexOfLastItem)
+    const totalPages = Math.ceil(groupedData.length / itemsPerPage)
 
     const getExpectedShifts = (phieu: any, dayOfWeek: number) => {
         const thuValue = dayOfWeek === 0 ? 8 : dayOfWeek + 1
@@ -217,8 +233,9 @@ export default function ChamCongPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto custom-scrollbar">
-                        <table className="w-full text-left text-sm border-collapse min-w-max">
+                    <>
+                        <div className="overflow-x-auto custom-scrollbar">
+                            <table className="w-full text-left text-sm border-collapse min-w-max">
                             <thead>
                                 <tr className="bg-slate-100/50 text-sm text-slate-500 uppercase font-bold border-b border-slate-200">
                                     <th className="sticky left-0 z-20 bg-slate-50 p-2 border-r border-slate-200"></th>
@@ -245,7 +262,7 @@ export default function ChamCongPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {groupedData.map((row, rowIndex) => (
+                                {currentItems.map((row, rowIndex) => (
                                     <tr key={row.id} className="hover:bg-slate-50 transition-colors group">
                                         <td className="sticky left-0 z-10 bg-white group-hover:bg-slate-50 p-4 font-mono text-sm text-blue-600 border-r border-slate-200">{row.id}</td>
                                         <td className="sticky left-[100px] z-10 bg-white group-hover:bg-slate-50 p-4 font-bold border-r border-slate-200 truncate">
@@ -268,7 +285,7 @@ export default function ChamCongPage() {
                                                     )}
                                                     {/* tooltip */}
                                                     {((dayData) || (expectedShifts.size > 0)) && (
-                                                        <div className={`invisible group-hover/cell:visible absolute ${rowIndex < 4 ? 'top-full mt-2' : 'bottom-full mb-2'} left-1/2 -translate-x-1/2 z-30 w-80 rounded-lg bg-white shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-slate-100 animate-in fade-in zoom-in duration-200`}>
+                                                        <div className={`invisible opacity-0 scale-95 group-hover/cell:visible group-hover/cell:opacity-100 group-hover/cell:scale-100 transition-all duration-200 delay-0 group-hover/cell:delay-[300ms] absolute ${rowIndex < 4 ? 'top-full mt-2' : 'bottom-full mb-2'} left-1/2 -translate-x-1/2 z-30 w-80 rounded-lg bg-white shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-slate-100`}>
                                                             <div className="p-4 max-h-[250px] overflow-y-auto custom-scrollbar overflow-x-hidden">
                                                                 <div className="font-black border-b border-slate-100 pb-2 mb-3 text-blue-600 flex justify-between uppercase text-xs tracking-wider">
                                                                     <span>{labelObj.thu}, {day}/{selectedMonth}</span>
@@ -380,7 +397,47 @@ export default function ChamCongPage() {
                             </tbody>
                         </table>
                     </div>
-                )}
+
+                    {/* Pagination */}
+                    {!loading && groupedData.length > 0 && (
+                        <div className="p-6 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/30">
+                            <div className="text-sm font-medium text-slate-500">
+                                Hiển thị <span className="text-blue-600 font-bold">{indexOfFirstItem + 1}</span> - <span className="text-blue-600 font-bold">{Math.min(indexOfLastItem, groupedData.length)}</span> trong tổng số <span className="text-slate-800 font-bold">{groupedData.length}</span> nhân sự/giáo viên
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                    className={`px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold transition-all ${currentPage === 1 ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'bg-white text-slate-600 hover:border-blue-500 hover:text-blue-600 shadow-sm cursor-pointer'}`}
+                                >
+                                    Trước
+                                </button>
+
+                                <div className="flex items-center gap-1">
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                                        <button
+                                            key={number}
+                                            onClick={() => setCurrentPage(number)}
+                                            className={`w-10 h-10 rounded-lg text-sm font-bold transition-all ${currentPage === number ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white text-slate-600 border border-slate-200 hover:border-blue-500 hover:text-blue-600 shadow-sm cursor-pointer'}`}
+                                        >
+                                            {number}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages}
+                                    className={`px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold transition-all ${currentPage === totalPages ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'bg-white text-slate-600 hover:border-blue-500 hover:text-blue-600 shadow-sm cursor-pointer'}`}
+                                >
+                                    Sau
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
             </div>
 
             {groupedData.length > 0 && !isPreview && (
@@ -402,7 +459,7 @@ export default function ChamCongPage() {
                             <FaExclamationTriangle size={24} />
                         </div>
                         <div>
-                            <p className="text-lg font-black text-orange-800 tracking-tight">Xác nhận dữ liệu chấm công</p>
+                            <p className="text-lg font-[700] text-orange-800 tracking-tight">Xác nhận dữ liệu chấm công</p>
                             <p className="text-sm text-orange-600 font-medium">Vui lòng kiểm tra kỹ các chỉ số trước khi nhấn Duyệt & Lưu chính thức.</p>
                         </div>
                     </div>
@@ -476,8 +533,8 @@ export default function ChamCongPage() {
                             <p className="text-sm font-bold text-slate-700">{selectedFile ? selectedFile.name : 'Chọn file Excel'}</p>
                         </div>
                         <div className="flex gap-3">
-                            <button onClick={() => setShowUploadModal(false)} className="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-lg">Hủy</button>
-                            <button onClick={handleImport} disabled={!selectedFile || loading} className="flex-1 py-3 text-sm font-bold bg-blue-600 text-white rounded-lg shadow-lg disabled:bg-slate-300">
+                            <button onClick={() => setShowUploadModal(false)} className="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-lg cursor-pointer">Hủy</button>
+                            <button onClick={handleImport} disabled={!selectedFile || loading} className="flex-1 py-3 text-sm font-bold bg-blue-600 text-white rounded-lg shadow-lg disabled:bg-slate-300 cursor-pointer">
                                 {loading ? 'Đang xử lý...' : 'Xác nhận'}
                             </button>
                         </div>

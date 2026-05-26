@@ -12,9 +12,23 @@ export async function GET(request: Request) {
     const coefOtNormal = parseFloat(searchParams.get("coefOtNormal") || "1.5");
     const coefWeekend = parseFloat(searchParams.get("coefWeekend") || "2.0");
     const coefOtWeekend = parseFloat(searchParams.get("coefOtWeekend") || "2.5");
+    const phatMoiLan = parseInt(searchParams.get("phatMoiLan") || "50000");
+    const bhxhPhanTram = parseFloat(searchParams.get("bhxhPhanTram") || "10.5");
+    const bhxhNgayToiThieu = parseInt(searchParams.get("bhxhNgayToiThieu") || "14");
 
     try {
         const kyLuong = `${month}/${year}`;
+        
+        const getWorkingDaysInMonth = (m: number, y: number) => {
+            const daysInMonth = new Date(y, m, 0).getDate();
+            let workingDays = 0;
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayOfWeek = new Date(y, m - 1, i).getDay();
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) workingDays++; // Bỏ Thứ 7 và Chủ Nhật
+            }
+            return workingDays;
+        };
+        const standardDays = getWorkingDaysInMonth(month, year);
         
         // 1. Kiểm tra xem đã có bảng lương chốt chưa
         const existingBangLuong = await prisma.bangLuong.findFirst({
@@ -26,7 +40,17 @@ export async function GET(request: Request) {
                         nhan_su: {
                             include: {
                                 chuc_vu: true,
-                                phong_ban: true
+                                phong_ban: true,
+                                hop_dong: {
+                                    where: {
+                                        OR: [
+                                            { tg_het_hop_dong: null },
+                                            { tg_het_hop_dong: { gte: new Date(year, month - 1, 1) } }
+                                        ]
+                                    },
+                                    orderBy: { ma_hop_dong: 'desc' },
+                                    take: 1
+                                }
                             }
                         },
                         giao_vien: {
@@ -37,6 +61,16 @@ export async function GET(request: Request) {
                                     include: {
                                         lop_hoc: true
                                     }
+                                },
+                                hop_dong: {
+                                    where: {
+                                        OR: [
+                                            { tg_het_hop_dong: null },
+                                            { tg_het_hop_dong: { gte: new Date(year, month - 1, 1) } }
+                                        ]
+                                    },
+                                    orderBy: { ma_hop_dong: 'desc' },
+                                    take: 1
                                 }
                             }
                         },
@@ -71,8 +105,11 @@ export async function GET(request: Request) {
                 const tong_so_gio_lam_viec = phieuCC?.tong_so_gio_lam_viec || 0;
 
                 const isNS = !!pl.ma_nhan_su;
-                const soNgayCong = isNS ? (so_gio_lam_viec_thuong / 8) : (tong_so_gio_lam_viec / 8);
-                const hourlyRate = luongCoBan / 26 / 8;
+                const soNgayCong = isNS ? ((so_gio_lam_viec_thuong + so_gio_lam_viec_thuong_ngay_nghi) / 8) : (tong_so_gio_lam_viec / 8);
+
+                // Nhân sự: đơn giá giờ = lương cơ bản / standardDays / 8
+                // Giáo viên: đơn giá giờ = lương cơ bản (VD: 100.000đ/giờ)
+                const hourlyRate = isNS ? (luongCoBan / standardDays / 8) : luongCoBan;
 
                 const luong_lam_viec_ngay_thuong = Math.round(so_gio_lam_viec_thuong * hourlyRate);
                 const luong_tang_ca_ngay_thuong = Math.round(so_gio_tang_ca_ngay_thuong * hourlyRate * 1.5);
@@ -83,18 +120,37 @@ export async function GET(request: Request) {
 
                 const hoaHong = Number(pl.tien_hoa_hong || 0);
                 const tongThuong = Number(pl.tong_thuong || 0);
-                const phuCap = Number(pl.chi_tiet_phu_cap ? (pl.chi_tiet_phu_cap as any[]).reduce((sum, pc) => sum + Number(pc.soTien || 0), 0) : 0);
+                const phuCap = Number(pl.chi_tiet_phu_cap ? (pl.chi_tiet_phu_cap as any[])
+                    .filter((pc: any) => pc.ten !== 'Chuyên cần')
+                    .reduce((sum, pc) => sum + Number(pc.soTien || 0), 0) : 0);
 
                 const dsPhieuThuong = existingBangThuong?.phieu_thuong.filter(p => 
                     (isNS && p.ma_nhan_su === pl.ma_nhan_su) || 
                     (!isNS && p.ma_giao_vien === pl.ma_giao_vien)
                 ) || [];
                 
-                const thuong_chuyen_can = dsPhieuThuong.filter(p => p.loai_thuong === "Chuyên cần").reduce((acc, p) => acc + Number(p.so_tien), 0);
+                const thuong_chuyen_can_from_ds = dsPhieuThuong.filter(p => p.loai_thuong === "Chuyên cần").reduce((acc, p) => acc + Number(p.so_tien), 0);
+                const hoaHong_from_ds = dsPhieuThuong.filter(p => p.loai_thuong === "Tiền hoa hồng").reduce((acc, p) => acc + Number(p.so_tien), 0);
                 const dsThuongNong = dsPhieuThuong.filter(p => p.loai_thuong === "Thưởng nóng");
-                const thuong_nong = dsThuongNong.reduce((acc, p) => acc + Number(p.so_tien), 0) || (tongThuong - hoaHong - thuong_chuyen_can);
+                const thuong_nong_from_ds = dsThuongNong.reduce((acc, p) => acc + Number(p.so_tien), 0);
+
+                // Fallback: nếu không có phiếu thưởng chi tiết, reconstruct từ các field đã lưu
+                const thuong_chuyen_can = dsPhieuThuong.length > 0
+                    ? thuong_chuyen_can_from_ds
+                    : Math.max(0, tongThuong - hoaHong); // chuyên cần = tổng thưởng - hoa hồng (khi không có phiếu chi tiết)
+                const thuong_nong = dsPhieuThuong.length > 0
+                    ? thuong_nong_from_ds
+                    : 0;
                 const noi_dung_thuong = dsThuongNong.map(p => p.noi_dung).filter(Boolean).join(", ");
                 const chi_tiet_thuong_nong = dsThuongNong.map(p => ({ noi_dung: p.noi_dung || 'Thưởng nóng', so_tien: Number(p.so_tien) }));
+
+                // Build chi_tiet_thuong với fallback khi dsPhieuThuong rỗng
+                const chi_tiet_thuong_base = dsPhieuThuong.length > 0
+                    ? dsPhieuThuong.map(p => ({ loai_thuong: p.loai_thuong, noi_dung: p.noi_dung || '', so_tien: Number(p.so_tien) }))
+                    : [
+                        ...(hoaHong > 0 ? [{ loai_thuong: 'Tiền hoa hồng', noi_dung: '', so_tien: hoaHong }] : []),
+                        ...(thuong_chuyen_can > 0 ? [{ loai_thuong: 'Chuyên cần', noi_dung: '', so_tien: thuong_chuyen_can }] : []),
+                      ];
 
                 return {
                     ma_id: pl.ma_nhan_su || pl.ma_giao_vien,
@@ -114,11 +170,14 @@ export async function GET(request: Request) {
                     thuong_nong: thuong_nong,
                     noi_dung_thuong: noi_dung_thuong,
                     chi_tiet_thuong_nong: chi_tiet_thuong_nong,
+                    chi_tiet_thuong: chi_tiet_thuong_base,
                     tong_thuong: tongThuong,
                     bao_hiem: Number(pl.bao_hiem_xa_hoi),
+                    tien_phat: Number((pl as any).tien_phat || 0),
                     thuc_linh: Number(pl.thuc_linh),
                     ghi_chu: pl.ghi_chu || "",
                     chi_tiet_phu_cap: pl.chi_tiet_phu_cap || [],
+                    hop_dong: pl.nhan_su?.hop_dong?.[0] || pl.giao_vien?.hop_dong?.[0],
                     isLocked: true,
 
                     // Chi tiết chấm công
@@ -159,7 +218,7 @@ export async function GET(request: Request) {
         }
 
         // 2. Nếu chưa có, tính toán bản xem trước
-        const previewResults = await calculatePayrollForMonth(month, year, coefNormal, coefOtNormal, coefWeekend, coefOtWeekend);
+        const previewResults = await calculatePayrollForMonth(month, year, coefNormal, coefOtNormal, coefWeekend, coefOtWeekend, phatMoiLan, bhxhPhanTram, bhxhNgayToiThieu);
         return NextResponse.json({ results: previewResults, isLocked: false }, {
             headers: {
                 'Cache-Control': 'no-store, max-age=0, must-revalidate'
@@ -234,6 +293,7 @@ export async function POST(request: Request) {
                     chi_tiet_phu_cap: item.chi_tiet_phu_cap,
                     tong_thuong: item.tong_thuong,
                     bao_hiem_xa_hoi: item.bao_hiem,
+                    tien_phat: item.tien_phat || 0,
                     thuc_linh: item.thuc_linh,
                     trang_thai: "Đã chốt"
                 });
@@ -241,6 +301,46 @@ export async function POST(request: Request) {
             }
 
             await tx.phieuLuong.createMany({ data: phieuLuongData });
+
+            const createdPhieuLuongs = await tx.phieuLuong.findMany({
+                where: { ma_bang_luong: bangLuong!.ma_bang_luong },
+                select: { ma_phieu_luong: true, ma_nhan_su: true, ma_giao_vien: true }
+            });
+
+            const existingBangThuong = await tx.bangThuong.findFirst({
+                where: { ki_thuong: kyLuong },
+                select: { ma_bang_thuong: true }
+            });
+
+            if (existingBangThuong) {
+                for (const pl of createdPhieuLuongs) {
+                    if (pl.ma_nhan_su) {
+                        await tx.phieuThuong.updateMany({
+                            where: {
+                                ma_bang_thuong: existingBangThuong.ma_bang_thuong,
+                                ma_nhan_su: pl.ma_nhan_su,
+                                ma_phieu_luong: null
+                            },
+                            data: {
+                                ma_phieu_luong: pl.ma_phieu_luong
+                            }
+                        });
+                    }
+
+                    if (pl.ma_giao_vien) {
+                        await tx.phieuThuong.updateMany({
+                            where: {
+                                ma_bang_thuong: existingBangThuong.ma_bang_thuong,
+                                ma_giao_vien: pl.ma_giao_vien,
+                                ma_phieu_luong: null
+                            },
+                            data: {
+                                ma_phieu_luong: pl.ma_phieu_luong
+                            }
+                        });
+                    }
+                }
+            }
 
             // 3. Cập nhật tổng tiền bảng lương
             await tx.bangLuong.update({

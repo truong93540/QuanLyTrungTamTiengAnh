@@ -178,7 +178,7 @@ export default function PhieuThuHocPhiPage() {
                 }
                 if (hocVienRes.ok) {
                     const resultHv = await hocVienRes.json()
-                    setHocVienList(resultHv)
+                    setHocVienList(Array.isArray(resultHv) ? resultHv : (resultHv.data ?? []))
                 }
                 if (khoaHocRes.ok) {
                     const resultKh = await khoaHocRes.json()
@@ -244,36 +244,12 @@ export default function PhieuThuHocPhiPage() {
         const firstPaymentWithPromo = previousPayments.find(pt => pt.ma_khuyen_mai)
         const inheritedPromoId = firstPaymentWithPromo ? firstPaymentWithPromo.ma_khuyen_mai?.toString() || '' : ''
 
-        let currentPromoId = formData.ma_khuyen_mai
-        if (inheritedPromoId && !currentPromoId) {
-            currentPromoId = inheritedPromoId
-        }
-
-        // 2. Tính học phí gốc sau khi áp dụng giảm giá
-        let finalPrice = Number(khoaHoc.hoc_phi)
-        if (currentPromoId) {
-            const khuyenMai = khuyenMaiList.find(km => km.ma_khuyen_mai.toString() === currentPromoId)
-            if (khuyenMai && khuyenMai.phan_tram_giam) {
-                finalPrice = finalPrice * (1 - khuyenMai.phan_tram_giam / 100)
-            }
-        }
-
-        // 3. Khấu trừ đi tổng số tiền học viên đã đóng trước đó
-        const totalPaidBefore = previousPayments.reduce((sum, pt) => sum + Number(pt.so_tien), 0)
-        const remainingPrice = Math.max(0, finalPrice - totalPaidBefore)
 
         setFormData(prev => {
-            const nextState = { ...prev }
-            let updated = false
             if (inheritedPromoId && !prev.ma_khuyen_mai) {
-                nextState.ma_khuyen_mai = inheritedPromoId
-                updated = true
+                return { ...prev, ma_khuyen_mai: inheritedPromoId }
             }
-            if (prev.so_tien !== remainingPrice.toString()) {
-                nextState.so_tien = remainingPrice.toString()
-                updated = true
-            }
-            return updated ? nextState : prev
+            return prev
         })
     }, [formData.ma_hoc_vien, formData.ma_khoa_hoc, formData.ma_khuyen_mai, khoaHocList, khuyenMaiList, data, editingId])
 
@@ -603,7 +579,7 @@ export default function PhieuThuHocPhiPage() {
                                         {formData.ma_hoc_vien && (
                                             <div className="text-xs mt-1.5 font-semibold text-blue-600">
                                                 {hocVienList.some(hv => hv.ma_hoc_vien.toString() === formData.ma_hoc_vien)
-                                                    ? `Tên học viên: ${hocVienList.find(hv => hv.ma_hoc_vien.toString() === formData.ma_hoc_vien)?.ho_ten}`
+                                                    ? <span>{`Tên học viên: ${hocVienList.find(hv => hv.ma_hoc_vien.toString() === formData.ma_hoc_vien)?.ho_ten}`}</span>
                                                     : <span className="text-red-500">Không tìm thấy học viên</span>}
                                             </div>
                                         )}
@@ -1243,7 +1219,7 @@ export default function PhieuThuHocPhiPage() {
                                                                         setEditingId(null)
                                                                         setFormData({
                                                                             ma_phieu_thu: '',
-                                                                            so_tien: g.remainingDue.toString(),
+                                                                            so_tien: '',
                                                                             ngay_thu: new Date().toISOString().split('T')[0],
                                                                             ma_hoc_vien: g.ma_hoc_vien.toString(),
                                                                             ma_nhan_su: '',
@@ -1379,7 +1355,7 @@ export default function PhieuThuHocPhiPage() {
                                                                         setEditingId(null)
                                                                         setFormData({
                                                                             ma_phieu_thu: '',
-                                                                            so_tien: remainingDue.toString(),
+                                                                            so_tien: '',
                                                                             ngay_thu: new Date().toISOString().split('T')[0],
                                                                             ma_hoc_vien: tg.ma_hoc_vien.toString(),
                                                                             ma_nhan_su: '',
@@ -1420,7 +1396,7 @@ export default function PhieuThuHocPhiPage() {
                 </div>
             )}
             {/* Khối Quản lý & Danh sách Phiếu thu (Gom tìm kiếm, bộ lọc và bảng dữ liệu vào 1 vùng) */}
-            <div className="bg-white border border-gray-200 rounded-[12px] p-6 shadow-sm mt-6">
+            <div className="bg-white border border-gray-200 rounded-[8px] p-6 shadow-sm mt-6">
                 {/* Bộ Tìm kiếm & Bộ lọc nâng cao */}
                 <div className="mb-6 pb-6 border-b border-gray-200">
                     {/* Hàng 1: Tìm kiếm tên & Thêm mới */}

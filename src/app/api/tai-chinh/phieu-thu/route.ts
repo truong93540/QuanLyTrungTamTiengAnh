@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { Prisma } from '@prisma/client'
+import { revalidatePath } from 'next/cache'
 import {
     layDanhSachPhieuThu,
     taoPhieuThuMoi,
@@ -50,6 +51,9 @@ export async function POST(request: Request) {
 
         const phieuThuMoi = await taoPhieuThuMoi(body)
 
+        revalidatePath('/api/tai-chinh/bao-cao')
+        revalidatePath('/dashboard/bao-cao/tai-chinh')
+
         return NextResponse.json(phieuThuMoi, { status: 201 })
     } catch (error) {
         console.error('Lỗi POST:', error)
@@ -75,6 +79,9 @@ export async function PUT(request: Request) {
         }
 
         const phieuThuCapNhat = await capNhatPhieuThu(Number(body.ma_phieu_thu), body)
+
+        revalidatePath('/api/tai-chinh/bao-cao')
+        revalidatePath('/dashboard/bao-cao/tai-chinh')
 
         return NextResponse.json(phieuThuCapNhat, { status: 200 })
     } catch (error) {
@@ -102,6 +109,9 @@ export async function DELETE(request: Request) {
         }
 
         await xoaPhieuThu(Number(id))
+
+        revalidatePath('/api/tai-chinh/bao-cao')
+        revalidatePath('/dashboard/bao-cao/tai-chinh')
 
         return NextResponse.json({ message: 'Xóa thành công' }, { status: 200 })
     } catch (error) {

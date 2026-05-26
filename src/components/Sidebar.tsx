@@ -95,12 +95,12 @@ const menuItems = [
         children: [
             {
                 title: '4.1 Kế hoạch giảng dạy',
-                href: '/dashboard/dao-tao/ke-hoach',
+                href: '/dashboard/dao-tao/ke-hoach-giang-day',
                 role: 'Kế hoạch giảng dạy',
             },
             {
                 title: '4.2 Chương trình học',
-                href: '/dashboard/dao-tao/chuong-trinh',
+                href: '/dashboard/dao-tao/chuong-trinh-hoc',
                 role: 'Quản lý chương trình học',
             },
             {
@@ -117,6 +117,11 @@ const menuItems = [
                 title: '4.5 Quản lý lớp học',
                 href: '/dashboard/dao-tao/lop-hoc',
                 role: 'Quản lý lớp học',
+            },
+            {
+                title: '4.6 Quản lý giáo viên',
+                href: '/dashboard/dao-tao/giao-vien',
+                role: 'Quản lý giáo viên',
             },
         ],
     },
@@ -220,8 +225,8 @@ export default function Sidebar() {
             }
 
             // Nếu là menu có con
-            const filteredChildren = item.children?.filter((child) =>
-                userRoles.includes(child.role),
+            const filteredChildren = item.children?.filter((child: any) =>
+                !child.role || userRoles.includes(child.role),
             )
             if (filteredChildren && filteredChildren.length > 0) {
                 return { ...item, children: filteredChildren }

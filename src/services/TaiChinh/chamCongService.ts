@@ -125,26 +125,30 @@ export const calculateDayMetrics = (data: RawChamCongData, expectedShifts: numbe
         const fullVaoRas = pairedVaoRas.filter(vr => vr.v !== null && vr.r !== null) as {v: number, r: number}[]
         
         if (fullVaoRas.length > 0) {
-            let actualMins = 0
+            let officeMins = 0
+            let outsideMins = 0
+
             fullVaoRas.forEach(vr => {
                 // Block sáng: 8:00 - 12:00
                 const startM = Math.max(vr.v, OFFICE_HOURS.MORNING_START)
                 const endM = Math.min(vr.r, OFFICE_HOURS.MORNING_END)
-                if (startM < endM) actualMins += (endM - startM)
+                const morningOfficeMins = Math.max(0, endM - startM)
 
-                // Block chiều + tăng ca: 13:30 - 23:59
+                // Block chiều: 13:30 - 17:30
                 const startA = Math.max(vr.v, OFFICE_HOURS.AFTERNOON_START)
-                const endA = vr.r // Không giới hạn giờ về để tính tăng ca
-                if (startA < endA) actualMins += (endA - startA)
+                const endA = Math.min(vr.r, OFFICE_HOURS.AFTERNOON_END)
+                const afternoonOfficeMins = Math.max(0, endA - startA)
+
+                // Tính tăng ca: chỉ tính thời gian trước 08:00 và sau 17:30 (loại bỏ hoàn toàn nghỉ trưa 12:00-13:30)
+                const beforeOfficeMins = Math.max(0, OFFICE_HOURS.MORNING_START - vr.v)
+                const afterOfficeMins = Math.max(0, vr.r - OFFICE_HOURS.AFTERNOON_END)
+
+                officeMins += (morningOfficeMins + afternoonOfficeMins)
+                outsideMins += (beforeOfficeMins + afterOfficeMins)
             })
 
-            const totalHours = actualMins / 60
-
-            // 1. Công hành chính (Tối đa 8 tiếng = 1 công)
-            metrics.gio_lam_thuong = Math.min(totalHours, 8)
-            
-            // 2. Giờ tăng ca (Tổng thực tế - 8)
-            metrics.gio_tang_ca = Math.max(0, totalHours - 8)
+            metrics.gio_lam_thuong = Math.round(officeMins / 60)
+            metrics.gio_tang_ca = Math.round(outsideMins / 60)
 
             const sorted = fullVaoRas.sort((a, b) => a.v - b.v)
             const firstVao = sorted[0].v
@@ -158,9 +162,6 @@ export const calculateDayMetrics = (data: RawChamCongData, expectedShifts: numbe
                 metrics.phut_som = OFFICE_HOURS.AFTERNOON_END - lastRa
                 metrics.so_lan_som = 1
             }
-
-            metrics.gio_lam_thuong = Math.round(metrics.gio_lam_thuong)
-            metrics.gio_tang_ca = Math.round(metrics.gio_tang_ca)
         }
     }
     return metrics
@@ -222,7 +223,7 @@ export const ghiNhanChamCongNgay = async (data: RawChamCongData) => {
         })
         
         // VỚI GIÁO VIÊN: Không có tăng ca và không tách biệt ngày nghỉ (Tất cả tính là giờ thường)
-        const isW = data.loai === 'GV' ? false : (ngay.getDay() === 0)
+        const isW = data.loai === 'GV' ? false : (ngay.getDay() === 0 || ngay.getDay() === 6)
         const finalGioThuong = data.loai === 'GV' ? (metrics.gio_lam_thuong + metrics.gio_tang_ca) : metrics.gio_lam_thuong
         const finalTangCa = data.loai === 'GV' ? 0 : metrics.gio_tang_ca
         

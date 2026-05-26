@@ -1,67 +1,95 @@
-// File: src/app/api/hoc-vien/route.ts
-import { NextResponse } from 'next/server'
-import {
-    layDanhSachHocVien,
-    taoHocVienMoi,
-    capNhatHocVien,
-    xoaHocVien,
-} from '@/services/DaoTao/hocVienService'
+import { NextResponse } from "next/server";
+import { hocVienService } from "@/services/DaoTao/hocVienService";
 
-export async function GET() {
-    try {
-        const danhSach = await layDanhSachHocVien()
-        return NextResponse.json(danhSach)
-    } catch (error) {
-        return NextResponse.json({ error: 'Lỗi lấy danh sách học viên' }, { status: 500 })
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get("type");
+
+    if (type === "metadata") {
+      const result = await hocVienService.getMetadataForForm();
+      return NextResponse.json(result);
     }
+
+    const idStr = searchParams.get("id");
+    if (idStr) {
+      const id = parseInt(idStr, 10);
+      if (isNaN(id)) return NextResponse.json({ success: false, message: "ID không hợp lệ." }, { status: 400 });
+      const result = await hocVienService.getChiTietHocVien(id);
+      if (!result.success) return NextResponse.json(result, { status: 404 });
+      return NextResponse.json(result);
+    }
+
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const search = searchParams.get("search") || "";
+
+    const result = await hocVienService.getDanhSachHocVien({ page, limit, search });
+    return NextResponse.json(result);
+  } catch (error: any) {
+    return NextResponse.json({ success: false, message: error.message || "Lỗi máy chủ." }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
-    try {
-        const body = await request.json()
-        const hocVienMoi = await taoHocVienMoi(body)
-        return NextResponse.json(hocVienMoi, { status: 201 })
-    } catch (error) {
-        return NextResponse.json({ error: 'Lỗi khi thêm học viên' }, { status: 500 })
+  try {
+    const body = await request.json();
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get("type");
+
+    switch (type) {
+      case "lop-hoc": return NextResponse.json(await hocVienService.addThamGiaLop(body));
+      case "cam-ket": return NextResponse.json(await hocVienService.addCamKet(body));
+      case "phieu-thu": return NextResponse.json(await hocVienService.addPhieuThu(body));
+      default: return NextResponse.json(await hocVienService.createHocVien(body));
     }
+  } catch (error: any) {
+    return NextResponse.json({ success: false, message: error.message || "Lỗi máy chủ." }, { status: 500 });
+  }
 }
 
 export async function PUT(request: Request) {
-    try {
-        const body = await request.json()
-        const updated = await capNhatHocVien(Number(body.ma_hoc_vien), body)
-        return NextResponse.json(updated)
-    } catch (error) {
-        return NextResponse.json({ error: 'Lỗi khi cập nhật học viên' }, { status: 500 })
+  try {
+    const { searchParams } = new URL(request.url);
+    const idStr = searchParams.get("id");
+    const type = searchParams.get("type");
+    const body = await request.json();
+
+    const id = parseInt(idStr || body.id, 10);
+    if (isNaN(id)) return NextResponse.json({ success: false, message: "Mã định danh không hợp lệ." }, { status: 400 });
+
+    switch (type) {
+      case "lop-hoc": return NextResponse.json(await hocVienService.updateThamGiaLop(id, body));
+      case "cam-ket": return NextResponse.json(await hocVienService.updateCamKet(id, body));
+      case "phieu-thu": return NextResponse.json(await hocVienService.updatePhieuThu(id, body));
+      default: return NextResponse.json(await hocVienService.updateHocVien(id, body));
     }
+  } catch (error: any) {
+    return NextResponse.json({ success: false, message: error.message || "Lỗi máy chủ." }, { status: 500 });
+  }
 }
 
 export async function DELETE(request: Request) {
-    try {
-        const { searchParams } = new URL(request.url)
-        const id = searchParams.get('id')
-        
-        if (!id) {
-            return NextResponse.json({ error: 'Thiếu ID học viên' }, { status: 400 })
-        }
+  try {
+    const { searchParams } = new URL(request.url);
+    const idStr = searchParams.get("id");
+    const type = searchParams.get("type");
+    const studentIdStr = searchParams.get("studentId"); 
 
-        await xoaHocVien(Number(id))
-        return NextResponse.json({ message: 'Xóa thành công' })
-        
-    } catch (error: any) {
-        console.error('Lỗi khi xóa học viên:', error)
-        
-        // Kiểm tra nếu lỗi do Prisma Foreign Key Constraint (Mã lỗi P2003 của Prisma)
-        if (error.code === 'P2003') {
-            return NextResponse.json(
-                { error: 'Không thể xóa! Học viên này đã phát sinh dữ liệu (đóng học phí, xếp lớp, v.v.). Bạn nên chuyển trạng thái sang "Bảo lưu" hoặc "Nghỉ học".' }, 
-                { status: 409 } // 409 Conflict
-            )
-        }
+    if (!idStr) return NextResponse.json({ success: false, message: "Cung cấp mã để xóa." }, { status: 400 });
+    const id = parseInt(idStr, 10);
+    const studentId = parseInt(studentIdStr || "0", 10);
 
-        return NextResponse.json(
-            { error: 'Lỗi hệ thống khi thực hiện xóa dữ liệu.' }, 
-            { status: 500 }
-        )
+    if (isNaN(id)) return NextResponse.json({ success: false, message: "ID không hợp lệ." }, { status: 400 });
+
+    switch (type) {
+      // Đã cập nhật kết nối đến các hàm xóa cứng dữ liệu trong Service công khai
+      case "lop-hoc": return NextResponse.json(await hocVienService.deleteThamGiaLop(id, studentId));
+      case "cam-ket": return NextResponse.json(await hocVienService.deleteCamKet(id, studentId));
+      case "phieu-thu": return NextResponse.json(await hocVienService.deletePhieuThu(id, studentId));
+      default: return NextResponse.json(await hocVienService.softDeleteHocVien(id));
     }
+  } catch (error: any) {
+    return NextResponse.json({ success: false, message: error.message || "Lỗi máy chủ." }, { status: 500 });
+  }
 }
