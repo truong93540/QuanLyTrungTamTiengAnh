@@ -217,7 +217,7 @@ export default function ChuongTrinhHocGopPage() {
       <div className="p-6 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-200">
         <button 
           onClick={() => { setChiTietData(null); setSelectedProgramId(null); }}
-          className="text-sm text-blue-600 hover:underline flex items-center space-x-1 font-medium"
+          className="text-black text-blue-600 hover:underline flex items-center space-x-1 font-medium"
         >
           <span>← Quay lại danh sách chính</span>
         </button>
@@ -226,7 +226,7 @@ export default function ChuongTrinhHocGopPage() {
         <div className="bg-white border rounded-xl p-6 shadow-sm space-y-2">
           <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Hồ sơ tổng quát</span>
           <h1 className="text-2xl font-bold text-slate-800">{chiTietData.ten_chuong_trinh}</h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 text-black">
             <div>
               <p className="font-semibold text-slate-400">Mô tả tổng quan:</p>
               <p className="text-slate-700 font-medium mt-1">{chiTietData.mo_ta || "Chưa thiết lập mô tả tổng quan."}</p>
@@ -266,7 +266,7 @@ export default function ChuongTrinhHocGopPage() {
                   <th className="p-4 text-right">Hành động</th>
                 </tr>
               </thead>
-              <tbody className="divide-y text-sm text-slate-700">
+              <tbody className="divide-y text-black text-slate-700">
                 {chiTietData.khoa_hoc?.length === 0 ? (
                   <tr><td colSpan={6} className="p-8 text-center text-slate-400">Chưa có khóa học nào trực thuộc chương trình này.</td></tr>
                 ) : (
@@ -342,7 +342,7 @@ export default function ChuongTrinhHocGopPage() {
                     required
                     value={courseFormData.ten_khoa_hoc}
                     onChange={(e) => setCourseFormData({ ...courseFormData, ten_khoa_hoc: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -352,7 +352,7 @@ export default function ChuongTrinhHocGopPage() {
                       type="text"
                       value={courseFormData.trinh_do}
                       onChange={(e) => setCourseFormData({ ...courseFormData, trinh_do: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
@@ -361,7 +361,7 @@ export default function ChuongTrinhHocGopPage() {
                       type="text"
                       value={courseFormData.thoi_luong}
                       onChange={(e) => setCourseFormData({ ...courseFormData, thoi_luong: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
@@ -373,7 +373,7 @@ export default function ChuongTrinhHocGopPage() {
                       required
                       value={courseFormData.hoc_phi}
                       onChange={(e) => setCourseFormData({ ...courseFormData, hoc_phi: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
@@ -381,7 +381,7 @@ export default function ChuongTrinhHocGopPage() {
                     <select
                       value={courseFormData.trang_thai}
                       onChange={(e) => setCourseFormData({ ...courseFormData, trang_thai: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
+                      className="w-full px-3 py-2 border rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
                     >
                       <option value="Hoạt động">Hoạt động</option>
                       <option value="Tạm dừng">Tạm dừng</option>
@@ -393,20 +393,20 @@ export default function ChuongTrinhHocGopPage() {
                   <textarea
                     value={courseFormData.mo_ta}
                     onChange={(e) => setCourseFormData({ ...courseFormData, mo_ta: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 h-16 resize-none"
+                    className="w-full px-3 py-2 border rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 h-16 resize-none"
                   />
                 </div>
                 <div className="flex justify-end space-x-2 pt-2">
                   <button
                     type="button"
                     onClick={() => setIsCourseModalOpen(false)}
-                    className="px-4 py-2 border rounded-lg text-sm hover:bg-slate-50 text-slate-600"
+                    className="px-4 py-2 border rounded-lg text-black hover:bg-slate-50 text-slate-600"
                   >
                     Hủy
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-black font-medium"
                   >
                     Lưu Thay Đổi
                   </button>
@@ -430,7 +430,7 @@ export default function ChuongTrinhHocGopPage() {
             setFormData({ ma_chuong_trinh: "", ten_chuong_trinh: "", mo_ta: "", muc_tieu: "" });
             setIsModalOpen(true);
           }}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-black font-medium transition shadow-sm"
         >
           + Thêm Chương Trình Mới
         </button>
@@ -442,7 +442,7 @@ export default function ChuongTrinhHocGopPage() {
           placeholder="Tìm kiếm theo tên chương trình..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="w-full md:w-80 px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          className="w-full md:w-80 px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
         />
       </div>
 
@@ -453,11 +453,11 @@ export default function ChuongTrinhHocGopPage() {
               <th className="p-4">Mã</th>
               <th className="p-4">Tên chương trình đào tạo</th>
               <th className="p-4">Mô tả / Chuẩn đầu ra</th>
-              <th className="p-4">Sức chứa liên kết</th>
+              <th className="p-4">Khoá học liên kết</th>
               <th className="p-4 text-right">Hành động</th>
             </tr>
           </thead>
-          <tbody className="divide-y text-sm text-slate-700">
+          <tbody className="divide-y text-black text-slate-700">
             {loading ? (
               <tr><td colSpan={5} className="p-8 text-center text-slate-400">Đang đồng bộ dữ liệu hệ thống...</td></tr>
             ) : dataList.length === 0 ? (
@@ -515,7 +515,7 @@ export default function ChuongTrinhHocGopPage() {
 
       {/* Phân trang */}
       {pagination.totalPages > 1 && (
-        <div className="flex justify-between items-center text-sm text-slate-500">
+        <div className="flex justify-between items-center text-black text-slate-500">
           <p>Tổng cộng: {pagination.total} bản ghi</p>
           <div className="space-x-1">
             <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 border rounded text-xs disabled:opacity-40">Trước</button>
@@ -540,7 +540,7 @@ export default function ChuongTrinhHocGopPage() {
                   required
                   value={formData.ten_chuong_trinh}
                   onChange={(e) => setFormData({ ...formData, ten_chuong_trinh: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  className="w-full px-3 py-2 border rounded-lg text-black focus:outline-none"
                 />
               </div>
               <div>
@@ -548,7 +548,7 @@ export default function ChuongTrinhHocGopPage() {
                 <textarea
                   value={formData.mo_ta}
                   onChange={(e) => setFormData({ ...formData, mo_ta: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none h-20 resize-none"
+                  className="w-full px-3 py-2 border rounded-lg text-black focus:outline-none h-20 resize-none"
                 />
               </div>
               <div>
@@ -557,12 +557,12 @@ export default function ChuongTrinhHocGopPage() {
                   type="text"
                   value={formData.muc_tieu}
                   onChange={(e) => setFormData({ ...formData, muc_tieu: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  className="w-full px-3 py-2 border rounded-lg text-black focus:outline-none"
                 />
               </div>
               <div className="flex justify-end space-x-2 pt-2">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border rounded-lg text-sm text-slate-600">Đóng</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">Lưu lại</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border rounded-lg text-black text-slate-600">Đóng</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-black font-medium">Lưu lại</button>
               </div>
             </form>
           </div>

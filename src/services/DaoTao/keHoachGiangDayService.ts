@@ -25,7 +25,6 @@ export const keHoachGiangDayService = {
                 buoi_hoc: true,
               },
             },
-            bai_kiem_tra: true,
           },
         },
       },
@@ -72,15 +71,6 @@ export const keHoachGiangDayService = {
                   },
                 },
                 tham_gia: {
-                  include: {
-                    hoc_vien: true,
-                  },
-                },
-              },
-            },
-            bai_kiem_tra: {
-              include: {
-                ket_qua: {
                   include: {
                     hoc_vien: true,
                   },
@@ -134,7 +124,6 @@ export const keHoachGiangDayService = {
         lich_day: data.lich_day,
         thoi_gian: data.thoi_gian,
         ma_giao_vien: data.ma_giao_vien ? Number(data.ma_giao_vien) : undefined,
-        ma_khoa_hoc: data.ma_khoa_hoc ? Number(data.ma_khoa_hoc) : undefined,
       },
     });
   },
