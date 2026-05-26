@@ -91,35 +91,47 @@ export const calculateDayMetrics = (data: RawChamCongData, expectedShifts: numbe
     })
 
     if (data.loai === 'GV') {
-        // Sau đó mới map theo lịch dạy để ghi đè/tính toán vi phạm (Giữ nguyên các vị trí ca tương ứng)
-        expectedShifts.forEach(caNum => {
-            const config = CA_DAY_CONFIG.find(c => c.ca === caNum)
-            if (!config) return
-            const caStart = timeToMin(config.vao)
-            const caEnd = timeToMin(config.ra)
-
-            // Chỉ tính toán nếu có cả v và r
-            const match = pairedVaoRas.find(vr => 
-                vr.v !== null && vr.r !== null && 
-                Math.max(vr.v, caStart) < Math.min(vr.r, caEnd)
-            ) as {v: number, r: number} | undefined
-
-            if (match) {
-                // Ghi đè lại giờ chuẩn của ca đó nếu tìm thấy khớp
-                metrics.shiftSlots[`gio_vao_${caNum}`] = minToTime(match.v)
-                metrics.shiftSlots[`gio_ra_${caNum}`] = minToTime(match.r)
-                
-                if (match.v > caStart + OFFICE_HOURS.GRACE_PERIOD) {
-                    metrics.phut_muon += (match.v - caStart)
-                    metrics.so_lan_muon++
-                }
-                if (match.r < caEnd - OFFICE_HOURS.GRACE_PERIOD) {
-                    metrics.phut_som += (caEnd - match.r)
-                    metrics.so_lan_som++
-                }
-                metrics.gio_lam_thuong += 2
+        if (expectedShifts.length > 0) {
+            // Khởi tạo lại tất cả ca về null trước để tránh bị rác dữ liệu thô (raw) gán sai ca phía trên
+            for (let i = 1; i <= 6; i++) {
+                metrics.shiftSlots[`gio_vao_${i}`] = null
+                metrics.shiftSlots[`gio_ra_${i}`] = null
             }
-        })
+
+            const allTimes: number[] = []
+            vaoRas.forEach(vr => {
+                if (vr.v !== null) allTimes.push(vr.v)
+                if (vr.r !== null) allTimes.push(vr.r)
+            })
+            allTimes.sort((a, b) => a - b)
+
+            const minVao = allTimes.length > 0 ? allTimes[0] : null
+            const maxRa = allTimes.length > 1 ? allTimes[allTimes.length - 1] : null
+
+            expectedShifts.forEach(caNum => {
+                const config = CA_DAY_CONFIG.find(c => c.ca === caNum)
+                if (!config) return
+                const caStart = timeToMin(config.vao)
+                const caEnd = timeToMin(config.ra)
+
+                // Kiểm tra sự giao thoa giữa thời gian có mặt tổng thể của giáo viên trong ngày [minVao, maxRa] và ca học [caStart, caEnd]
+                if (minVao !== null && maxRa !== null && Math.max(minVao, caStart) < Math.min(maxRa, caEnd)) {
+                    // Thiết lập khoảng chấm công cho ca học là khoảng bao phủ rộng nhất của ngày
+                    metrics.shiftSlots[`gio_vao_${caNum}`] = minToTime(minVao)
+                    metrics.shiftSlots[`gio_ra_${caNum}`] = minToTime(maxRa)
+                    
+                    if (minVao > caStart + OFFICE_HOURS.GRACE_PERIOD) {
+                        metrics.phut_muon += (minVao - caStart)
+                        metrics.so_lan_muon++
+                    }
+                    if (maxRa < caEnd - OFFICE_HOURS.GRACE_PERIOD) {
+                        metrics.phut_som += (caEnd - maxRa)
+                        metrics.so_lan_som++
+                    }
+                    metrics.gio_lam_thuong += 2
+                }
+            })
+        }
     } else {
         // Lọc ra các cặp hoàn chỉnh để tính công cho nhân sự hành chính
         const fullVaoRas = pairedVaoRas.filter(vr => vr.v !== null && vr.r !== null) as {v: number, r: number}[]

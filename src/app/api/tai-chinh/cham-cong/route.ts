@@ -99,7 +99,13 @@ export async function POST(req: Request) {
             return null
         }
 
-        const previewMap = new Map<string, any>()
+        const groupedData = new Map<string, {
+            ma_id: number;
+            loai: 'GV' | 'NS';
+            ngay: string;
+            ngayObj: Date;
+            intervals: { vao: string | null; ra: string | null }[];
+        }>()
 
         for (const rowObj of jsonData) {
             const data: any = { intervals: [] }
@@ -131,11 +137,7 @@ export async function POST(req: Request) {
                 if (tVao || tRa) {
                     const vStr = tVao ? `${tVao.h.toString().padStart(2, '0')}:${tVao.m.toString().padStart(2, '0')}` : null
                     const rStr = tRa ? `${tRa.h.toString().padStart(2, '0')}:${tRa.m.toString().padStart(2, '0')}` : null
-                    
                     data.intervals.push({ vao: vStr, ra: rStr })
-                    // Gán thêm vào các trường lẻ để chắc chắn calculateDayMetrics đọc được
-                    data[`gio_vao_${i}`] = vStr
-                    data[`gio_ra_${i}`] = rStr
                 }
             }
 
@@ -148,10 +150,30 @@ export async function POST(req: Request) {
 
             const ma_id = parseInt(data.rawId.replace(/[^0-9]/g, ''))
             const loai = data.rawId.startsWith('GV') ? 'GV' : 'NS'
-            data.ma_id = ma_id
-            data.loai = loai
             
-            data.ngay = `${ngay.getFullYear()}-${(ngay.getMonth() + 1).toString().padStart(2, '0')}-${ngay.getDate().toString().padStart(2, '0')}`
+            const ngayStr = `${ngay.getFullYear()}-${(ngay.getMonth() + 1).toString().padStart(2, '0')}-${ngay.getDate().toString().padStart(2, '0')}`
+            const groupKey = `${loai}-${ma_id}-${ngayStr}`
+
+            if (!groupedData.has(groupKey)) {
+                groupedData.set(groupKey, {
+                    ma_id,
+                    loai,
+                    ngay: ngayStr,
+                    ngayObj: ngay,
+                    intervals: []
+                })
+            }
+
+            const group = groupedData.get(groupKey)!
+            group.intervals.push(...data.intervals)
+        }
+
+        const previewMap = new Map<string, any>()
+
+        for (const group of groupedData.values()) {
+            const loai = group.loai
+            const ma_id = group.ma_id
+            const ngay = group.ngayObj
 
             const info = loai === 'NS' 
                 ? await prisma.nhanSu.findUnique({ where: { ma_nhan_su: ma_id } }) 
@@ -177,7 +199,14 @@ export async function POST(req: Request) {
             }
             const phieu = previewMap.get(key)
             const expectedShifts = await getExpectedShifts(prisma, loai, ma_id, ngay)
-            const metrics = calculateDayMetrics(data, expectedShifts)
+            
+            const dataForMetrics = {
+                ma_id: String(ma_id),
+                loai,
+                ngay: group.ngay,
+                intervals: group.intervals as any
+            }
+            const metrics = calculateDayMetrics(dataForMetrics, expectedShifts)
             const day = ngay.getDate()
             
             const totalDayWork = metrics.gio_lam_thuong + metrics.gio_tang_ca
@@ -190,7 +219,7 @@ export async function POST(req: Request) {
             
             let ct = phieu.chi_tiet_cham_cong.find((c: any) => c.day === day)
             if (!ct) {
-                ct = { day, ngay: data.ngay, ...metrics.shiftSlots }
+                ct = { day, ngay: group.ngay, ...metrics.shiftSlots }
                 phieu.chi_tiet_cham_cong.push(ct)
             } else {
                 Object.assign(ct, metrics.shiftSlots)
