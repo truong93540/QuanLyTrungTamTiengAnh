@@ -7,11 +7,11 @@ interface PhanCongData {
 
 interface ChuongTrinhData {
     ten_chuong_trinh_marketing: string;
-    noi_dung?: string | null;
+    noi_dung?: string | null;   
     ngay_bat_dau: Date;
     ngay_ket_thuc: Date;
     ngan_sach?: number | null;
-    danh_sach_khoa_hoc?: number[]; // <-- Sửa: Nhận một mảng các ID khóa học thay vì 1 ID
+    danh_sach_khoa_hoc?: number[]; 
     danh_sach_nhan_su?: PhanCongData[];
 }
 
@@ -19,7 +19,6 @@ interface ChuongTrinhData {
 export const layDanhSachChuongTrinh = async () => {
     return await prisma.chuongTrinhMarketing.findMany({
         include: {
-            // SỬA: Đi qua bảng trung gian chi_tiet_marketing để lấy thông tin khóa học
             chi_tiet_marketing: {
                 include: {
                     khoa_hoc: {
@@ -77,7 +76,6 @@ export const taoChuongTrinhMoi = async (data: ChuongTrinhData) => {
             ngay_ket_thuc: data.ngay_ket_thuc,
             ngan_sach: data.ngan_sach,
             
-            // SỬA: Lưu vào bảng trung gian ChiTietMarketing
             chi_tiet_marketing: {
                 create: data.danh_sach_khoa_hoc?.map(id => ({
                     ma_khoa_hoc: id
@@ -138,7 +136,6 @@ export const capNhatChuongTrinh = async (id: number, data: ChuongTrinhData) => {
 
 // XÓA
 export const xoaChuongTrinh = async (id: number) => {
-    // SỬA: Cần xóa dữ liệu ở bảng trung gian chiTietMarketing trước để tránh lỗi rác
     await prisma.$transaction([
         prisma.chiTietMarketing.deleteMany({ where: { ma_chuong_trinh_marketing: id } }),
         prisma.phanCongMarketing.deleteMany({ where: { ma_chuong_trinh_marketing: id } })

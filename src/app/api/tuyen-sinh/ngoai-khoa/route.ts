@@ -11,11 +11,14 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url)
         const action = searchParams.get('action')
+        
+        // API lấy danh sách giáo viên
         if (action === 'get_teachers') {
             const giaoVien = await layDanhSachGiaoVien()
             return NextResponse.json(giaoVien)
         }
 
+        // API lấy danh sách hoạt động
         const filters = { search: searchParams.get('search') }
         const danhSach = await layDanhSachHoatDong(filters)
         return NextResponse.json(danhSach)
@@ -29,7 +32,15 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json()
-        const { ten_hoat_dong, mo_ta, ngay_to_chuc, dia_diem, chi_phi, danh_sach_giao_vien } = body
+        const { 
+            ten_hoat_dong, 
+            mo_ta, 
+            ngay_to_chuc, 
+            dia_diem, 
+            chi_phi, 
+            danh_sach_giao_vien,
+            danh_sach_hoc_vien // <-- Bổ sung nhận danh sách học viên
+        } = body
 
         if (!ten_hoat_dong || !ngay_to_chuc) {
             return NextResponse.json({ error: 'Tên hoạt động và Ngày tổ chức là bắt buộc' }, { status: 400 })
@@ -41,7 +52,8 @@ export async function POST(request: Request) {
             ngay_to_chuc: new Date(ngay_to_chuc),
             dia_diem: dia_diem ? String(dia_diem) : null,
             chi_phi: chi_phi !== undefined && chi_phi !== '' ? Number(chi_phi) : null,
-            danh_sach_giao_vien: Array.isArray(danh_sach_giao_vien) ? danh_sach_giao_vien.map(Number) : []
+            danh_sach_giao_vien: Array.isArray(danh_sach_giao_vien) ? danh_sach_giao_vien.map(Number) : [],
+            danh_sach_hoc_vien: Array.isArray(danh_sach_hoc_vien) ? danh_sach_hoc_vien.map(Number) : [] // <-- Ép kiểu thành mảng số
         }
 
         const hoatDongMoi = await taoHoatDong(duLieuMoi)
@@ -55,7 +67,16 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
     try {
         const body = await request.json()
-        const { ma_hoat_dong_ngoai_khoa, ten_hoat_dong, mo_ta, ngay_to_chuc, dia_diem, chi_phi, danh_sach_giao_vien } = body
+        const { 
+            ma_hoat_dong_ngoai_khoa, 
+            ten_hoat_dong, 
+            mo_ta, 
+            ngay_to_chuc, 
+            dia_diem, 
+            chi_phi, 
+            danh_sach_giao_vien,
+            danh_sach_hoc_vien // <-- Bổ sung nhận danh sách học viên
+        } = body
 
         if (!ma_hoat_dong_ngoai_khoa) {
             return NextResponse.json({ error: 'Thiếu mã hoạt động' }, { status: 400 })
@@ -67,7 +88,16 @@ export async function PUT(request: Request) {
             ...(ngay_to_chuc && { ngay_to_chuc: new Date(ngay_to_chuc) }),
             ...(dia_diem !== undefined && { dia_diem: dia_diem ? String(dia_diem) : null }),
             ...(chi_phi !== undefined && { chi_phi: chi_phi !== '' && chi_phi !== null ? Number(chi_phi) : null }),
-            ...(danh_sach_giao_vien !== undefined && { danh_sach_giao_vien: Array.isArray(danh_sach_giao_vien) ? danh_sach_giao_vien.map(Number) : [] })
+            
+            // Xử lý mảng giáo viên
+            ...(danh_sach_giao_vien !== undefined && { 
+                danh_sach_giao_vien: Array.isArray(danh_sach_giao_vien) ? danh_sach_giao_vien.map(Number) : [] 
+            }),
+            
+            // Bổ sung: Xử lý mảng học viên
+            ...(danh_sach_hoc_vien !== undefined && { 
+                danh_sach_hoc_vien: Array.isArray(danh_sach_hoc_vien) ? danh_sach_hoc_vien.map(Number) : [] 
+            })
         }
 
         const hoatDongCapNhat = await capNhatHoatDong(Number(ma_hoat_dong_ngoai_khoa), duLieuCapNhat)
