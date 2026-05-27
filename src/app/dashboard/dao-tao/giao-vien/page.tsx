@@ -354,11 +354,11 @@ export default function QuanLyGiaoVienPage() {
                 ) : (
                   giaoViens.map((gv) => (
                     <tr key={gv.ma_giao_vien} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="px-5 py-4 font-mono text-xs font-semibold text-slate-400">#{gv.ma_giao_vien}</td>
+                      <td className="px-5 py-4 font-sans text-xs font-semibold text-slate-400">GV-{gv.ma_giao_vien}</td>
                       <td className="px-5 py-4 font-bold text-blue-600 cursor-pointer hover:text-blue-700 hover:underline transition-colors" onClick={() => openDetailModal(gv.ma_giao_vien)}>{gv.ho_ten}</td>
                       <td className="px-5 py-4 space-y-0.5">
                         <p className="text-slate-900 font-medium">{gv.email || '—'}</p>
-                        <p className="text-xs text-slate-400 font-mono">{gv.so_dien_thoai || '—'}</p>
+                        <p className="text-xs text-slate-400 font-sans">{gv.so_dien_thoai || '—'}</p>
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex flex-wrap gap-1.5">
@@ -368,7 +368,7 @@ export default function QuanLyGiaoVienPage() {
                       </td>
                       <td className="px-5 py-4">
                         {gv.tai_khoan ? (
-                          <span className="inline-block items-center font-mono font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded text-xs border border-slate-200">{gv.tai_khoan.ten_dang_nhap}</span>
+                          <span className="inline-block items-center font-sans font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded text-xs border border-slate-200">{gv.tai_khoan.ten_dang_nhap}</span>
                         ) : (
                           <span className="inline-block items-center text-rose-500 font-medium text-xs bg-rose-50 px-2 py-0.5 rounded border border-rose-100">Chưa cấp</span>
                         )}
@@ -519,32 +519,17 @@ export default function QuanLyGiaoVienPage() {
                         placeholder="Đi lại - 500000&#10;Tiền ăn - 300000" 
                         value={formValues.chi_tiet_phu_cap_text} 
                         onChange={e => setFormValues({...formValues, chi_tiet_phu_cap_text: e.target.value})}
-                        className="w-full px-3 py-2 text-sm bg-white border border-slate-200 text-slate-900 font-mono rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300"
+                        className="w-full px-3 py-2 text-sm bg-white border border-slate-200 text-slate-900 font-sans rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300"
                       />
-                      <p className="text-slate-400 text-xxs mt-0.5 italic">Mỗi khoản phụ cấp ghi trên một dòng, cách nhau bởi dấu gạch ngang "-". Hệ thống tự động biên dịch sang JSON.</p>
+                      <p className="text-slate-400 text-xxs mt-0.5 italic">Mỗi khoản phụ cấp ghi trên một dòng, cách nhau bởi dấu gạch ngang "-".</p>
                     </div>
 
-                  </div>
-                </div>
-
-                {/* 4. Tài khoản liên kết */}
-                <div className="space-y-4 pt-4 border-t border-slate-100">
-                  <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider bg-purple-50/50 px-2.5 py-1 rounded inline-block">4. Cấp Tài Khoản Hệ Thống</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">Tên đăng nhập</label>
-                      <input type="text" value={formValues.tai_khoan_user} onChange={e => setFormValues({...formValues, tai_khoan_user: e.target.value})} className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Bỏ trống nếu không cấp tài khoản" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">Mật khẩu mới</label>
-                      <input type="password" value={formValues.tai_khoan_pass} onChange={e => setFormValues({...formValues, tai_khoan_pass: e.target.value})} className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder={selectedTeacher ? "Nhập nếu muốn đổi mật khẩu" : "Mặc định: 123456@"} />
-                    </div>
                   </div>
                 </div>
 
                 {/* 5. Hồ sơ bằng cấp */}
                 <div className="space-y-4 pt-4 border-t border-slate-100">
-                  <h3 className="text-xs font-bold text-cyan-600 uppercase tracking-wider bg-cyan-50/50 px-2.5 py-1 rounded inline-block">5. Hồ Sơ Bằng Cấp chính</h3>
+                  <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider bg-cyan-50/50 px-2.5 py-1 rounded inline-block">4. Hồ Sơ Bằng Cấp chính</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <select value={formValues.ma_bang_cap} onChange={e => setFormValues({...formValues, ma_bang_cap: e.target.value})} className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                       <option value="">-- Chọn loại Bằng cấp --</option>
@@ -557,7 +542,7 @@ export default function QuanLyGiaoVienPage() {
 
                 {/* 6. Phân công lớp học */}
                 <div className="space-y-3 pt-4 border-t border-slate-100">
-                  <h3 className="text-xs font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50/50 px-2.5 py-1 rounded inline-block">6. Phân Công Giảng Dạy Lớp Học (N-N)</h3>
+                  <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider bg-indigo-50/50 px-2.5 py-1 rounded inline-block">5. Phân Công Giảng Dạy Lớp Học</h3>
                   <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto border border-slate-200 p-3 bg-slate-50 rounded-xl">
                     {metadata.lopHocs.map(l => {
                       const isChecked = formValues.selected_lops.includes(l.ma_lop_hoc);
@@ -587,7 +572,7 @@ export default function QuanLyGiaoVienPage() {
               <div className="flex justify-between items-start border-b border-slate-100 pb-3">
                 <div>
                   <h2 className="text-xl font-bold text-slate-900">{selectedTeacher.ho_ten}</h2>
-                  <p className="text-xs font-mono font-semibold text-slate-400 mt-0.5">Mã Số Giáo Viên: #{selectedTeacher.ma_giao_vien}</p>
+                  <p className="text-xs font-sans font-semibold text-slate-400 mt-0.5">Mã Số Giáo Viên: GV-{selectedTeacher.ma_giao_vien}</p>
                 </div>
                 <button onClick={() => setIsDetailOpen(false)} className="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center font-bold text-xl transition-all">×</button>
               </div>
@@ -596,7 +581,7 @@ export default function QuanLyGiaoVienPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 bg-slate-50 border border-slate-200/60 p-4 rounded-xl">
                   <p><b>Giới tính:</b> <span className="text-slate-900">{selectedTeacher.gioi_tinh || '—'}</span></p>
                   <p><b>Ngày sinh:</b> <span className="text-slate-900">{selectedTeacher.ngay_sinh ? new Date(selectedTeacher.ngay_sinh).toLocaleDateString('vi-VN') : '—'}</span></p>
-                  <p><b>Số điện thoại:</b> <span className="text-slate-900 font-mono">{selectedTeacher.so_dien_thoai || '—'}</span></p>
+                  <p><b>Số điện thoại:</b> <span className="text-slate-900 font-sans">{selectedTeacher.so_dien_thoai || '—'}</span></p>
                   <p><b>Email:</b> <span className="text-slate-900 font-medium">{selectedTeacher.email || '—'}</span></p>
                   <p className="col-span-2 border-t border-slate-200/50 pt-2 mt-1"><b>Địa chỉ:</b> <span className="text-slate-900">{selectedTeacher.dia_chi || '—'}</span></p>
                 </div>
