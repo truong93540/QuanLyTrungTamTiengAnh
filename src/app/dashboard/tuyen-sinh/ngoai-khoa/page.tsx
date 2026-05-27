@@ -94,12 +94,15 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
     const [showHocVienDetail, setShowHocVienDetail] = useState(false)
     const [openStudentClassId, setOpenStudentClassId] = useState<number | null>(null)
     
-    // STATE: QUẢN LÝ THÊM HỌC VIÊN
+    // STATE: QUẢN LÝ THÊM HỌC VIÊN VÀ COMBOBOX TÌM LỚP
     const [danhSachThamGia, setDanhSachThamGia] = useState<{ma_hoc_vien: number, ho_ten: string, ten_lop?: string}[]>([])
+    const [selectedLopId, setSelectedLopId] = useState<number | null>(null)
     const [hocVienTrongLop, setHocVienTrongLop] = useState<{ma_hoc_vien: number, ho_ten: string, ten_lop: string}[]>([])
     const [idChonTamThoi, setIdChonTamThoi] = useState<number[]>([])
     const [tuKhoaLop, setTuKhoaLop] = useState("")
-    const [tuKhoaTuDo, setTuKhoaTuDo] = useState("") // State cho thanh tìm kiếm học viên tự do
+    const [tuKhoaTuDo, setTuKhoaTuDo] = useState("") 
+    const [tuKhoaTimLop, setTuKhoaTimLop] = useState("")
+    const [showDropdownLop, setShowDropdownLop] = useState(false)
 
     const [formData, setFormData] = useState({
         ten_hoat_dong: '',
@@ -140,14 +143,32 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                 const [resHD, resGV, resLop, resHV] = await Promise.all([
                     fetch('/api/tuyen-sinh/ngoai-khoa'),
                     fetch('/api/tuyen-sinh/ngoai-khoa?action=get_teachers'),
-                    fetch('/api/tuyen-sinh/lop-hoc'),
-                    fetch('/api/tuyen-sinh/hoc-vien')
+                    fetch('/api/dao-tao/lop-hoc?limit=1000'), 
+                    fetch('/api/dao-tao/hoc-vien?limit=5000') 
                 ])
 
                 if (resHD.ok) setData(await resHD.json())
                 if (resGV.ok) setDanhSachGiaoVien(await resGV.json())
-                if (resLop.ok) setDanhSachLopHoc(await resLop.json())
-                if (resHV.ok) setDanhSachTatCaHocVien(await resHV.json())
+                
+                if (resLop.ok) {
+                    const dataLop = await resLop.json();
+                    let mangLop = [];
+                    if (Array.isArray(dataLop)) mangLop = dataLop;
+                    else if (dataLop.data && Array.isArray(dataLop.data)) mangLop = dataLop.data;
+                    else if (dataLop.lop_hoc && Array.isArray(dataLop.lop_hoc)) mangLop = dataLop.lop_hoc;
+                    else if (dataLop.items && Array.isArray(dataLop.items)) mangLop = dataLop.items;
+                    setDanhSachLopHoc(mangLop);
+                }
+
+                if (resHV.ok) {
+                    const dataHV = await resHV.json();
+                    let mangHV = [];
+                    if (Array.isArray(dataHV)) mangHV = dataHV;
+                    else if (dataHV.data && Array.isArray(dataHV.data)) mangHV = dataHV.data;
+                    else if (dataHV.hoc_vien && Array.isArray(dataHV.hoc_vien)) mangHV = dataHV.hoc_vien;
+                    else if (dataHV.items && Array.isArray(dataHV.items)) mangHV = dataHV.items;
+                    setDanhSachTatCaHocVien(mangHV);
+                }
 
             } catch (error) {
                 console.error('Lỗi fetch API:', error)
@@ -203,10 +224,12 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
         setEditingId(null)
         setFormData({ ten_hoat_dong: '', mo_ta: '', ngay_to_chuc: '', dia_diem: '', chi_phi: '', danh_sach_giao_vien: [] })
         setDanhSachThamGia([])
+        setSelectedLopId(null)
         setHocVienTrongLop([])
         setIdChonTamThoi([])
         setTuKhoaLop('')
         setTuKhoaTuDo('')
+        setTuKhoaTimLop('')
         setTuKhoaGiaoVien('') 
         setFormErrors({})
         setIsModalOpen(true)
@@ -217,10 +240,12 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
         setIsViewMode(false)
         setEditingId(row.ma_hoat_dong_ngoai_khoa)
         setTuKhoaGiaoVien('') 
+        setSelectedLopId(null)
         setHocVienTrongLop([])
         setIdChonTamThoi([])
         setTuKhoaLop('')
         setTuKhoaTuDo('')
+        setTuKhoaTimLop('')
         setFormErrors({})
         setIsModalOpen(true)
     }
@@ -302,7 +327,7 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                 ...formData,
                 ma_hoat_dong_ngoai_khoa: editingId,
                 chi_phi: formData.chi_phi ? parseInt(formData.chi_phi) : null,
-                danh_sach_hoc_vien: danhSachThamGia.map(hv => hv.ma_hoc_vien) // Gửi mảng ID học viên xuống API
+                danh_sach_hoc_vien: danhSachThamGia.map(hv => hv.ma_hoc_vien) 
             }
 
             const response = await fetch('/api/tuyen-sinh/ngoai-khoa', {
@@ -357,13 +382,12 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
         gv.ho_ten.toLowerCase().includes(tuKhoaGiaoVien.toLowerCase())
     )
 
-    // Lọc danh sách học viên tự do (Chưa xếp lớp hoặc tìm toàn bộ)
     const hocVienTuDoLoc = tuKhoaTuDo.trim() === "" ? [] : danhSachTatCaHocVien.filter(hv => 
         hv.ho_ten.toLowerCase().includes(tuKhoaTuDo.toLowerCase()) || 
         hv.ma_hoc_vien.toString().includes(tuKhoaTuDo)
     )
 
-    const groupedHocVien = useMemo(() => {
+    const groupedHocVienView = useMemo(() => {
         if (!viewData?.tham_gia_hoc_vien) return {};
         return viewData.tham_gia_hoc_vien.reduce((acc, current) => {
             const hv = current.hoc_vien;
@@ -614,9 +638,9 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                                 
                                 {showHocVienDetail && (
                                     <div className="px-5 pb-5 pt-0 animate-fade-in-up">
-                                        {Object.keys(groupedHocVien).length > 0 ? (
+                                        {Object.keys(groupedHocVienView).length > 0 ? (
                                             <div className="space-y-3">
-                                                {Object.entries(groupedHocVien).map(([classIdStr, group]) => {
+                                                {Object.entries(groupedHocVienView).map(([classIdStr, group]) => {
                                                     const classId = Number(classIdStr);
                                                     const isOpen = openStudentClassId === classId;
                                                     return (
@@ -808,33 +832,57 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                                     {/* Cột 1: Chọn lớp */}
                                     <div>
                                         <span className="block text-xs font-semibold text-gray-500 mb-1">Thêm nhanh từ lớp:</span>
-                                        <select 
-                                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white cursor-pointer text-gray-900 font-medium"
-                                            onChange={(e) => {
-                                                const maLop = parseInt(e.target.value);
-                                                if (!maLop) { setHocVienTrongLop([]); setIdChonTamThoi([]); setTuKhoaLop(""); return; }
-                                                
-                                                const selectedLop = danhSachLopHoc.find(l => l.ma_lop_hoc === maLop);
-                                                
-                                                // Lọc những học viên đang thuộc lớp học được chọn
-                                                const studentsInClass = danhSachTatCaHocVien.filter(hv => 
-                                                    hv.tham_gia_lop?.some(tl => tl.lop_hoc?.ma_lop_hoc === maLop)
-                                                ).map(hv => ({
-                                                    ma_hoc_vien: hv.ma_hoc_vien,
-                                                    ho_ten: hv.ho_ten,
-                                                    ten_lop: selectedLop?.ten_lop || ''
-                                                }));
-                                                
-                                                setHocVienTrongLop(studentsInClass);
-                                                setIdChonTamThoi([]);
-                                                setTuKhoaLop("");
-                                            }}
-                                        >
-                                            <option value="">-- Chọn lớp học --</option>
-                                            {danhSachLopHoc.map(lop => (
-                                                <option key={lop.ma_lop_hoc} value={lop.ma_lop_hoc}>{lop.ten_lop}</option>
-                                            ))}
-                                        </select>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                placeholder="🔍 Tìm tên lớp..."
+                                                value={tuKhoaTimLop}
+                                                onChange={(e) => {
+                                                    setTuKhoaTimLop(e.target.value);
+                                                    setShowDropdownLop(true);
+                                                }}
+                                                onFocus={() => setShowDropdownLop(true)}
+                                                className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm outline-none focus:border-blue-500 bg-white text-gray-900 font-medium transition"
+                                            />
+                                            
+                                            {/* Dropdown danh sách lớp đã lọc */}
+                                            {showDropdownLop && (
+                                                <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
+                                                    {danhSachLopHoc.filter(l => l.ten_lop.toLowerCase().includes(tuKhoaTimLop.toLowerCase())).length === 0 ? (
+                                                        <div className="px-3 py-2 text-sm text-gray-400 italic">Không tìm thấy lớp</div>
+                                                    ) : (
+                                                        danhSachLopHoc
+                                                            .filter(l => l.ten_lop.toLowerCase().includes(tuKhoaTimLop.toLowerCase()))
+                                                            .map(lop => (
+                                                                <div 
+                                                                    key={lop.ma_lop_hoc}
+                                                                    className="px-3 py-2.5 text-sm hover:bg-blue-50 cursor-pointer text-gray-800 font-medium border-b border-gray-50 last:border-0"
+                                                                    onClick={() => {
+                                                                        setTuKhoaTimLop(lop.ten_lop);
+                                                                        setShowDropdownLop(false);
+                                                                        setSelectedLopId(lop.ma_lop_hoc);
+
+                                                                        // Logic lấy học viên của lớp
+                                                                        const studentsInClass = danhSachTatCaHocVien.filter(hv => 
+                                                                            hv.tham_gia_lop?.some(tl => tl.lop_hoc?.ma_lop_hoc === lop.ma_lop_hoc)
+                                                                        ).map(hv => ({
+                                                                            ma_hoc_vien: hv.ma_hoc_vien,
+                                                                            ho_ten: hv.ho_ten,
+                                                                            ten_lop: lop.ten_lop
+                                                                        }));
+                                                                        
+                                                                        setHocVienTrongLop(studentsInClass);
+                                                                        setIdChonTamThoi([]);
+                                                                        setTuKhoaLop("");
+                                                                    }}
+                                                                >
+                                                                    {lop.ten_lop}
+                                                                </div>
+                                                            ))
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
 
                                         {/* Khung tìm kiếm/Chọn học viên bên trong lớp */}
                                         {hocVienTrongLop.length > 0 && (() => {
@@ -907,7 +955,7 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                                                                                 }
                                                                             }}
                                                                         />
-                                                                        <span className="truncate">{hv.ho_ten}</span>
+                                                                        <span className="truncate text-gray-900 font-medium">{hv.ho_ten}</span>
                                                                     </label>
                                                                 ))
                                                             )}
@@ -918,6 +966,7 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                                                             disabled={idChonTamThoi.length === 0}
                                                             onClick={() => {
                                                                 const selected = hocVienTrongLop.filter(hv => idChonTamThoi.includes(hv.ma_hoc_vien));
+                                                                
                                                                 setDanhSachThamGia(prev => {
                                                                     const mangMoi = [...prev];
                                                                     selected.forEach(hvMoi => {
@@ -927,10 +976,11 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                                                                     });
                                                                     return mangMoi;
                                                                 });
+                                                                setSelectedLopId(null);
                                                                 setHocVienTrongLop([]);
                                                                 setIdChonTamThoi([]);
                                                                 setTuKhoaLop("");
-                                                                // Reset select value to default programmatically if needed
+                                                                setTuKhoaTimLop(""); // Xóa text combobox
                                                             }}
                                                             className="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed shadow-sm mt-1"
                                                         >
@@ -944,25 +994,25 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
 
                                     {/* Cột 2: Thêm học viên tự do / chưa xếp lớp */}
                                     <div>
-                                        <span className="block text-xs font-semibold text-gray-500 mb-1">Hoặc thêm học viên tự do / chưa xếp lớp:</span>
+                                        <span className="block text-xs font-semibold text-gray-500 mb-1">Thêm học viên lẻ (chưa xếp lớp):</span>
                                         <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><FaSearch /></span>
+                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><FaSearch size={14}/></span>
                                             <input
                                                 type="text"
                                                 placeholder="🔍 Nhập tên hoặc mã học viên..."
                                                 value={tuKhoaTuDo}
                                                 onChange={(e) => setTuKhoaTuDo(e.target.value)}
-                                                className="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 outline-none text-sm text-gray-900 font-medium placeholder-gray-500 focus:ring-2 focus:ring-blue-500 shadow-sm bg-white"
+                                                className="w-full border border-gray-300 rounded-md py-2.5 pl-10 pr-3 outline-none text-sm text-gray-900 font-medium placeholder-gray-500 focus:ring-2 focus:ring-blue-500 shadow-sm bg-white"
                                             />
                                         </div>
                                         
                                         {tuKhoaTuDo.trim() !== "" && (
-                                            <div className="bg-white border border-gray-200 p-2 rounded-md shadow-sm max-h-[220px] overflow-y-auto mt-2 animate-fade-in-down">
-                                                {hocVienTuDoLoc.length === 0 ? (
+                                            <div className="bg-white border border-gray-200 p-2 rounded-md shadow-sm max-h-[220px] overflow-y-auto mt-2 animate-fade-in-down custom-scrollbar">
+                                                {danhSachTatCaHocVien.filter(hv => hv.ho_ten.toLowerCase().includes(tuKhoaTuDo.toLowerCase()) || hv.ma_hoc_vien.toString().includes(tuKhoaTuDo)).length === 0 ? (
                                                     <p className="text-xs text-gray-500 italic p-2 text-center">Không tìm thấy học viên.</p>
                                                 ) : (
                                                     <div className="flex flex-col gap-1">
-                                                        {hocVienTuDoLoc.map(hv => {
+                                                        {danhSachTatCaHocVien.filter(hv => hv.ho_ten.toLowerCase().includes(tuKhoaTuDo.toLowerCase()) || hv.ma_hoc_vien.toString().includes(tuKhoaTuDo)).map(hv => {
                                                             const isAdded = danhSachThamGia.some(item => item.ma_hoc_vien === hv.ma_hoc_vien);
                                                             const tenLop = hv.tham_gia_lop && hv.tham_gia_lop.length > 0 
                                                                 ? hv.tham_gia_lop[0].lop_hoc?.ten_lop 
@@ -971,7 +1021,7 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                                                             return (
                                                                 <div 
                                                                     key={`free-${hv.ma_hoc_vien}`} 
-                                                                    className={`flex items-center justify-between p-2 rounded border transition text-sm ${isAdded ? 'bg-gray-50 border-gray-200 opacity-60 cursor-not-allowed' : 'hover:bg-blue-50 border-transparent hover:border-blue-100 cursor-pointer'}`}
+                                                                    className={`flex items-center justify-between p-2 rounded border transition text-sm ${isAdded ? 'bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed' : 'hover:bg-blue-50 border-transparent hover:border-blue-100 cursor-pointer'}`}
                                                                     onClick={() => {
                                                                         if (isAdded) return;
                                                                         setDanhSachThamGia(prev => [...prev, { 
@@ -1007,10 +1057,10 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                                         <span className="block text-xs font-semibold text-green-700 mb-2 uppercase">Giỏ học viên đã chọn ({danhSachThamGia.length}):</span>
                                         <div className="flex flex-wrap gap-2 max-h-[150px] overflow-y-auto custom-scrollbar pr-2">
                                             {danhSachThamGia.map(hv => (
-                                                <span key={`cart-${hv.ma_hoc_vien}`} className="flex items-center gap-1.5 bg-white border border-green-200 px-3 py-1 rounded-full text-sm font-semibold shadow-sm text-gray-800">
+                                                <span key={`cart-${hv.ma_hoc_vien}`} className="flex items-center gap-1.5 bg-white border border-green-200 px-3 py-1 rounded-full text-sm font-semibold shadow-sm text-gray-800 hover:bg-red-50 hover:border-red-200 transition group cursor-default">
                                                     {hv.ho_ten}
                                                     {hv.ten_lop && <span className="text-[10px] text-gray-500 font-normal ml-1">({hv.ten_lop})</span>}
-                                                    <FaTimes className="cursor-pointer text-gray-400 hover:text-red-500 ml-1 transition" onClick={() => setDanhSachThamGia(prev => prev.filter(x => x.ma_hoc_vien !== hv.ma_hoc_vien))}/>
+                                                    <FaTimes className="cursor-pointer text-gray-400 group-hover:text-red-600 ml-1 transition" onClick={() => setDanhSachThamGia(prev => prev.filter(x => x.ma_hoc_vien !== hv.ma_hoc_vien))}/>
                                                 </span>
                                             ))}
                                         </div>
@@ -1032,7 +1082,7 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
 
                         <div className="p-5 border-t border-gray-200 bg-gray-50 rounded-b-lg flex justify-end gap-3 shrink-0">
                             {Object.keys(formErrors).length > 0 && <div className="mr-auto text-red-600 font-medium self-center text-sm bg-red-50 px-3 py-1.5 rounded border border-red-100 flex items-center gap-2"><FaExclamationTriangle /> Vui lòng kiểm tra lại các thông tin báo đỏ!</div>}
-                            <button onClick={closeModal} className="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-50 font-semibold transition shadow-sm">
+                            <button onClick={closeModal} className="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-50 font-bold transition shadow-sm">
                                 Hủy bỏ
                             </button>
                             <button onClick={handleSave} className="flex items-center gap-2 px-8 py-2.5 bg-[#1d4ed8] text-white rounded-md hover:bg-blue-700 font-semibold transition shadow-sm">
