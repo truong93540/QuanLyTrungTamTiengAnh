@@ -43,7 +43,7 @@ const SearchableSelect = ({ options, value, onChange, placeholder, disabled = fa
     <div className="relative w-full" ref={wrapperRef}>
       <div 
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`w-full px-3 py-2 border rounded-lg text-sm bg-white cursor-pointer flex justify-between items-center ${disabled ? "opacity-60 bg-slate-50 cursor-not-allowed" : "focus-within:ring-2 focus-within:ring-indigo-500"}`}
+        className={`w-full px-3 py-2 border rounded-lg text-black bg-white cursor-pointer flex justify-between items-center ${disabled ? "opacity-60 bg-slate-50 cursor-not-allowed" : "focus-within:ring-2 focus-within:ring-indigo-500"}`}
       >
         <span className={selectedOption ? "text-slate-900" : "text-slate-400"}>
           {selectedOption ? selectedOption.label : placeholder}
@@ -60,7 +60,7 @@ const SearchableSelect = ({ options, value, onChange, placeholder, disabled = fa
               placeholder="Nhập để tìm kiếm..." 
               value={search} 
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-3 py-1.5 text-sm border rounded outline-none focus:border-indigo-500"
+              className="w-full px-3 py-1.5 text-black border rounded outline-none focus:border-indigo-500"
             />
           </div>
           <div className="overflow-y-auto flex-1 p-1">
@@ -71,7 +71,7 @@ const SearchableSelect = ({ options, value, onChange, placeholder, disabled = fa
                 <div 
                   key={opt.value} 
                   onClick={() => { onChange(opt.value); setIsOpen(false); setSearch(""); }}
-                  className="px-3 py-2 text-sm hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer rounded"
+                  className="px-3 py-2 text-black hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer rounded"
                 >
                   {opt.label}
                 </div>
@@ -118,7 +118,12 @@ export default function HocVienPage() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
-
+  const khoaHocMap = Object.fromEntries(
+    metadata.khoaHocs.map((k: any) => [
+      k.ma_khoa_hoc,
+      k.ten_khoa_hoc
+    ])
+  );
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000);
@@ -311,9 +316,9 @@ export default function HocVienPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Quản Lý Hồ Sơ Học Viên</h1>
-          <p className="text-slate-500 text-sm">Quản lý danh sách, cam kết đào tạo, bài kiểm tra và học phí.</p>
+          <p className="text-slate-500 text-black">Quản lý danh sách, cam kết đào tạo, bài kiểm tra và học phí.</p>
         </div>
-        <button onClick={handleOpenAddModal} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition text-sm flex items-center justify-center gap-2">
+        <button onClick={handleOpenAddModal} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition text-black flex items-center justify-center gap-2">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
           Thêm học viên
         </button>
@@ -330,7 +335,7 @@ export default function HocVienPage() {
             placeholder="Tìm kiếm theo Tên, Số điện thoại hoặc Email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm bg-slate-50 text-black placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+            className="w-full pl-10 pr-4 py-2 border rounded-lg text-black bg-slate-50 text-black placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
           />
         </div>
       </div>
@@ -340,7 +345,7 @@ export default function HocVienPage() {
         {loading ? (
           <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
             <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-slate-500 text-sm">Đang truy xuất dữ liệu...</p>
+            <p className="text-slate-500 text-black">Đang truy xuất dữ liệu...</p>
           </div>
         ) : hocViens.length === 0 ? (
           <div className="p-12 text-center text-slate-500">
@@ -348,7 +353,7 @@ export default function HocVienPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-sm">
+            <table className="w-full text-left border-collapse text-black">
               <thead>
                 <tr className="bg-slate-50 text-slate-600 font-semibold border-b">
                   <th className="p-4 w-16">Mã HV</th>
@@ -362,7 +367,7 @@ export default function HocVienPage() {
               <tbody className="divide-y text-slate-700">
                 {hocViens.map((hv) => (
                   <tr key={hv.ma_hoc_vien} onClick={() => { setSelectedHocVien(hv); setActiveTab("info"); setIsDetailOpen(true); }} className="hover:bg-slate-50/80 cursor-pointer transition">
-                    <td className="p-4 font-mono text-xs text-slate-500">#{hv.ma_hoc_vien}</td>
+                    <td className="p-4 font-mono text-xs text-slate-500">{hv.ma_hoc_vien}</td>
                     <td className="p-4 font-medium text-slate-900">{hv.ho_ten}</td>
                     <td className="p-4 text-slate-600">{hv.so_dien_thoai || "—"}</td>
                     <td className="p-4 text-slate-600">{hv.email || "—"}</td>
@@ -400,7 +405,7 @@ export default function HocVienPage() {
                 <h2 className="text-lg font-bold">{modalType === "add" ? "Thêm mới Học viên" : "Cập nhật Thông tin"}</h2>
                 <button onClick={() => setIsModalOpen(false)}><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
              </div>
-             <form onSubmit={handleFormSubmit} className="p-6 space-y-4 text-sm">
+             <form onSubmit={handleFormSubmit} className="p-6 space-y-4 text-black">
                 <div className="grid grid-cols-2 gap-4">
                    <div className="col-span-2 md:col-span-1">
                      <label className="block mb-1 font-semibold text-xs text-slate-600">Họ và Tên *</label>
@@ -457,26 +462,26 @@ export default function HocVienPage() {
             <div className="p-6 border-b flex justify-between items-center bg-slate-50">
               <div>
                 <h2 className="text-xl font-bold">{selectedHocVien.ho_ten}</h2>
-                <p className="text-xs text-slate-500">Mã số: #{selectedHocVien.ma_hoc_vien}</p>
+                <p className="text-xs text-slate-500">Mã số: {selectedHocVien.ma_hoc_vien}</p>
               </div>
               <button onClick={() => setIsDetailOpen(false)}><svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
             
-            <div className="flex border-b px-6 overflow-x-auto text-sm bg-white">
+            <div className="flex border-b px-6 overflow-x-auto text-black bg-white">
               <button onClick={() => setActiveTab("info")} className={`py-3 px-4 font-medium border-b-2 whitespace-nowrap ${activeTab === "info" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500"}`}>Thông tin chung</button>
               <button onClick={() => setActiveTab("lop")} className={`py-3 px-4 font-medium border-b-2 whitespace-nowrap ${activeTab === "lop" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500"}`}>Lớp học ({selectedHocVien.tham_gia_lop?.length || 0})</button>
               <button onClick={() => setActiveTab("camket")} className={`py-3 px-4 font-medium border-b-2 whitespace-nowrap ${activeTab === "camket" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500"}`}>Cam kết ({selectedHocVien.cam_ket?.length || 0})</button>
               <button onClick={() => setActiveTab("taichinh")} className={`py-3 px-4 font-medium border-b-2 whitespace-nowrap ${activeTab === "taichinh" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500"}`}>Phiếu thu ({selectedHocVien.phieu_thu?.length || 0})</button>
             </div>
 
-            <div className="p-6 overflow-y-auto flex-1 text-sm bg-slate-50/50">
+            <div className="p-6 overflow-y-auto flex-1 text-black bg-slate-50/50">
               
               {/* TAB THÔNG TIN (ĐÃ KHÔI PHỤC ĐẦY ĐỦ DATA) */}
               {activeTab === "info" && (
                 <div className="bg-white p-5 rounded-lg border grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">
                   <div>
                     <span className="text-slate-400 block text-xs">Mã học viên:</span> 
-                    <p className="font-medium text-slate-800">#{selectedHocVien.ma_hoc_vien}</p>
+                    <p className="font-medium text-slate-800">{selectedHocVien.ma_hoc_vien}</p>
                   </div>
                   <div>
                     <span className="text-slate-400 block text-xs">Giới tính:</span> 
@@ -538,16 +543,31 @@ export default function HocVienPage() {
                 <div className="space-y-4">
                   <div className="flex justify-end"><button onClick={() => handleOpenSubModal("cam-ket", "add")} className="bg-indigo-50 text-indigo-600 font-medium px-3 py-1.5 rounded-lg border flex items-center gap-1">Tạo Cam kết</button></div>
                   {!selectedHocVien.cam_ket?.length ? <p className="text-slate-500 italic text-center p-4 bg-white border rounded">Không có cam kết.</p> : selectedHocVien.cam_ket.map((ck: any) => (
-                    <div key={ck.ma_cam_ket} className="bg-white p-4 rounded-lg border">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-bold text-slate-800">Mã Khóa: {ck.ma_khoa_hoc}</p>
-                          <p className="text-xs text-slate-500 mt-1">{ck.noi_dung_cam_ket}</p>
-                        </div>
-                        <div className="space-x-3 text-xs">
-                          <button onClick={() => handleOpenSubModal("cam-ket", "edit", ck)} className="text-indigo-600">Sửa</button>
-                          <button onClick={() => handleSubDelete("cam-ket", ck.ma_cam_ket)} className="text-rose-600">Xóa</button>
-                        </div>
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-slate-800">
+                          {khoaHocMap[ck.ma_khoa_hoc] || `Mã khóa: ${ck.ma_khoa_hoc}`}
+                        </p>
+
+                        <p className="text-xs text-slate-500 mt-1 break-words whitespace-normal">
+                          {ck.noi_dung_cam_ket}
+                        </p>
+                      </div>
+
+                      <div className="space-x-3 text-xs flex-shrink-0">
+                        <button
+                          onClick={() => handleOpenSubModal("cam-ket", "edit", ck)}
+                          className="text-indigo-600"
+                        >
+                          Sửa
+                        </button>
+
+                        <button
+                          onClick={() => handleSubDelete("cam-ket", ck.ma_cam_ket)}
+                          className="text-rose-600"
+                        >
+                          Xóa
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -565,7 +585,7 @@ export default function HocVienPage() {
                         <tbody className="divide-y text-slate-700">
                           {selectedHocVien.phieu_thu.map((pt: any) => (
                             <tr key={pt.ma_phieu_thu} className={pt.noi_dung?.includes("[ĐÃ HỦY/XÓA]") ? "opacity-50 bg-slate-50" : ""}>
-                              <td className="p-3">#{pt.ma_phieu_thu}</td>
+                              <td className="p-3">{pt.ma_phieu_thu}</td>
                               <td className="p-3 font-bold">{Number(pt.so_tien).toLocaleString("vi-VN")} đ</td>
                               <td className="p-3 text-right space-x-2">
                                 <button onClick={() => handleOpenSubModal("phieu-thu", "edit", pt)} className="text-indigo-600">Sửa</button>
@@ -580,7 +600,7 @@ export default function HocVienPage() {
                 </div>
               )}
             </div>
-            <div className="p-4 border-t bg-slate-50 flex justify-end"><button onClick={() => setIsDetailOpen(false)} className="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm">Đóng</button></div>
+            <div className="p-4 border-t bg-slate-50 flex justify-end"><button onClick={() => setIsDetailOpen(false)} className="bg-slate-800 text-white px-4 py-2 rounded-lg text-black">Đóng</button></div>
           </div>
         </div>
       )}
@@ -597,7 +617,7 @@ export default function HocVienPage() {
               <button onClick={() => setSubModal({ isOpen: false, mode: "add", type: "" })}><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
 
-            <form onSubmit={handleSubModalSubmit} className="p-5 space-y-4 text-sm">
+            <form onSubmit={handleSubModalSubmit} className="p-5 space-y-4 text-black">
               
               {/* SUB FORM: LỚP HỌC */}
               {subModal.type === "lop-hoc" && (

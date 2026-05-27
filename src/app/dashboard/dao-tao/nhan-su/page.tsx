@@ -620,7 +620,6 @@ export default function NhanSuPage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-black">
                           <div><span className="text-slate-500">Tên văn bằng:</span> <span className="font-semibold text-slate-900">{bc.ten_bang_cap}</span></div>
-                          <div><span className="text-slate-500">Xếp loại / Cấp độ:</span> <span className="font-medium text-slate-900">{bc.loai_bang_cap || "—"}</span></div>
                           <div><span className="text-slate-500">Nơi cấp:</span> <span className="font-medium text-slate-700">{bc.noi_cap || "—"}</span></div>
                           <div><span className="text-slate-500">Ngày cấp bằng:</span> <span className="font-medium text-slate-900">{bc.ngay_cap ? new Date(bc.ngay_cap).toLocaleDateString("vi-VN") : "—"}</span></div>
                         </div>
@@ -766,10 +765,6 @@ export default function NhanSuPage() {
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">Tên văn bằng, chứng chỉ *</label>
                 <input type="text" required value={bcFormData.ten_bang_cap} onChange={(e) => setBcFormData({ ...bcFormData, ten_bang_cap: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Xếp loại / Cấp độ</label>
-                <input type="text" placeholder="Ví dụ: Giỏi, Khá" value={bcFormData.loai_bang_cap} onChange={(e) => setBcFormData({ ...bcFormData, loai_bang_cap: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">Nơi cấp / Trường cấp</label>

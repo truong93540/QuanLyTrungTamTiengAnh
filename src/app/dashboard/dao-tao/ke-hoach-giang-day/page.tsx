@@ -218,7 +218,7 @@ export default function KeHoachGiangDayPage() {
               <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
                 {filteredData.map((item) => (
                   <tr key={item.ma_ke_hoach_giang_day} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-4 font-medium text-slate-900 max-w-xs truncate">{item.noi_dung}</td>
+                    <td className="p-4 font-medium text-slate-900 max-w-xs whitespace-normal break-words">{item.noi_dung}</td>
                     <td className="p-4 font-semibold text-slate-800">{item.giao_vien?.ho_ten}</td>
                     <td className="p-4 text-slate-600 font-medium">{item.khoa_hoc?.ten_khoa_hoc}</td>
                     <td className="p-4 text-slate-400 text-xs">{item.khoa_hoc?.chuong_trinh?.ten_chuong_trinh}</td>
