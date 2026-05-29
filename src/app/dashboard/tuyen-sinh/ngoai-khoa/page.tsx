@@ -92,7 +92,8 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
     // Accordion States (View Mode)
     const [showGiaoVienDetail, setShowGiaoVienDetail] = useState(false)
     const [showHocVienDetail, setShowHocVienDetail] = useState(false)
-    const [openStudentClassId, setOpenStudentClassId] = useState<number | null>(null)
+    // CẬP NHẬT: Dùng mảng để lưu các lớp đang được mở
+    const [openStudentClassIds, setOpenStudentClassIds] = useState<number[]>([])
     
     // STATE: QUẢN LÝ THÊM HỌC VIÊN VÀ COMBOBOX TÌM LỚP
     const [danhSachThamGia, setDanhSachThamGia] = useState<{ma_hoc_vien: number, ho_ten: string, ten_lop?: string}[]>([])
@@ -258,7 +259,7 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
         setFormErrors({})
         setShowGiaoVienDetail(false)
         setShowHocVienDetail(false)
-        setOpenStudentClassId(null)
+        setOpenStudentClassIds([]) // CẬP NHẬT: Reset mảng khi mở modal
         setIsModalOpen(true)
     }
 
@@ -642,12 +643,20 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                                             <div className="space-y-3">
                                                 {Object.entries(groupedHocVienView).map(([classIdStr, group]) => {
                                                     const classId = Number(classIdStr);
-                                                    const isOpen = openStudentClassId === classId;
+                                                    // CẬP NHẬT: Kiểm tra xem ID lớp này có trong mảng không
+                                                    const isOpen = openStudentClassIds.includes(classId); 
                                                     return (
                                                         <div key={classId} className={`border rounded-lg transition-all ${isOpen ? 'border-green-400 shadow-sm ring-1 ring-green-400' : 'border-gray-200 hover:border-green-300'}`}>
                                                             <div 
                                                                 className={`p-4 flex justify-between items-center cursor-pointer ${isOpen ? 'bg-[#f6fbf7]' : 'bg-white'} rounded-t-lg`}
-                                                                onClick={() => setOpenStudentClassId(isOpen ? null : classId)}
+                                                                onClick={() => {
+                                                                    // CẬP NHẬT: Toggle thêm/xóa classId vào mảng
+                                                                    setOpenStudentClassIds(prev => 
+                                                                        prev.includes(classId) 
+                                                                            ? prev.filter(id => id !== classId) 
+                                                                            : [...prev, classId]
+                                                                    );
+                                                                }}
                                                             >
                                                                 <div className="flex items-center gap-4">
                                                                     <span className="font-bold text-green-700 text-base">Lớp: {group.ten_lop}</span>

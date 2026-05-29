@@ -11,7 +11,7 @@ interface HoatDongData {
     dia_diem?: string | null
     chi_phi?: number | null
     danh_sach_giao_vien?: number[] 
-    danh_sach_hoc_vien?: number[] // <-- Bổ sung mảng ID học viên tham gia
+    danh_sach_hoc_vien?: number[] 
 }
 
 export const layDanhSachGiaoVien = async () => {
@@ -50,7 +50,6 @@ export const layDanhSachHoatDong = async (filters: HoatDongFilter) => {
                             ho_ten: true,
                             so_dien_thoai: true,
                             email: true,
-                            // Kéo thêm dữ liệu bảng ThamGiaLop -> LopHoc để gom nhóm trên UI
                             tham_gia_lop: {
                                 include: {
                                     lop_hoc: { select: { ma_lop_hoc: true, ten_lop: true } }

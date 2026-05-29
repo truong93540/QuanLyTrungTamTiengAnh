@@ -31,7 +31,19 @@ export const layDanhSachCamKet = async (filters: CamKetFilter) => {
 
     return await prisma.camKet.findMany({
         where: whereClause,
-        include: { hoc_vien: { select: { ho_ten: true } }, khoa_hoc: { select: { ten_khoa_hoc: true } } },
+        include: { 
+            khoa_hoc: { select: { ten_khoa_hoc: true } },
+            hoc_vien: { 
+                include: { 
+                    // BẮT BUỘC PHẢI INCLUDE ĐOẠN NÀY ĐỂ CÓ DỮ LIỆU LỚP HỌC
+                    tham_gia_lop: { 
+                        include: { 
+                            lop_hoc: { select: { ma_lop_hoc: true, ten_lop: true } } 
+                        } 
+                    } 
+                } 
+            } 
+        },
         orderBy: { ma_cam_ket: 'asc' }, 
     });
 }
@@ -144,10 +156,10 @@ export const kiemTraVaCapNhatViPham = async (ma_cam_ket: number) => {
                 where: { ma_bai_kiem_tra: bkt.ma_bai_kiem_tra, ma_hoc_vien: ma_hoc_vien }
             });
             
-            if (!ketQua || (ketQua.diem_so === 0 && ketQua.trang_thai === 'Bỏ thi')) {
-                bo_thi = true;
-                break;
-            }
+if (ketQua && (ketQua.diem_so === 0 || ketQua.trang_thai?.trim() === 'Bỏ thi')) {
+    bo_thi = true;
+    break;
+}
         }
     }
 

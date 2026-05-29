@@ -112,8 +112,6 @@ export const capNhatChuongTrinh = async (id: number, data: ChuongTrinhData) => {
             ngay_bat_dau: data.ngay_bat_dau,
             ngay_ket_thuc: data.ngay_ket_thuc,
             ngan_sach: data.ngan_sach,
-            
-            // SỬA: Tạo lại liên kết mới cho bảng ChiTietMarketing
             chi_tiet_marketing: {
                 create: data.danh_sach_khoa_hoc?.map(id => ({
                     ma_khoa_hoc: id
