@@ -88,7 +88,6 @@ const SearchableSelect = ({ options, value, onChange, placeholder, disabled = fa
 // MAIN PAGE COMPONENT
 // ==========================================
 export default function HocVienPage() {
-  // Fix lỗi Hydration (Next.js)
   const [isMounted, setIsMounted] = useState(false);
 
   const [hocViens, setHocViens] = useState<any[]>([]);
@@ -98,7 +97,7 @@ export default function HocVienPage() {
   const [page, setPage] = useState<number>(1);
   const [pagination, setPagination] = useState<PaginationInfo>({ total: 0, page: 1, limit: 10, totalPages: 1 });
 
-  // Dữ liệu danh mục
+  // Dữ liệu danh mục nền
   const [metadata, setMetadata] = useState({ lopHocs: [], khoaHocs: [], nhanSus: [], khuyenMais: [] });
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -118,12 +117,11 @@ export default function HocVienPage() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
   const khoaHocMap = Object.fromEntries(
-    metadata.khoaHocs.map((k: any) => [
-      k.ma_khoa_hoc,
-      k.ten_khoa_hoc
-    ])
+    metadata.khoaHocs.map((k: any) => [k.ma_khoa_hoc, k.ten_khoa_hoc])
   );
+
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000);
@@ -136,7 +134,9 @@ export default function HocVienPage() {
         const res = await fetch("/api/dao-tao/hoc-vien?type=metadata");
         const result = await res.json();
         if (result.success) setMetadata(result.data);
-      } catch (err) {}
+      } catch (err) {
+        console.error("Lỗi lấy metadata:", err);
+      }
     };
     fetchMetadata();
   }, []);
@@ -159,13 +159,13 @@ export default function HocVienPage() {
         showToast(result.message || "Lỗi tải danh sách", "error");
       }
     } catch (err) {
-      showToast("Không thể kết nối đến máy chủ", "error");
+      showToast("Không thể kết nối đến máy chủ API", "error");
     } finally {
       setLoading(false);
     }
   }, [page, debouncedSearch]);
 
-  useEffect(() => { fetchHocViens(); }, [fetchHocViens]);
+  useEffect(() => { if (isMounted) fetchHocViens(); }, [fetchHocViens, isMounted]);
 
   const refreshHocVienDetail = async (id: number) => {
     setDetailLoading(true);
@@ -174,13 +174,13 @@ export default function HocVienPage() {
       const result = await res.json();
       if (result.success) setSelectedHocVien(result.data);
     } catch (err) {
-      showToast("Lỗi khi làm mới dữ liệu", "error");
+      showToast("Lỗi khi làm mới dữ liệu hồ sơ", "error");
     } finally {
       setDetailLoading(false);
     }
   };
 
-  // --- HÀM MAIN MODAL ---
+  // --- HÀM XỬ LÝ MAIN MODAL HỌC VIÊN ---
   const handleOpenAddModal = () => {
     setModalType("add");
     setFormData({ ma_hoc_vien: "", ho_ten: "", ngay_sinh: "", gioi_tinh: "Nam", so_dien_thoai: "", email: "", dia_chi: "", dau_ra_chung_chi: "", trang_thai: "Đang học" });
@@ -216,34 +216,78 @@ export default function HocVienPage() {
         showToast(modalType === "add" ? "Thêm mới thành công!" : "Cập nhật thành công!"); 
         setIsModalOpen(false); 
         fetchHocViens();
+        if (selectedHocVien && modalType === "edit") {
+          refreshHocVienDetail(selectedHocVien.ma_hoc_vien);
+        }
       } else { showToast(result.message, "error"); }
     } catch (err) { showToast("Lỗi gửi dữ liệu", "error"); }
   };
 
   const handleSoftDelete = async (id: number, name: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (confirm(`Bạn có chắc muốn xóa hồ sơ học viên "${name}"?`)) {
+    if (confirm(`Bạn có chắc muốn xóa hồ sơ học viên "${name}"? (Xóa mềm)`)) {
       try {
         const res = await fetch(`/api/dao-tao/hoc-vien?id=${id}`, { method: "DELETE" });
         const result = await res.json();
-        if (result.success) { showToast("Xóa thành công!"); fetchHocViens(); } 
-        else { showToast(result.message, "error"); }
+        if (result.success) { 
+          showToast("Xóa thành công!"); 
+          setIsDetailOpen(false);
+          fetchHocViens(); 
+        } else { showToast(result.message, "error"); }
       } catch (err) { showToast("Lỗi xóa dữ liệu", "error"); }
     }
   };
 
-  // --- HÀM SUB-MODAL ---
+  // --- HÀM XỬ LÝ SUB-MODAL (CON) ---
   const handleOpenSubModal = (type: "lop-hoc" | "cam-ket" | "phieu-thu", mode: "add" | "edit", data: any = null) => {
     let initialData = {};
-    const parseDate = (d: string) => d ? new Date(d).toISOString().substring(0, 10) : new Date().toISOString().substring(0, 10);
+    const parseDate = (d: string) => d ? new Date(d).toISOString().substring(0, 10) : "";
+    const todayStr = new Date().toISOString().substring(0, 10);
     
     if (mode === "add") {
-      if (type === "lop-hoc") initialData = { ma_lop_hoc: "", ngay_dang_ky: parseDate(""), trang_thai: "Đang học" };
-      if (type === "cam-ket") initialData = { ma_khoa_hoc: "", noi_dung: "", ngay_ky: parseDate(""), trang_thai: "Hiệu lực" };
-      if (type === "phieu-thu") initialData = { ma_khoa_hoc: "", ma_nhan_su: "", so_tien: "", ngay_thu: parseDate(""), noi_dung: "", ma_khuyen_mai: "" };
+      if (type === "lop-hoc") initialData = { ma_lop_hoc: "", ngay_dang_ky: todayStr, trang_thai: "Đang học" };
+      if (type === "cam-ket") {
+        initialData = { 
+          ma_khoa_hoc: "", 
+          noi_dung_cam_ket: "", 
+          ngay_ky: todayStr, 
+          ngay_het_han: "",
+          trang_thai: "Hiệu lực",
+          so_buoi_vang_cho_phep: 3,
+          tham_gia_thi_day_du: true,
+          so_buoi_di_muon: 3,
+          so_lan_thieu_bai_tap: 2,
+          bi_vi_pham: false,
+          da_bo_thi: false,
+          ly_do_vi_pham: "",
+          so_buoi_di_muon_thuc_te: 0,
+          so_buoi_vang_thuc_te: 0,
+          so_lan_thieu_bai_tap_thuc_te: 0
+        };
+      }
+      if (type === "phieu-thu") initialData = { ma_khoa_hoc: "", ma_nhan_su: "", so_tien: "", ngay_thu: todayStr, noi_dung: "", ma_khuyen_mai: "" };
     } else if (data) {
       if (type === "lop-hoc") initialData = { ma_lop_hoc: data.ma_lop_hoc, ngay_dang_ky: parseDate(data.ngay_dang_ky), trang_thai: data.trang_thai };
-      else if (type === "cam-ket") initialData = { ma_khoa_hoc: data.ma_khoa_hoc, noi_dung: data.noi_dung_cam_ket, ngay_ky: parseDate(data.ngay_ky), trang_thai: data.trang_thai };
+      else if (type === "cam-ket") {
+        // Ánh xạ đầy đủ tất cả các trường từ schema dữ liệu cũ khi sửa cam kết
+        initialData = { 
+          ma_khoa_hoc: data.ma_khoa_hoc, 
+          noi_dung_cam_ket: data.noi_dung_cam_ket || "", 
+          ngay_ky: parseDate(data.ngay_ky), 
+          ngay_het_han: parseDate(data.ngay_het_han),
+          trang_thai: data.trang_thai || "Hiệu lực",
+          so_buoi_vang_cho_phep: data.so_buoi_vang_cho_phep ?? 0,
+          tham_gia_thi_day_du: data.tham_gia_thi_day_du ?? true,
+          so_buoi_di_muon: data.so_buoi_di_muon ?? 0,
+          so_lan_thieu_bai_tap: data.so_lan_thieu_bai_tap ?? 0,
+          bi_vi_pham: data.bi_vi_pham ?? false,
+          da_bo_thi: data.da_bo_thi ?? false,
+          ly_do_vi_pham: data.ly_do_vi_pham || "",
+          so_buoi_di_muon_thuc_te: data.so_buoi_di_muon_thuc_te ?? 0,
+          so_buoi_vang_thuc_te: data.so_buoi_vang_thuc_te ?? 0,
+          so_lan_thieu_bai_tap_thuc_te: data.so_lan_thieu_bai_tap_thuc_te ?? 0
+        };
+      }
       else if (type === "phieu-thu") initialData = { ma_khoa_hoc: data.ma_khoa_hoc, ma_nhan_su: data.ma_nhan_su, so_tien: data.so_tien, ngay_thu: parseDate(data.ngay_thu), noi_dung: data.noi_dung, ma_khuyen_mai: data.ma_khuyen_mai || "" };
     }
     
@@ -287,7 +331,7 @@ export default function HocVienPage() {
   };
 
   const handleSubDelete = async (type: string, id: number) => {
-    if (confirm("Bạn có chắc muốn xóa/hủy bản ghi này?")) {
+    if (confirm("Bạn có chắc muốn xóa vĩnh viễn bản ghi liên kết này?")) {
       setDetailLoading(true);
       try {
         const res = await fetch(`/api/dao-tao/hoc-vien?type=${type}&id=${id}&studentId=${selectedHocVien.ma_hoc_vien}`, { method: "DELETE" });
@@ -300,12 +344,11 @@ export default function HocVienPage() {
     }
   };
 
-  // Ngăn chặn lỗi Hydration
   if (!isMounted) return null;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 relative">
-      {/* TOAST THÔNG BÁO */}
+    <div className="p-6 max-w-7xl mx-auto space-y-6 relative text-black">
+      {/* TOAST NOTIFICATION */}
       {toast && (
         <div className={`fixed top-4 right-4 z-[100] px-4 py-3 rounded shadow-lg text-white font-medium transition-all ${toast.type === "success" ? "bg-emerald-600" : "bg-rose-600"}`}>
           {toast.message}
@@ -316,18 +359,18 @@ export default function HocVienPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Quản Lý Hồ Sơ Học Viên</h1>
-          <p className="text-slate-500 text-black">Quản lý danh sách, cam kết đào tạo, bài kiểm tra và học phí.</p>
+          <p className="text-slate-500 text-sm">Quản lý danh sách học viên, cam kết đào tạo, tình trạng lớp và phiếu thu học phí.</p>
         </div>
-        <button onClick={handleOpenAddModal} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition text-black flex items-center justify-center gap-2">
+        <button onClick={handleOpenAddModal} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition flex items-center justify-center gap-2">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
           Thêm học viên
         </button>
       </div>
 
-      {/* SEARCH HỌC VIÊN */}
+      {/* FILTER SEARCH */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
         <div className="relative max-w-md">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-black">
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           </span>
           <input
@@ -335,27 +378,27 @@ export default function HocVienPage() {
             placeholder="Tìm kiếm theo Tên, Số điện thoại hoặc Email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border rounded-lg text-black bg-slate-50 text-black placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+            className="w-full pl-10 pr-4 py-2 border rounded-lg bg-slate-50 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition"
           />
         </div>
       </div>
 
-      {/* TABLE HỌC VIÊN */}
+      {/* MAIN DATA TABLE */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         {loading ? (
           <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
             <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-slate-500 text-black">Đang truy xuất dữ liệu...</p>
+            <p className="text-slate-500">Đang truy xuất dữ liệu từ máy chủ...</p>
           </div>
         ) : hocViens.length === 0 ? (
           <div className="p-12 text-center text-slate-500">
-            <p className="font-medium text-slate-700">Không tìm thấy dữ liệu học viên</p>
+            <p className="font-medium text-slate-600">Không tìm thấy dữ liệu học viên hợp lệ</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-black">
+            <table className="w-full text-left border-collapse text-slate-700">
               <thead>
-                <tr className="bg-slate-50 text-slate-600 font-semibold border-b">
+                <tr className="bg-slate-50 text-slate-600 font-semibold border-b text-xs uppercase tracking-wider">
                   <th className="p-4 w-16">Mã HV</th>
                   <th className="p-4">Họ và Tên</th>
                   <th className="p-4">Số điện thoại</th>
@@ -364,21 +407,21 @@ export default function HocVienPage() {
                   <th className="p-4 text-right">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y text-slate-700">
+              <tbody className="divide-y text-sm">
                 {hocViens.map((hv) => (
                   <tr key={hv.ma_hoc_vien} onClick={() => { setSelectedHocVien(hv); setActiveTab("info"); setIsDetailOpen(true); }} className="hover:bg-slate-50/80 cursor-pointer transition">
-                    <td className="p-4 font-mono text-xs text-slate-500">{hv.ma_hoc_vien}</td>
-                    <td className="p-4 font-medium text-slate-900">{hv.ho_ten}</td>
-                    <td className="p-4 text-slate-600">{hv.so_dien_thoai || "—"}</td>
+                    <td className="p-4 font-mono text-xs text-slate-400">{hv.ma_hoc_vien}</td>
+                    <td className="p-4 font-semibold text-slate-900">{hv.ho_ten}</td>
+                    <td className="p-4 font-mono text-slate-600">{hv.so_dien_thoai || "—"}</td>
                     <td className="p-4 text-slate-600">{hv.email || "—"}</td>
                     <td className="p-4">
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${hv.trang_thai === "Đang học" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-700"}`}>
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${hv.trang_thai === "Đang học" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-700"}`}>
                         {hv.trang_thai || "Đang học"}
                       </span>
                     </td>
-                    <td className="p-4 text-right space-x-2">
-                      <button onClick={(e) => handleOpenEditModal(hv, e)} className="text-indigo-600 hover:bg-indigo-50 px-2 py-1 border rounded">Sửa</button>
-                      <button onClick={(e) => handleSoftDelete(hv.ma_hoc_vien, hv.ho_ten, e)} className="text-rose-600 hover:bg-rose-50 px-2 py-1 border rounded">Xóa</button>
+                    <td className="p-4 text-right space-x-2" onClick={(e) => e.stopPropagation()}>
+                      <button onClick={(e) => handleOpenEditModal(hv, e)} className="text-indigo-600 hover:bg-indigo-50 px-2 py-1 border rounded text-xs transition">Sửa</button>
+                      <button onClick={(e) => handleSoftDelete(hv.ma_hoc_vien, hv.ho_ten, e)} className="text-rose-600 hover:bg-rose-50 px-2 py-1 border rounded text-xs transition">Xóa</button>
                     </td>
                   </tr>
                 ))}
@@ -388,25 +431,27 @@ export default function HocVienPage() {
         )}
         {hocViens.length > 0 && (
           <div className="p-4 border-t bg-slate-50 flex items-center justify-between text-xs text-slate-500">
-            <div>Hiển thị <span className="font-semibold text-slate-700">{pagination.page}</span> / {pagination.totalPages} (Tổng {pagination.total})</div>
+            <div>Hiển thị trang <span className="font-semibold text-slate-700">{pagination.page}</span> / {pagination.totalPages} (Tổng số {pagination.total} bản ghi)</div>
             <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1.5 border bg-white rounded-md hover:bg-slate-50">Trước</button>
-              <button disabled={page >= pagination.totalPages} onClick={() => setPage((p) => p + 1)} className="px-3 py-1.5 border bg-white rounded-md hover:bg-slate-50">Sau</button>
+              <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1.5 border bg-white rounded-md hover:bg-slate-50 disabled:opacity-50 transition">Trước</button>
+              <button disabled={page >= pagination.totalPages} onClick={() => setPage((p) => p + 1)} className="px-3 py-1.5 border bg-white rounded-md hover:bg-slate-50 disabled:opacity-50 transition">Sau</button>
             </div>
           </div>
         )}
       </div>
 
-      {/* MODAL MAIN THÊM / SỬA HỌC VIÊN */}
+      {/* MODAL THÊM / SỬA HỌC VIÊN CHÍNH */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
-             <div className="p-6 border-b flex justify-between items-center">
-                <h2 className="text-lg font-bold">{modalType === "add" ? "Thêm mới Học viên" : "Cập nhật Thông tin"}</h2>
-                <button onClick={() => setIsModalOpen(false)}><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+             <div className="p-6 border-b flex justify-between items-center bg-slate-50">
+                <h2 className="text-lg font-bold text-slate-800">{modalType === "add" ? "Thêm mới Hồ sơ Học viên" : "Cập nhật Thông tin Học viên"}</h2>
+                <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
              </div>
-             <form onSubmit={handleFormSubmit} className="p-6 space-y-4 text-black">
-                <div className="grid grid-cols-2 gap-4">
+             <form onSubmit={handleFormSubmit} className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
                    <div className="col-span-2 md:col-span-1">
                      <label className="block mb-1 font-semibold text-xs text-slate-600">Họ và Tên *</label>
                      <input type="text" required value={formData.ho_ten} onChange={e=>setFormData({...formData, ho_ten: e.target.value})} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" />
@@ -444,13 +489,16 @@ export default function HocVienPage() {
                      </select>
                    </div>
                 </div>
-                <div className="pt-4 flex justify-end gap-2"><button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border rounded-lg">Hủy</button><button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-lg">Lưu hồ sơ</button></div>
+                <div className="pt-4 border-t flex justify-end gap-2">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border rounded-lg text-slate-600 hover:bg-slate-50">Hủy</button>
+                  <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Lưu hồ sơ</button>
+                </div>
              </form>
           </div>
         </div>
       )}
 
-      {/* MODAL CHI TIẾT */}
+      {/* MODAL CHI TIẾT HỒ SƠ & TABS SUB-DATA */}
       {isDetailOpen && selectedHocVien && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-30 p-4">
           <div className="bg-white rounded-xl shadow-xl border w-full max-w-4xl max-h-[85vh] flex flex-col relative overflow-hidden">
@@ -461,59 +509,64 @@ export default function HocVienPage() {
             )}
             <div className="p-6 border-b flex justify-between items-center bg-slate-50">
               <div>
-                <h2 className="text-xl font-bold">{selectedHocVien.ho_ten}</h2>
-                <p className="text-xs text-slate-500">Mã số: {selectedHocVien.ma_hoc_vien}</p>
+                <h2 className="text-xl font-bold text-slate-800">{selectedHocVien.ho_ten}</h2>
+                <p className="text-xs text-slate-400 font-mono mt-0.5">Mã học viên: {selectedHocVien.ma_hoc_vien}</p>
               </div>
-              <button onClick={() => setIsDetailOpen(false)}><svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+              <button onClick={() => setIsDetailOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
             </div>
             
-            <div className="flex border-b px-6 overflow-x-auto text-black bg-white">
-              <button onClick={() => setActiveTab("info")} className={`py-3 px-4 font-medium border-b-2 whitespace-nowrap ${activeTab === "info" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500"}`}>Thông tin chung</button>
-              <button onClick={() => setActiveTab("lop")} className={`py-3 px-4 font-medium border-b-2 whitespace-nowrap ${activeTab === "lop" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500"}`}>Lớp học ({selectedHocVien.tham_gia_lop?.length || 0})</button>
-              <button onClick={() => setActiveTab("camket")} className={`py-3 px-4 font-medium border-b-2 whitespace-nowrap ${activeTab === "camket" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500"}`}>Cam kết ({selectedHocVien.cam_ket?.length || 0})</button>
-              <button onClick={() => setActiveTab("taichinh")} className={`py-3 px-4 font-medium border-b-2 whitespace-nowrap ${activeTab === "taichinh" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500"}`}>Phiếu thu ({selectedHocVien.phieu_thu?.length || 0})</button>
+            <div className="flex border-b px-6 overflow-x-auto bg-white sticky top-0">
+              <button onClick={() => setActiveTab("info")} className={`py-3 px-4 font-medium text-sm border-b-2 whitespace-nowrap transition ${activeTab === "info" ? "border-indigo-600 text-indigo-600 font-semibold" : "border-transparent text-slate-500 hover:text-slate-800"}`}>Thông tin chung</button>
+              <button onClick={() => setActiveTab("lop")} className={`py-3 px-4 font-medium text-sm border-b-2 whitespace-nowrap transition ${activeTab === "lop" ? "border-indigo-600 text-indigo-600 font-semibold" : "border-transparent text-slate-500 hover:text-slate-800"}`}>Lớp học ({selectedHocVien.tham_gia_lop?.length || 0})</button>
+              <button onClick={() => setActiveTab("camket")} className={`py-3 px-4 font-medium text-sm border-b-2 whitespace-nowrap transition ${activeTab === "camket" ? "border-indigo-600 text-indigo-600 font-semibold" : "border-transparent text-slate-500 hover:text-slate-800"}`}>Cam kết ({selectedHocVien.cam_ket?.length || 0})</button>
+              <button onClick={() => setActiveTab("taichinh")} className={`py-3 px-4 font-medium text-sm border-b-2 whitespace-nowrap transition ${activeTab === "taichinh" ? "border-indigo-600 text-indigo-600 font-semibold" : "border-transparent text-slate-500 hover:text-slate-800"}`}>Phiếu thu ({selectedHocVien.phieu_thu?.length || 0})</button>
             </div>
 
-            <div className="p-6 overflow-y-auto flex-1 text-black bg-slate-50/50">
+            <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">
               
-              {/* TAB THÔNG TIN (ĐÃ KHÔI PHỤC ĐẦY ĐỦ DATA) */}
+              {/* TAB THÔNG TIN CHUNG */}
               {activeTab === "info" && (
-                <div className="bg-white p-5 rounded-lg border grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">
+                <div className="bg-white p-5 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
                   <div>
-                    <span className="text-slate-400 block text-xs">Mã học viên:</span> 
-                    <p className="font-medium text-slate-800">{selectedHocVien.ma_hoc_vien}</p>
+                    <span className="text-slate-400 block text-xs font-medium">Mã hệ thống:</span> 
+                    <p className="font-semibold text-slate-800">{selectedHocVien.ma_hoc_vien}</p>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-xs">Giới tính:</span> 
+                    <span className="text-slate-400 block text-xs font-medium">Giới tính:</span> 
                     <p className="font-medium text-slate-800">{selectedHocVien.gioi_tinh || "—"}</p>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-xs">Ngày sinh:</span> 
+                    <span className="text-slate-400 block text-xs font-medium">Ngày sinh:</span> 
                     <p className="font-medium text-slate-800">
                       {selectedHocVien.ngay_sinh ? new Date(selectedHocVien.ngay_sinh).toLocaleDateString("vi-VN") : "—"}
                     </p>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-xs">Số điện thoại:</span> 
-                    <p className="font-medium text-slate-800">{selectedHocVien.so_dien_thoai || "—"}</p>
+                    <span className="text-slate-400 block text-xs font-medium">Số điện thoại:</span> 
+                    <p className="font-mono font-medium text-slate-800">{selectedHocVien.so_dien_thoai || "—"}</p>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-xs">Email:</span> 
+                    <span className="text-slate-400 block text-xs font-medium">Địa chỉ Email:</span> 
                     <p className="font-medium text-slate-800">{selectedHocVien.email || "—"}</p>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-xs">Đầu ra chứng chỉ:</span> 
-                    <p className="font-medium text-slate-800">{selectedHocVien.dau_ra_chung_chi || "—"}</p>
+                    <span className="text-slate-400 block text-xs font-medium">Mục tiêu đầu ra chứng chỉ:</span> 
+                    <p className="font-semibold text-indigo-600">{selectedHocVien.dau_ra_chung_chi || "—"}</p>
                   </div>
                   <div className="md:col-span-2">
-                    <span className="text-slate-400 block text-xs">Địa chỉ thường trú:</span> 
+                    <span className="text-slate-400 block text-xs font-medium">Địa chỉ thường trú:</span> 
                     <p className="font-medium text-slate-800">{selectedHocVien.dia_chi || "—"}</p>
                   </div>
-                  <div className="md:col-span-2">
-                    <span className="text-slate-400 block text-xs">Trạng thái hiện tại:</span> 
-                    <span className={`inline-block px-2 py-1 mt-1 rounded text-xs font-semibold ${selectedHocVien.trang_thai === 'Đang học' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-700'}`}>
-                      {selectedHocVien.trang_thai || "Đang học"}
-                    </span>
+                  <div className="md:col-span-2 border-t pt-3 flex items-center justify-between">
+                    <div>
+                      <span className="text-slate-400 block text-xs font-medium">Trạng thái hiện tại:</span> 
+                      <span className={`inline-block px-2.5 py-0.5 mt-1 rounded text-xs font-semibold ${selectedHocVien.trang_thai === 'Đang học' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-700'}`}>
+                        {selectedHocVien.trang_thai || "Đang học"}
+                      </span>
+                    </div>
+                    <button onClick={(e) => { handleOpenEditModal(selectedHocVien, e); }} className="px-3 py-1.5 border bg-white rounded-lg hover:bg-slate-50 text-xs font-medium">Sửa nhanh thông tin cá nhân</button>
                   </div>
                 </div>
               )}
@@ -521,53 +574,75 @@ export default function HocVienPage() {
               {/* TAB LỚP HỌC */}
               {activeTab === "lop" && (
                 <div className="space-y-4">
-                  <div className="flex justify-end"><button onClick={() => handleOpenSubModal("lop-hoc", "add")} className="bg-indigo-50 text-indigo-600 font-medium px-3 py-1.5 rounded-lg border flex items-center gap-1">Thêm Lớp học</button></div>
-                  {!selectedHocVien.tham_gia_lop?.length ? <p className="text-slate-500 italic text-center p-4 bg-white border rounded">Chưa tham gia lớp nào.</p> : selectedHocVien.tham_gia_lop.map((tgl: any) => (
-                    <div key={tgl.ma_tham_gia_lop} className="bg-white p-4 rounded-lg border flex justify-between items-center">
+                  <div className="flex justify-end"><button onClick={() => handleOpenSubModal("lop-hoc", "add")} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs px-3 py-1.5 rounded-lg flex items-center gap-1">+ Ghi danh vào lớp học</button></div>
+                  {!selectedHocVien.tham_gia_lop?.length ? <p className="text-slate-500 italic text-center p-6 bg-white border rounded-xl">Học viên chưa tham gia lớp học nào.</p> : selectedHocVien.tham_gia_lop.map((tgl: any) => (
+                    <div key={tgl.ma_tham_gia_lop} className="bg-white p-4 rounded-xl border border-slate-100 flex justify-between items-center shadow-sm">
                       <div>
-                        <p className="font-bold text-slate-800">{tgl.lop_hoc?.ten_lop} (Mã: {tgl.ma_lop_hoc})</p>
-                        <p className="text-xs text-slate-400 mt-1">Ngày ĐK: {new Date(tgl.ngay_dang_ky).toLocaleDateString("vi-VN")}</p>
+                        <p className="font-bold text-slate-800 text-sm">{tgl.lop_hoc?.ten_lop || "Không tìm thấy tên lớp"}</p>
+                        <p className="text-xs text-slate-400 font-mono mt-1">Mã lớp: {tgl.ma_lop_hoc} • Ngày đăng ký: {new Date(tgl.ngay_dang_ky).toLocaleDateString("vi-VN")}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="px-2 py-1 text-xs bg-slate-100 rounded">{tgl.trang_thai}</span>
-                        <button onClick={() => handleOpenSubModal("lop-hoc", "edit", tgl)} className="text-indigo-600 text-xs">Sửa</button>
-                        <button onClick={() => handleSubDelete("lop-hoc", tgl.ma_tham_gia_lop)} className="text-rose-600 text-xs">Xóa</button>
+                        <span className="px-2.5 py-0.5 text-xs bg-slate-100 font-medium rounded-full text-slate-700">{tgl.trang_thai}</span>
+                        <button onClick={() => handleOpenSubModal("lop-hoc", "edit", tgl)} className="text-indigo-600 text-xs font-semibold hover:underline">Sửa</button>
+                        <button onClick={() => handleSubDelete("lop-hoc", tgl.ma_tham_gia_lop)} className="text-rose-600 text-xs font-semibold hover:underline">Gỡ</button>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* TAB CAM KẾT */}
+              {/* TAB CAM KẾT (Cập nhật hiển thị nhiều trường hơn ngoài thực tế) */}
               {activeTab === "camket" && (
                 <div className="space-y-4">
-                  <div className="flex justify-end"><button onClick={() => handleOpenSubModal("cam-ket", "add")} className="bg-indigo-50 text-indigo-600 font-medium px-3 py-1.5 rounded-lg border flex items-center gap-1">Tạo Cam kết</button></div>
-                  {!selectedHocVien.cam_ket?.length ? <p className="text-slate-500 italic text-center p-4 bg-white border rounded">Không có cam kết.</p> : selectedHocVien.cam_ket.map((ck: any) => (
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-bold text-slate-800">
-                          {khoaHocMap[ck.ma_khoa_hoc] || `Mã khóa: ${ck.ma_khoa_hoc}`}
+                  <div className="flex justify-end"><button onClick={() => handleOpenSubModal("cam-ket", "add")} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs px-3 py-1.5 rounded-lg flex items-center gap-1">+ Thiết lập cam kết đầu ra</button></div>
+                  {!selectedHocVien.cam_ket?.length ? <p className="text-slate-500 italic text-center p-6 bg-white border rounded-xl">Không tồn tại biên bản cam kết kết quả đào tạo cho học viên này.</p> : selectedHocVien.cam_ket.map((ck: any) => (
+                    <div key={ck.ma_cam_ket} className="bg-white p-5 rounded-xl border border-slate-200 flex justify-between items-start gap-4 shadow-sm text-sm">
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <div className="flex items-center flex-wrap gap-2">
+                          <p className="font-bold text-slate-800 text-sm">{khoaHocMap[ck.ma_khoa_hoc] || `Khóa học ${ck.ma_khoa_hoc}`}</p>
+                          <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${ck.trang_thai === "Hiệu lực" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{ck.trang_thai}</span>
+                          {ck.bi_vi_pham && <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-100 text-rose-700">⚠️ Bị vi phạm</span>}
+                          {ck.da_bo_thi && <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 text-slate-600">❌ Đã bỏ thi</span>}
+                        </div>
+                        <p className="text-xs text-slate-400 font-mono">
+                          Ngày ký: {new Date(ck.ngay_ky).toLocaleDateString("vi-VN")} 
+                          {ck.ngay_het_han && ` • Hết hạn: ${new Date(ck.ngay_het_han).toLocaleDateString("vi-VN")}`}
                         </p>
+                        
+                        {/* Hiển thị tóm lược các chỉ số cam kết chỉ tiêu */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs border bg-slate-50 p-2 rounded-lg">
+                          <div>
+                            <span className="text-slate-400 block">Vắng cho phép:</span>
+                            <span className="font-semibold">{ck.so_buoi_vang_cho_phep ?? "—"} buổi ({ck.so_buoi_vang_thuc_te ?? 0} thực tế)</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block">Đi muộn tối đa:</span>
+                            <span className="font-semibold">{ck.so_buoi_di_muon ?? "—"} buổi ({ck.so_buoi_di_muon_thuc_te ?? 0} thực tế)</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block">Thiếu bài tập:</span>
+                            <span className="font-semibold">{ck.so_lan_thieu_bai_tap ?? "—"} lần ({ck.so_lan_thieu_bai_tap_thuc_te ?? 0} thực tế)</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block">Thi đầy đủ:</span>
+                            <span className="font-semibold">{ck.tham_gia_thi_day_du ? "Bắt buộc" : "Không"}</span>
+                          </div>
+                        </div>
 
-                        <p className="text-xs text-slate-500 mt-1 break-words whitespace-normal">
-                          {ck.noi_dung_cam_ket}
-                        </p>
+                        {ck.ly_do_vi_pham && (
+                          <p className="text-xs text-rose-600 bg-rose-50 p-2 rounded border border-rose-100">
+                            <strong>Lý do vi phạm:</strong> {ck.ly_do_vi_pham}
+                          </p>
+                        )}
+
+                        <div className="text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-dashed border-slate-200">
+                          <span className="font-semibold block text-slate-500 text-[10px] uppercase mb-0.5">Nội dung văn bản chi tiết:</span>
+                          {ck.noi_dung_cam_ket || "Chưa nhập nội dung chi tiết thỏa thuận."}
+                        </div>
                       </div>
-
-                      <div className="space-x-3 text-xs flex-shrink-0">
-                        <button
-                          onClick={() => handleOpenSubModal("cam-ket", "edit", ck)}
-                          className="text-indigo-600"
-                        >
-                          Sửa
-                        </button>
-
-                        <button
-                          onClick={() => handleSubDelete("cam-ket", ck.ma_cam_ket)}
-                          className="text-rose-600"
-                        >
-                          Xóa
-                        </button>
+                      <div className="space-x-3 text-xs flex-shrink-0 font-medium">
+                        <button onClick={() => handleOpenSubModal("cam-ket", "edit", ck)} className="text-indigo-600 hover:underline">Sửa</button>
+                        <button onClick={() => handleSubDelete("cam-ket", ck.ma_cam_ket)} className="text-rose-600 hover:underline">Xóa</button>
                       </div>
                     </div>
                   ))}
@@ -577,19 +652,31 @@ export default function HocVienPage() {
               {/* TAB TÀI CHÍNH (PHIẾU THU) */}
               {activeTab === "taichinh" && (
                 <div className="space-y-4">
-                  <div className="flex justify-end"><button onClick={() => handleOpenSubModal("phieu-thu", "add")} className="bg-indigo-50 text-indigo-600 font-medium px-3 py-1.5 rounded-lg border flex items-center gap-1">Tạo Phiếu thu</button></div>
-                  {!selectedHocVien.phieu_thu?.length ? <p className="text-slate-500 italic text-center p-4 bg-white border rounded">Không có phiếu thu.</p> : (
-                    <div className="bg-white rounded-lg border overflow-hidden">
-                      <table className="w-full text-left text-xs">
-                        <thead className="bg-slate-50 text-slate-500 border-b"><tr><th className="p-3">Mã PT</th><th className="p-3">Số tiền</th><th className="p-3 text-right">Thao tác</th></tr></thead>
-                        <tbody className="divide-y text-slate-700">
+                  <div className="flex justify-end"><button onClick={() => handleOpenSubModal("phieu-thu", "add")} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs px-3 py-1.5 rounded-lg flex items-center gap-1">+ Lập phiếu thu học phí</button></div>
+                  {!selectedHocVien.phieu_thu?.length ? <p className="text-slate-500 italic text-center p-6 bg-white border rounded-xl">Không tìm thấy chứng từ lịch sử giao dịch nộp học phí.</p> : (
+                    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                      <table className="w-full text-left text-xs text-slate-700">
+                        <thead className="bg-slate-50 text-slate-600 border-b font-semibold uppercase tracking-wider">
+                          <tr>
+                            <th className="p-3">Mã phiếu</th>
+                            <th className="p-3">Khóa học áp dụng</th>
+                            <th className="p-3">Ngày thu</th>
+                            <th className="p-3">Nội dung thu</th>
+                            <th className="p-3">Số tiền nộp</th>
+                            <th className="p-3 text-right">Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y text-slate-600">
                           {selectedHocVien.phieu_thu.map((pt: any) => (
-                            <tr key={pt.ma_phieu_thu} className={pt.noi_dung?.includes("[ĐÃ HỦY/XÓA]") ? "opacity-50 bg-slate-50" : ""}>
-                              <td className="p-3">{pt.ma_phieu_thu}</td>
-                              <td className="p-3 font-bold">{Number(pt.so_tien).toLocaleString("vi-VN")} đ</td>
-                              <td className="p-3 text-right space-x-2">
-                                <button onClick={() => handleOpenSubModal("phieu-thu", "edit", pt)} className="text-indigo-600">Sửa</button>
-                                <button onClick={() => handleSubDelete("phieu-thu", pt.ma_phieu_thu)} className="text-rose-600">Xóa</button>
+                            <tr key={pt.ma_phieu_thu} className="hover:bg-slate-50/50 transition">
+                              <td className="p-3 font-mono">{pt.ma_phieu_thu}</td>
+                              <td className="p-3 font-medium text-slate-800">{khoaHocMap[pt.ma_khoa_hoc] || `Mã KH: ${pt.ma_khoa_hoc}`}</td>
+                              <td className="p-3">{new Date(pt.ngay_thu).toLocaleDateString("vi-VN")}</td>
+                              <td className="p-3 max-w-[200px] truncate" title={pt.noi_dung}>{pt.noi_dung || "—"}</td>
+                              <td className="p-3 font-mono font-bold text-emerald-600 text-sm">+{Number(pt.so_tien).toLocaleString("vi-VN")} đ</td>
+                              <td className="p-3 text-right space-x-2 font-medium" onClick={(e)=>e.stopPropagation()}>
+                                <button onClick={() => handleOpenSubModal("phieu-thu", "edit", pt)} className="text-indigo-600 hover:underline">Sửa</button>
+                                <button onClick={() => handleSubDelete("phieu-thu", pt.ma_phieu_thu)} className="text-rose-600 hover:underline">Xóa</button>
                               </td>
                             </tr>
                           ))}
@@ -600,69 +687,171 @@ export default function HocVienPage() {
                 </div>
               )}
             </div>
-            <div className="p-4 border-t bg-slate-50 flex justify-end"><button onClick={() => setIsDetailOpen(false)} className="bg-slate-800 text-white px-4 py-2 rounded-lg text-black">Đóng</button></div>
+            <div className="p-4 border-t bg-slate-50 flex justify-end">
+              <button onClick={() => setIsDetailOpen(false)} className="bg-slate-800 hover:bg-slate-900 text-white font-medium px-4 py-2 rounded-lg text-sm transition">Đóng hồ sơ</button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* MODAL PHỤ: THÊM DỮ LIỆU CÓ COMBOBOX TÌM KIẾM */}
+      {/* SUB MODAL FORM CHO QUAN HỆ CON */}
       {subModal.isOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-xl shadow-2xl border w-full max-w-md overflow-visible">
-            <div className="p-5 border-b bg-slate-50 flex justify-between items-center">
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-[60] p-4 backdrop-blur-xs">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-100 w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="p-5 border-b bg-slate-50 flex justify-between items-center flex-shrink-0">
               <h2 className="text-base font-bold text-slate-800">
-                {subModal.mode === "add" ? "Thêm " : "Cập nhật "}
-                {subModal.type === "lop-hoc" ? "Tham gia Lớp" : subModal.type === "cam-ket" ? "Cam kết" : "Phiếu thu"}
+                {subModal.mode === "add" ? "Thêm mới " : "Cập nhật "}
+                {subModal.type === "lop-hoc" ? "Liên kết Lớp" : subModal.type === "cam-ket" ? "Biên bản Cam kết" : "Chứng từ Phiếu thu"}
               </h2>
-              <button onClick={() => setSubModal({ isOpen: false, mode: "add", type: "" })}><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+              <button onClick={() => setSubModal({ isOpen: false, mode: "add", type: "" })} className="text-slate-400 hover:text-slate-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
             </div>
 
-            <form onSubmit={handleSubModalSubmit} className="p-5 space-y-4 text-black">
+            <form onSubmit={handleSubModalSubmit} className="flex-1 overflow-y-auto p-5 space-y-4 text-sm">
               
-              {/* SUB FORM: LỚP HỌC */}
+              {/* LAYOUT FORM: LỚP HỌC */}
               {subModal.type === "lop-hoc" && (
-                <>
-                  <div className="relative">
-                    <label className="block text-xs font-semibold mb-1 text-slate-600">Tìm & Chọn Lớp học *</label>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-slate-600">Tìm & Chọn Lớp học học viên tham gia *</label>
                     <SearchableSelect 
                       options={metadata.lopHocs.map((l: any) => ({ value: l.ma_lop_hoc, label: `${l.ten_lop} (Mã: ${l.ma_lop_hoc})` }))}
                       value={subFormData.ma_lop_hoc}
                       onChange={(val: any) => setSubFormData({ ...subFormData, ma_lop_hoc: val })}
-                      placeholder="-- Gõ để tìm kiếm lớp --"
-                      disabled={subModal.mode === "edit"} // Không cho đổi lớp khi Sửa
+                      placeholder="-- Gõ từ khóa để tìm lớp --"
+                      disabled={subModal.mode === "edit"} 
                     />
                   </div>
-                  <div><label className="block text-xs font-semibold mb-1 text-slate-600">Trạng thái</label>
-                    <select value={subFormData.trang_thai} onChange={e => setSubFormData({...subFormData, trang_thai: e.target.value})} className="w-full px-3 py-2 border rounded-lg">
-                      <option value="Đang học">Đang học</option><option value="Đã hủy">Đã hủy</option>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-slate-600">Ngày ghi danh đăng ký học *</label>
+                    <input type="date" required value={subFormData.ngay_dang_ky} onChange={e => setSubFormData({...subFormData, ngay_dang_ky: e.target.value})} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-slate-600">Trạng thái học tập trong lớp</label>
+                    <select value={subFormData.trang_thai} onChange={e => setSubFormData({...subFormData, trang_thai: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+                      <option value="Đang học">Đang học</option>
+                      <option value="Bảo lưu">Bảo lưu</option>
+                      <option value="Hoàn thành">Hoàn thành</option>
+                      <option value="Đã thôi học">Đã thôi học</option>
                     </select>
                   </div>
-                </>
+                </div>
               )}
 
-              {/* SUB FORM: CAM KẾT */}
+              {/* LAYOUT FORM: CAM KẾT (ĐÃ BỔ SUNG ĐẦY ĐỦ TẤT CẢ CÁC TRƯỜNG DỮ LIỆU SCHEMA) */}
               {subModal.type === "cam-ket" && (
-                <>
+                <div className="space-y-4">
+                  {/* Hàng 1: Khóa học */}
                   <div>
-                    <label className="block text-xs font-semibold mb-1 text-slate-600">Tìm & Chọn Khóa học áp dụng *</label>
+                    <label className="block text-xs font-semibold mb-1 text-slate-600">Khóa học áp dụng văn bản cam kết *</label>
                     <SearchableSelect 
                       options={metadata.khoaHocs.map((k: any) => ({ value: k.ma_khoa_hoc, label: `${k.ten_khoa_hoc} (Mã: ${k.ma_khoa_hoc})` }))}
                       value={subFormData.ma_khoa_hoc}
                       onChange={(val: any) => setSubFormData({ ...subFormData, ma_khoa_hoc: val })}
-                      placeholder="-- Tìm khóa học --"
+                      placeholder="-- Tìm kiếm khóa học --"
                     />
                   </div>
-                  <div><label className="block text-xs font-semibold mb-1 text-slate-600">Nội dung</label>
-                    <textarea rows={2} value={subFormData.noi_dung} onChange={e=>setSubFormData({...subFormData, noi_dung: e.target.value})} className="w-full px-3 py-2 border rounded-lg outline-none focus:border-indigo-500"></textarea>
+
+                  {/* Hàng 2: Ngày ký & Ngày hết hạn */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold mb-1 text-slate-600">Ngày ký biên bản *</label>
+                      <input type="date" required value={subFormData.ngay_ky} onChange={e => setSubFormData({...subFormData, ngay_ky: e.target.value})} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold mb-1 text-slate-600">Ngày hết hạn cam kết</label>
+                      <input type="date" value={subFormData.ngay_het_han} onChange={e => setSubFormData({...subFormData, ngay_het_han: e.target.value})} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
                   </div>
-                </>
+
+                  {/* Hàng 3: Trạng thái & Thi đầy đủ */}
+                  <div className="grid grid-cols-2 gap-3 items-center pt-1">
+                    <div>
+                      <label className="block text-xs font-semibold mb-1 text-slate-600">Trạng thái hiệu lực</label>
+                      <select value={subFormData.trang_thai} onChange={e => setSubFormData({...subFormData, trang_thai: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="Hiệu lực">Hiệu lực</option>
+                        <option value="Tạm ngưng">Tạm ngưng</option>
+                        <option value="Hết hạn">Hết hạn</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center h-full mt-5">
+                      <label className="relative flex items-center cursor-pointer select-none">
+                        <input type="checkbox" checked={subFormData.tham_gia_thi_day_du} onChange={e => setSubFormData({...subFormData, tham_gia_thi_day_du: e.target.checked})} className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500" />
+                        <span className="ml-2 text-xs font-semibold text-slate-700">Bắt buộc thi đầy đủ</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Phân đoạn: CHỈ TIÊU ĐIỀU KIỆN CAM KẾT (Dạng Số Nguyên) */}
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-3">
+                    <span className="block text-[11px] font-bold uppercase text-slate-500 tracking-wider">Hạn mức chỉ tiêu điều kiện</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Số buổi vắng tối đa</label>
+                        <input type="number" min="0" value={subFormData.so_buoi_vang_cho_phep} onChange={e => setSubFormData({...subFormData, so_buoi_vang_cho_phep: e.target.value === "" ? "" : parseInt(e.target.value, 10)})} className="w-full px-2 py-1.5 border rounded-md outline-none bg-white font-mono" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Số buổi đi muộn tối đa</label>
+                        <input type="number" min="0" value={subFormData.so_buoi_di_muon} onChange={e => setSubFormData({...subFormData, so_buoi_di_muon: e.target.value === "" ? "" : parseInt(e.target.value, 10)})} className="w-full px-2 py-1.5 border rounded-md outline-none bg-white font-mono" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Số lần thiếu bài tập tối đa</label>
+                        <input type="number" min="0" value={subFormData.so_lan_thieu_bai_tap} onChange={e => setSubFormData({...subFormData, so_lan_thieu_bai_tap: e.target.value === "" ? "" : parseInt(e.target.value, 10)})} className="w-full px-2 py-1.5 border rounded-md outline-none bg-white font-mono" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Phân đoạn: GIÁ TRỊ GHI NHẬN THỰC TẾ & VI PHẠM (Dành cho việc theo dõi, sửa đổi) */}
+                  <div className="bg-amber-50/50 p-3 rounded-xl border border-amber-200 space-y-3">
+                    <span className="block text-[11px] font-bold uppercase text-amber-700 tracking-wider">Theo dõi tình hình thực tế</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-semibold text-amber-800 mb-0.5">Số buổi vắng thực tế</label>
+                        <input type="number" min="0" value={subFormData.so_buoi_vang_thuc_te} onChange={e => setSubFormData({...subFormData, so_buoi_vang_thuc_te: e.target.value === "" ? "" : parseInt(e.target.value, 10)})} className="w-full px-2 py-1.5 border border-amber-200 rounded-md outline-none bg-white font-mono" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-amber-800 mb-0.5">Số buổi muộn thực tế</label>
+                        <input type="number" min="0" value={subFormData.so_buoi_di_muon_thuc_te} onChange={e => setSubFormData({...subFormData, so_buoi_di_muon_thuc_te: e.target.value === "" ? "" : parseInt(e.target.value, 10)})} className="w-full px-2 py-1.5 border border-amber-200 rounded-md outline-none bg-white font-mono" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-amber-800 mb-0.5">Thiếu bài thực tế</label>
+                        <input type="number" min="0" value={subFormData.so_lan_thieu_bai_tap_thuc_te} onChange={e => setSubFormData({...subFormData, so_lan_thieu_bai_tap_thuc_te: e.target.value === "" ? "" : parseInt(e.target.value, 10)})} className="w-full px-2 py-1.5 border border-amber-200 rounded-md outline-none bg-white font-mono" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pt-1">
+                      <label className="flex items-center cursor-pointer select-none">
+                        <input type="checkbox" checked={subFormData.bi_vi_pham} onChange={e => setSubFormData({...subFormData, bi_vi_pham: e.target.checked})} className="w-4 h-4 text-rose-600 border-amber-300 rounded focus:ring-rose-500" />
+                        <span className="ml-2 text-xs font-semibold text-rose-700">Đánh dấu: Bị vi phạm cam kết</span>
+                      </label>
+                      <label className="flex items-center cursor-pointer select-none">
+                        <input type="checkbox" checked={subFormData.da_bo_thi} onChange={e => setSubFormData({...subFormData, da_bo_thi: e.target.checked})} className="w-4 h-4 text-slate-600 border-amber-300 rounded focus:ring-slate-500" />
+                        <span className="ml-2 text-xs font-semibold text-slate-700">Học viên đã bỏ thi</span>
+                      </label>
+                    </div>
+
+                    {subFormData.bi_vi_pham && (
+                      <div className="pt-1">
+                        <label className="block text-[10px] font-semibold text-rose-800 mb-0.5">Lý do vi phạm hệ thống hoặc ghi chú giải trình</label>
+                        <input type="text" placeholder="Nhập lý do học viên vi phạm cam kết..." value={subFormData.ly_do_vi_pham} onChange={e => setSubFormData({...subFormData, ly_do_vi_pham: e.target.value})} className="w-full px-3 py-1.5 border border-rose-200 rounded-md outline-none bg-white text-xs" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Văn bản nội dung chi tiết */}
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-slate-600">Nội dung văn bản thỏa thuận cam kết chi tiết</label>
+                    <textarea rows={3} placeholder="Mô tả ràng buộc chi tiết..." value={subFormData.noi_dung_cam_ket} onChange={e=>setSubFormData({...subFormData, noi_dung_cam_ket: e.target.value})} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
+                </div>
               )}
 
-              {/* SUB FORM: PHIẾU THU */}
+              {/* LAYOUT FORM: PHIẾU THU */}
               {subModal.type === "phieu-thu" && (
-                <>
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold mb-1 text-slate-600">Khóa học thu tiền *</label>
+                    <label className="block text-xs font-semibold mb-1 text-slate-600">Khóa học áp dụng thu tiền học phí *</label>
                     <SearchableSelect 
                       options={metadata.khoaHocs.map((k: any) => ({ value: k.ma_khoa_hoc, label: k.ten_khoa_hoc }))}
                       value={subFormData.ma_khoa_hoc}
@@ -671,23 +860,37 @@ export default function HocVienPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1 text-slate-600">Người lập phiếu (Nhân sự) *</label>
+                    <label className="block text-xs font-semibold mb-1 text-slate-600">Nhân sự thực hiện lập phiếu thu *</label>
                     <SearchableSelect 
                       options={metadata.nhanSus.map((n: any) => ({ value: n.ma_nhan_su, label: n.ho_ten }))}
                       value={subFormData.ma_nhan_su}
                       onChange={(val: any) => setSubFormData({ ...subFormData, ma_nhan_su: val })}
-                      placeholder="-- Tìm nhân sự --"
+                      placeholder="-- Tìm nhân sự tiếp nhận --"
                     />
                   </div>
-                  <div><label className="block text-xs font-semibold mb-1 text-slate-600">Số tiền (VNĐ) *</label><input type="number" required value={subFormData.so_tien} onChange={e=>setSubFormData({...subFormData, so_tien: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
-                </>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-slate-600">Số tiền VNĐ thực tế thu từ học viên *</label>
+                    <input type="number" required min="1000" placeholder="Ví dụ: 3000000" value={subFormData.so_tien} onChange={e=>setSubFormData({...subFormData, so_tien: e.target.value})} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-slate-600">Ngày lập chứng từ thu phí *</label>
+                    <input type="date" required value={subFormData.ngay_thu} onChange={e => setSubFormData({...subFormData, ngay_thu: e.target.value})} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-slate-600">Ghi chú lý do nội dung thu</label>
+                    <input type="text" placeholder="Ví dụ: Thu tiền học phí đợt 1 khóa IELTS..." value={subFormData.noi_dung} onChange={e=>setSubFormData({...subFormData, noi_dung: e.target.value})} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
+                </div>
               )}
 
-              <div className="pt-4 border-t flex justify-end gap-2">
-                <button type="button" onClick={() => setSubModal({ isOpen: false, mode: "add", type: "" })} className="px-4 py-2 border rounded-lg text-slate-600">Hủy</button>
-                <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-indigo-600 text-white rounded-lg disabled:opacity-70">Lưu</button>
-              </div>
             </form>
+
+            <div className="p-4 border-t bg-slate-50 flex justify-end gap-2 flex-shrink-0">
+              <button type="button" onClick={() => setSubModal({ isOpen: false, mode: "add", type: "" })} className="px-4 py-2 border rounded-lg text-slate-600 hover:bg-slate-50 text-sm">Hủy</button>
+              <button type="button" onClick={handleSubModalSubmit} disabled={isSubmitting} className="px-4 py-2 bg-indigo-600 text-white rounded-lg disabled:opacity-70 text-sm font-medium hover:bg-indigo-700 transition">
+                {isSubmitting ? "Đang xử lý..." : "Lưu dữ liệu"}
+              </button>
+            </div>
           </div>
         </div>
       )}
