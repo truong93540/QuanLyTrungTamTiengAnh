@@ -119,7 +119,6 @@ export const hocVienService = {
     }
   },
 
-  // Học viên chính vẫn giữ Xoá mềm để an toàn dữ liệu
   async softDeleteHocVien(ma_hoc_vien: number) {
     try {
       const deletedHocVien = await prisma.hocVien.update({
@@ -131,7 +130,7 @@ export const hocVienService = {
     }
   },
 
-  // ================= LỚP HỌC (ĐÃ ĐỔI SANG XOÁ CỨNG) =================
+  // ================= LỚP HỌC =================
   async addThamGiaLop(data: any) {
     try {
       const result = await prisma.thamGiaLop.create({
@@ -184,16 +183,33 @@ export const hocVienService = {
     }
   },
 
-  // ================= CAM KẾT (ĐÃ ĐỔI SANG XOÁ CỨNG) =================
+  // ================= CAM KẾT (ĐÃ CẬP NHẬT TOÀN DIỆN CÁC TRƯỜNG) =================
   async addCamKet(data: any) {
     try {
       const result = await prisma.camKet.create({
         data: {
           ma_hoc_vien: parseInt(data.ma_hoc_vien, 10),
           ma_khoa_hoc: parseInt(data.ma_khoa_hoc, 10),
-          noi_dung_cam_ket: data.noi_dung,
+          noi_dung_cam_ket: data.noi_dung_cam_ket || null,
           ngay_ky: data.ngay_ky ? new Date(data.ngay_ky) : new Date(),
+          ngay_het_han: data.ngay_het_han ? new Date(data.ngay_het_han) : null,
           trang_thai: data.trang_thai || "Hiệu lực",
+          
+          // Điều kiện hạn mức chỉ tiêu (Ép kiểu số hoặc gán null nếu ô trống)
+          so_buoi_vang_cho_phep: data.so_buoi_vang_cho_phep !== undefined && data.so_buoi_vang_cho_phep !== "" ? parseInt(data.so_buoi_vang_cho_phep, 10) : null,
+          so_buoi_di_muon: data.so_buoi_di_muon !== undefined && data.so_buoi_di_muon !== "" ? parseInt(data.so_buoi_di_muon, 10) : null,
+          so_lan_thieu_bai_tap: data.so_lan_thieu_bai_tap !== undefined && data.so_lan_thieu_bai_tap !== "" ? parseInt(data.so_lan_thieu_bai_tap, 10) : null,
+          
+          // Các trạng thái khảo sát logic Boolean
+          tham_gia_thi_day_du: data.tham_gia_thi_day_du === true || data.tham_gia_thi_day_du === 'true',
+          da_bo_thi: data.da_bo_thi === true || data.da_bo_thi === 'true',
+          bi_vi_pham: data.bi_vi_pham === true || data.bi_vi_pham === 'true',
+          ly_do_vi_pham: data.ly_do_vi_pham || null,
+
+          // Đồng bộ ghi nhận các số liệu thực tế phát sinh truyền từ form
+          so_buoi_di_muon_thuc_te: data.so_buoi_di_muon_thuc_te !== undefined && data.so_buoi_di_muon_thuc_te !== "" ? parseInt(data.so_buoi_di_muon_thuc_te, 10) : 0,
+          so_buoi_vang_thuc_te: data.so_buoi_vang_thuc_te !== undefined && data.so_buoi_vang_thuc_te !== "" ? parseInt(data.so_buoi_vang_thuc_te, 10) : 0,
+          so_lan_thieu_bai_tap_thuc_te: data.so_lan_thieu_bai_tap_thuc_te !== undefined && data.so_lan_thieu_bai_tap_thuc_te !== "" ? parseInt(data.so_lan_thieu_bai_tap_thuc_te, 10) : 0
         }
       });
       return { success: true, data: result };
@@ -212,9 +228,26 @@ export const hocVienService = {
         where: { ma_cam_ket },
         data: {
           ma_khoa_hoc: parseInt(data.ma_khoa_hoc, 10),
-          noi_dung_cam_ket: data.noi_dung,
+          noi_dung_cam_ket: data.noi_dung_cam_ket || null,
           ngay_ky: data.ngay_ky ? new Date(data.ngay_ky) : undefined,
+          ngay_het_han: data.ngay_het_han ? new Date(data.ngay_het_han) : null,
           trang_thai: data.trang_thai,
+          
+          // Đồng bộ cập nhật chỉ tiêu điều kiện ràng buộc
+          so_buoi_vang_cho_phep: data.so_buoi_vang_cho_phep !== undefined && data.so_buoi_vang_cho_phep !== "" ? parseInt(data.so_buoi_vang_cho_phep, 10) : null,
+          so_buoi_di_muon: data.so_buoi_di_muon !== undefined && data.so_buoi_di_muon !== "" ? parseInt(data.so_buoi_di_muon, 10) : null,
+          so_lan_thieu_bai_tap: data.so_lan_thieu_bai_tap !== undefined && data.so_lan_thieu_bai_tap !== "" ? parseInt(data.so_lan_thieu_bai_tap, 10) : null,
+          
+          // Trạng thái luận lý logic hệ thống
+          tham_gia_thi_day_du: data.tham_gia_thi_day_du === true || data.tham_gia_thi_day_du === 'true',
+          da_bo_thi: data.da_bo_thi === true || data.da_bo_thi === 'true',
+          bi_vi_pham: data.bi_vi_pham === true || data.bi_vi_pham === 'true',
+          ly_do_vi_pham: data.bi_vi_pham ? data.ly_do_vi_pham : null,
+
+          // Cập nhật linh động toàn bộ các số liệu thực tế phát sinh
+          so_buoi_di_muon_thuc_te: data.so_buoi_di_muon_thuc_te !== undefined && data.so_buoi_di_muon_thuc_te !== "" ? parseInt(data.so_buoi_di_muon_thuc_te, 10) : 0,
+          so_buoi_vang_thuc_te: data.so_buoi_vang_thuc_te !== undefined && data.so_buoi_vang_thuc_te !== "" ? parseInt(data.so_buoi_vang_thuc_te, 10) : 0,
+          so_lan_thieu_bai_tap_thuc_te: data.so_lan_thieu_bai_tap_thuc_te !== undefined && data.so_lan_thieu_bai_tap_thuc_te !== "" ? parseInt(data.so_lan_thieu_bai_tap_thuc_te, 10) : 0
         }
       });
       return { success: true, data: result };
@@ -237,7 +270,7 @@ export const hocVienService = {
     }
   },
 
-  // ================= PHIẾU THU (ĐÃ ĐỔI SANG XOÁ CỨNG) =================
+  // ================= PHIẾU THU =================
   async addPhieuThu(data: any) {
     try {
       const result = await prisma.phieuThu.create({
@@ -290,7 +323,7 @@ export const hocVienService = {
       });
       return { success: true, data: result };
     } catch (error: any) {
-      throw new Error(error.message || "Không thể xóa phiếu thu.");
+      throw new Error("Không thể xóa phiếu thu.");
     }
   }
 };
