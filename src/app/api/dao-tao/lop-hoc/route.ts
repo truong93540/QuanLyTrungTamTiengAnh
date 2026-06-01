@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 import { lopHocService } from '@/services/DaoTao/lopHocService';
+
+const prisma = new PrismaClient();
 
 const resJson = (success: boolean, message: string, data?: any, error?: any, status = 200) => {
   return NextResponse.json({ success, message, data, error }, { status });
@@ -9,6 +12,17 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const meta = searchParams.get('meta');
+    const ma_buoi_hoc_nx = searchParams.get('ma_buoi_hoc_nx');
+    if (ma_buoi_hoc_nx) {
+      try {
+        const data = await prisma.nhanXet.findMany({
+          where: { ma_buoi_hoc: Number(ma_buoi_hoc_nx) }
+        });
+        return NextResponse.json({ success: true, data });
+      } catch (error: any) {
+        return NextResponse.json({ success: false, error: error.message });
+      }
+    }
     const getKhgdMau = searchParams.get('khgd_mau');
     const ma_lop_hoc = searchParams.get('ma_lop_hoc');
     const ma_buoi_hoc = searchParams.get('ma_buoi_hoc');
@@ -57,7 +71,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// ... (Giữ nguyên toàn bộ khối POST, PUT, DELETE như file gốc tôi đã đưa lúc trước) ...
 // (Lưu ý: Khối POST đã có sẵn case CREATE_BAI_KIEM_TRA và UPSERT_KET_QUA_KT)
 export async function POST(req: NextRequest) {
     try {
@@ -65,6 +78,12 @@ export async function POST(req: NextRequest) {
       const { action, payload } = body;
   
       switch (action) {
+        case 'UPDATE_KHOA_HOC_LIEN_KET':
+        const updatedLop = await prisma.lopHoc.update({
+          where: { ma_lop_hoc: Number(payload.ma_lop_hoc) },
+          data: { ma_khoa_hoc: Number(payload.ma_khoa_hoc) }
+        });
+        return NextResponse.json({ success: true, message: 'Liên kết khóa học thành công!', data: updatedLop });
         case 'CREATE_LOP_HOC':
           const newLop = await lopHocService.createLopHoc(payload);
           return resJson(true, 'Tạo lớp học thành công', newLop);

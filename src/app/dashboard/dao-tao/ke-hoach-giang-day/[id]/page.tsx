@@ -218,7 +218,7 @@ export default function KeHoachGiangDayDetailPage({ params }: PageProps) {
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-5 rounded-xl shadow-sm border border-slate-100 gap-4">
         <div>
-          <span className="text-xs text-indigo-600 font-bold uppercase tracking-wider">Mã hồ sơ kế hoạch: #{data.ma_ke_hoach_giang_day}</span>
+          <span className="text-xs text-indigo-600 font-bold uppercase tracking-wider">Mã hồ sơ kế hoạch: {data.ma_ke_hoach_giang_day}</span>
           <h1 className="text-xl font-bold text-slate-800 mt-1">{data.noi_dung}</h1>
         </div>
         <Link href="/dashboard/dao-tao/ke-hoach-giang-day" className="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200">
@@ -261,7 +261,7 @@ export default function KeHoachGiangDayDetailPage({ params }: PageProps) {
             </div>
 
             <div className="space-y-2">
-              <h3 className="font-bold text-slate-800 text-sm border-l-4 border-amber-600 pl-2 uppercase tracking-wide">Lớp học thuộc quản lý của khóa</h3>
+              <h3 className="font-bold text-slate-800 text-sm border-l-4 border-amber-600 pl-2 uppercase tracking-wide">Lớp học sử dụng giáo trình</h3>
               <table className="w-full text-left text-sm border border-slate-100 rounded-lg overflow-hidden">
                 <thead>
                   <tr className="bg-slate-50 text-slate-600 text-xs font-semibold uppercase">
@@ -310,7 +310,7 @@ export default function KeHoachGiangDayDetailPage({ params }: PageProps) {
                 <tbody>
                   {allLessons.map((b) => (
                     <tr key={b.ma_buoi_hoc} className="border-b last:border-0 hover:bg-slate-50/40">
-                      <td className="p-3 text-slate-400">#{b.ma_buoi_hoc}</td>
+                      <td className="p-3 text-slate-400">{b.ma_buoi_hoc}</td>
                       <td className="p-3 font-semibold text-indigo-600">
                         {data.khoa_hoc.lop_hoc.find((l) => l.ma_lop_hoc === b.ma_lop_hoc)?.ten_lop}
                       </td>
@@ -336,7 +336,7 @@ export default function KeHoachGiangDayDetailPage({ params }: PageProps) {
             {allLessons.map((b) => (
               <div key={b.ma_buoi_hoc} className="border rounded-lg p-4 bg-slate-50/50 space-y-2 mb-3">
                 <div className="text-xs font-bold text-slate-700 border-b pb-1 flex justify-between">
-                  <span>Buổi học mã số #{b.ma_buoi_hoc} - Lớp {data.khoa_hoc.lop_hoc.find(l => l.ma_lop_hoc === b.ma_lop_hoc)?.ten_lop}</span>
+                  <span>Buổi học mã số {b.ma_buoi_hoc} - Lớp {data.khoa_hoc.lop_hoc.find(l => l.ma_lop_hoc === b.ma_lop_hoc)?.ten_lop}</span>
                   <span className="text-slate-400 font-medium">{new Date(b.ngay_hoc).toLocaleDateString("vi-VN")}</span>
                 </div>
                 {!b.diem_danh || b.diem_danh.length === 0 ? (
@@ -364,7 +364,7 @@ export default function KeHoachGiangDayDetailPage({ params }: PageProps) {
             {allLessons.map((b) => (
               <div key={b.ma_buoi_hoc} className="border rounded-lg p-4 bg-slate-50/30 text-xs mb-3">
                 <div className="font-bold text-slate-500 border-b pb-1 mb-2">
-                  Buổi học #{b.ma_buoi_hoc} - Lớp {data.khoa_hoc.lop_hoc.find(l => l.ma_lop_hoc === b.ma_lop_hoc)?.ten_lop}
+                  Buổi học {b.ma_buoi_hoc} - Lớp {data.khoa_hoc.lop_hoc.find(l => l.ma_lop_hoc === b.ma_lop_hoc)?.ten_lop}
                 </div>
                 {!b.nhan_xet || b.nhan_xet.length === 0 ? (
                   <p className="text-slate-400 italic">Chưa cập nhật đánh giá học viên.</p>
