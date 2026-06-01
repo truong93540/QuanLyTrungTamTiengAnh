@@ -1,5 +1,4 @@
 'use client'
-
 import { useState, useEffect, useMemo } from 'react'
 import { 
     FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaEye, FaCheckCircle, 
@@ -7,39 +6,23 @@ import {
     FaChevronUp, FaGraduationCap, FaUsers, FaBookOpen
 } from 'react-icons/fa'
 
-interface KhoaHocInfo {
-    ma_khoa_hoc: number
-    ten_khoa_hoc: string
-    hoc_phi: number
-    thoi_luong: string
-    trinh_do: string
-    trang_thai: string 
-}
-
-interface NhanSuInfo {
-    ma_nhan_su: number
-    ho_ten: string
-    so_dien_thoai: string | null
-    email: string | null
-    phong_ban?: { ten_phong_ban: string }
-}
-
 interface NhanSu {
     ma_nhan_su: number
     ho_ten: string
     so_dien_thoai: string | null
     email: string | null
+    phong_ban?: { ten_phong_ban: string } 
 }
 
 interface PhanCong {
     ma_nhan_su: number
     vai_tro: string
-    nhan_su?: NhanSuInfo
+    nhan_su?: NhanSu
 }
 
 interface ChiTietMarketing {
     ma_khoa_hoc: number
-    khoa_hoc?: KhoaHocInfo
+    khoa_hoc?: KhoaHoc
 }
 
 interface ChuongTrinhMarketing {
@@ -50,7 +33,7 @@ interface ChuongTrinhMarketing {
     ngay_ket_thuc: string
     ngan_sach: number
     phan_cong?: PhanCong[]
-    chi_tiet_marketing?: ChiTietMarketing[] // Quan hệ nhiều-nhiều
+    chi_tiet_marketing?: ChiTietMarketing[] 
 }
 
 interface PhanCongForm {
@@ -63,9 +46,10 @@ interface KhoaHoc {
     ten_khoa_hoc: string
     hoc_phi?: number
     thoi_luong?: string
+    trinh_do?: string    
+    trang_thai?: string   
 }
 
-// Interface phục vụ việc tạo nhanh Khóa học
 interface ChuongTrinhHoc {
     ma_chuong_trinh: number
     ten_chuong_trinh: string
@@ -75,7 +59,7 @@ export default function QuanLyMarketingPage() {
     const [data, setData] = useState<ChuongTrinhMarketing[]>([])
     const [danhSachKhoaHoc, setDanhSachKhoaHoc] = useState<KhoaHoc[]>([]) 
     const [danhSachNhanSu, setDanhSachNhanSu] = useState<NhanSu[]>([])
-    const [chuongTrinhHocList, setChuongTrinhHocList] = useState<ChuongTrinhHoc[]>([]) // Dành cho Modal thêm nhanh khóa học
+    const [chuongTrinhHocList, setChuongTrinhHocList] = useState<ChuongTrinhHoc[]>([])
     const [isLoading, setIsLoading] = useState(true)
     
     // Tìm kiếm và lọc
@@ -116,7 +100,7 @@ export default function QuanLyMarketingPage() {
         ngay_bat_dau: '',
         ngay_ket_thuc: '',
         ngan_sach: '',
-        danh_sach_khoa_hoc: [] as number[], // Chuyển thành mảng đa chọn
+        danh_sach_khoa_hoc: [] as number[], 
         danh_sach_nhan_su: [] as PhanCongForm[] 
     })
     
@@ -230,7 +214,6 @@ export default function QuanLyMarketingPage() {
             ngay_bat_dau: formatDateForInput(row.ngay_bat_dau),
             ngay_ket_thuc: formatDateForInput(row.ngay_ket_thuc),
             ngan_sach: row.ngan_sach?.toString() || '',
-            // Map từ chi_tiet_marketing ra mảng ID
             danh_sach_khoa_hoc: row.chi_tiet_marketing?.map(ct => ct.ma_khoa_hoc) || [],
             danh_sach_nhan_su: row.phan_cong?.map(pc => ({ ma_nhan_su: pc.ma_nhan_su, vai_tro: pc.vai_tro || '' })) || []
         })
@@ -424,10 +407,7 @@ export default function QuanLyMarketingPage() {
         const matchProgram = item.ten_chuong_trinh_marketing.toLowerCase().includes(lowerSearch) ||
                              item.ma_chuong_trinh_marketing.toString().includes(lowerSearch);
         const matchStaff = item.phan_cong?.some(pc => pc.nhan_su?.ho_ten.toLowerCase().includes(lowerSearch)) || false;
-        
-        // Tìm xem có khóa học nào thuộc chiến dịch này khớp không
         const matchCourse = item.chi_tiet_marketing?.some(ct => ct.khoa_hoc?.ten_khoa_hoc.toLowerCase().includes(lowerSearch)) || false;
-
         const matchSearch = matchProgram || matchStaff || matchCourse;
         
         let matchDate = true;
@@ -922,7 +902,7 @@ export default function QuanLyMarketingPage() {
             className={`w-full border rounded-md py-2.5 pl-10 pr-3 text-sm outline-none shadow-sm font-medium transition bg-white text-gray-900 ${formErrors.danh_sach_nhan_su ? 'border-red-500 focus:ring-2 focus:ring-red-500' : 'border-gray-300 focus:ring-2 focus:ring-[#1d4ed8]'}`} 
         />
         </div>
-        {/* Hiển thị dòng text báo lỗi trơn (không icon) giống form khóa học */}
+        
         {formErrors.danh_sach_nhan_su && (
             <p className="text-red-500 text-sm mt-1.5 font-medium">
                 {formErrors.danh_sach_nhan_su}

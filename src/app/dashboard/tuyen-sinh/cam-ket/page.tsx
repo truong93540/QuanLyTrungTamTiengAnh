@@ -2,29 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { 
-    FaEdit, 
-    FaSearch, 
-    FaPlus, 
-    FaSave, 
-    FaTimes, 
-    FaTrash, 
-    FaUserGraduate, 
-    FaEye, 
-    FaCheckCircle, 
-    FaSpinner, 
-    FaQuestionCircle, 
-    FaUserPlus, 
-    FaExclamationTriangle, 
-    FaShieldAlt, 
-    FaSync, 
-    FaTasks, 
-    FaClock, 
-    FaFileAlt, 
-    FaChevronDown, 
-    FaChevronUp, 
-    FaBookOpen,
-    FaArrowLeft,
-    FaFolderOpen
+    FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaUserGraduate, FaEye, FaCheckCircle, FaSpinner, FaQuestionCircle, 
+    FaUserPlus,  FaExclamationTriangle,  FaShieldAlt,  FaSync,  FaTasks,  FaClock,  FaFileAlt, FaChevronDown,FaChevronUp,FaBookOpen,FaArrowLeft,FaFolderOpen
 } from 'react-icons/fa'
 
 // ==========================================
@@ -69,15 +48,16 @@ interface CamKet {
     so_lan_thieu_bai_tap?: number | null
     bi_vi_pham?: boolean
     ly_do_vi_pham?: string | null
-    hoc_vien?: { 
+    hoc_vien?: {
         ho_ten: string,
-        tham_gia_lop?: { lop_hoc?: LopHoc }[] 
+        tham_gia_lop?: { lop_hoc?: LopHoc }[]
     }
     khoa_hoc?: { ten_khoa_hoc: string }
     so_buoi_vang_thuc_te?: number | null
     so_buoi_di_muon_thuc_te?: number | null
     so_lan_thieu_bai_tap_thuc_te?: number | null
     da_bo_thi?: boolean | null
+    so_lan_bo_thi_thuc_te?: number | null
 }
 
 export default function QuanLyCamKetPage() {
@@ -109,7 +89,7 @@ export default function QuanLyCamKetPage() {
     const [isChecking, setIsChecking] = useState(false)
 
     const [activeTab, setActiveTab] = useState<'info' | 'violation'>('info')
-    const [violationStats, setViolationStats] = useState({ vang: 0, muon: 0, thieu_bt: 0, bo_thi: false })
+    const [violationStats, setViolationStats] = useState({ vang: 0, muon: 0, thieu_bt: 0, bo_thi: 0 })
     const [dateError, setDateError] = useState('')
 
     const [formData, setFormData] = useState({
@@ -378,7 +358,7 @@ export default function QuanLyCamKetPage() {
             vang: row.so_buoi_vang_thuc_te || 0,
             muon: row.so_buoi_di_muon_thuc_te || 0,
             thieu_bt: row.so_lan_thieu_bai_tap_thuc_te || 0,
-            bo_thi: row.da_bo_thi || false,
+            bo_thi: row.so_lan_bo_thi_thuc_te ?? (row.da_bo_thi ? 1 : 0),
         })
     }
 
@@ -389,8 +369,8 @@ export default function QuanLyCamKetPage() {
         setActiveTab('info')
         setIsModalOpen(true)
         setIsLoadingDetails(true)
-        setShowStudentInfo(true) 
-        setShowCourseInfo(true)
+        setShowStudentInfo(false) 
+        setShowCourseInfo(false)
         setFormErrors({})
         setDateError('')
 
@@ -431,7 +411,7 @@ export default function QuanLyCamKetPage() {
             so_buoi_vang_cho_phep: 3, tham_gia_thi_day_du: true, so_buoi_di_muon: 3, so_lan_thieu_bai_tap: 3,
             bi_vi_pham: false, ly_do_vi_pham: '',
         })
-        setViolationStats({ vang: 0, muon: 0, thieu_bt: 0, bo_thi: false })
+        setViolationStats({ vang: 0, muon: 0, thieu_bt: 0, bo_thi: 0 })
         setActiveTab('info')
         setIsModalOpen(true)
         setFormErrors({})
@@ -578,7 +558,13 @@ export default function QuanLyCamKetPage() {
             if (response.ok) {
                 const dataRes = await response.json()
                 const { updatedCamKet, stats } = dataRes
-                setViolationStats(stats)
+                
+                // CẬP NHẬT: Ép kiểu dữ liệu an toàn để chống lỗi tàng hình số
+                setViolationStats({
+                    ...stats,
+                    bo_thi: typeof stats.bo_thi === 'number' ? stats.bo_thi : (stats.bo_thi ? 1 : 0)
+                })
+
                 setFormData((prev) => ({
                     ...prev,
                     bi_vi_pham: updatedCamKet.bi_vi_pham,
@@ -816,7 +802,7 @@ export default function QuanLyCamKetPage() {
             <table className="w-full text-sm text-left">
                 <thead className="bg-[#1d4ed8] text-white uppercase font-semibold text-xs border-b">
                     <tr>
-                        <th className="px-4 py-4 text-center">Mã CK</th>
+                        <th className="px-4 py-4 text-center">Mã Cam Kết</th>
                         <th className="px-4 py-4">Học Viên</th>
                         <th className="px-4 py-4 min-w-[200px]">Khóa Học</th>
                         <th className="px-4 py-4 text-center">Ngày Ký</th>
@@ -921,7 +907,7 @@ export default function QuanLyCamKetPage() {
                             <table className="w-full text-sm text-left">
                                 <thead className="bg-[#1d4ed8] text-white uppercase font-semibold text-xs border-b">
                                     <tr>
-                                        <th className="px-4 py-4 text-center">Mã CK</th>
+                                        <th className="px-4 py-4 text-center">Mã Cam Kết</th>
                                         <th className="px-4 py-4">Học Viên</th>
                                         <th className="px-4 py-4 min-w-[200px]">Khóa Học</th>
                                         <th className="px-4 py-4 text-center">Ngày Ký</th>
@@ -970,7 +956,7 @@ export default function QuanLyCamKetPage() {
                                 <table className="w-full text-sm text-left">
                                     <thead className="bg-green-600 text-white uppercase font-semibold text-xs border-b">
                                         <tr>
-                                            <th className="px-4 py-3 text-center">Mã CK</th>
+                                            <th className="px-4 py-3 text-center">Mã Cam Kết</th>
                                             <th className="px-4 py-3">Học Viên</th>
                                             <th className="px-4 py-3 text-center">Ngày Ký</th>
                                             <th className="px-4 py-3 text-center">Trạng Thái</th>
@@ -1003,7 +989,7 @@ export default function QuanLyCamKetPage() {
                                 <table className="w-full text-sm text-left">
                                     <thead className="bg-red-600 text-white uppercase font-semibold text-xs border-b">
                                         <tr>
-                                            <th className="px-4 py-3 text-center">Mã CK</th>
+                                            <th className="px-4 py-3 text-center">Mã Cam Kết</th>
                                             <th className="px-4 py-3">Học Viên</th>
                                             <th className="px-4 py-3 text-center">Ngày Ký</th>
                                             <th className="px-4 py-3 text-center">Chi tiết vi phạm</th>
@@ -1017,10 +1003,10 @@ export default function QuanLyCamKetPage() {
                                                 <td className="px-4 py-3 text-center font-medium">{row.ma_cam_ket}</td>
                                                 <td className="px-4 py-3 font-bold text-gray-800">{row.hoc_vien?.ho_ten}</td>
                                                 <td className="px-4 py-3 text-center text-gray-600">{formatDateForView(row.ngay_ky)}</td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <span className="text-xs text-red-600 font-semibold line-clamp-1 truncate max-w-[200px] mx-auto" title={row.ly_do_vi_pham || ''}>
-                                                        {row.ly_do_vi_pham || 'Vi phạm nội quy'}
-                                                    </span>
+                                                <td className="px-4 py-3 text-center max-w-[300px]">
+                                                 <span className="text-xs text-red-600 font-semibold whitespace-normal leading-relaxed block text-left mx-auto w-fit" title={row.ly_do_vi_pham || ''}>
+                                                    {row.ly_do_vi_pham || 'Vi phạm nội quy'}
+                                                </span>
                                                 </td>
                                                 <td className="px-4 py-3 text-center">
                                                     <button onClick={() => { openViewModal(row); setActiveTab('violation'); }} className="text-red-600 hover:text-red-800 font-semibold text-xs underline">Tra cứu</button>
@@ -1414,11 +1400,13 @@ export default function QuanLyCamKetPage() {
                                             <span className="text-[11px] text-gray-400 mt-3 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">Cho phép: {formData.so_buoi_di_muon}</span>
                                         </div>
                                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col items-center p-5 relative overflow-hidden">
-                                            <div className={`absolute top-0 left-0 w-full h-1.5 ${formData.tham_gia_thi_day_du && violationStats.bo_thi ? 'bg-green-500' : 'bg-green-500'}`}></div>
-                                            <FaFileAlt className="text-2xl mb-3 text-green-500" />
-                                            <span className="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-2">Bỏ thi / test</span>
-                                            <div className="flex items-baseline gap-1 mt-1 mb-1"><span className="text-3xl font-black text-gray-800">{violationStats.bo_thi ? 'Có' : 'Không'}</span></div>
-                                            <span className="text-[11px] text-gray-400 mt-3 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">Bắt buộc: {formData.tham_gia_thi_day_du ? 'Có' : 'Không'}</span>
+                                            <div className={`absolute top-0 left-0 w-full h-1.5 ${violationStats.bo_thi > 0 ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                                            <FaFileAlt className={`text-2xl mb-3 ${violationStats.bo_thi > 0 ? 'text-red-500' : 'text-green-500'}`} />
+                                            <span className="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-2">Không làm bài test</span>
+                                            <div className="flex items-baseline gap-1 mt-1 mb-1">
+                                                <span className="text-4xl font-black text-gray-800">{violationStats.bo_thi}</span>
+                                                <span className="text-sm font-medium text-gray-500">lần</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
