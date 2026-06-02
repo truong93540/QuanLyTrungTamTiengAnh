@@ -109,7 +109,7 @@ export default function QuanLyLopHocPage() {
             <tbody>
               {lops.map(l => (
                 <tr key={l.ma_lop_hoc} className="border-b hover:bg-slate-50">
-                  <td className="p-4 text-slate-400 font-mono">#{l.ma_lop_hoc}</td>
+                  <td className="p-4 text-slate-400 font-mono">{l.ma_lop_hoc}</td>
                   <td className="p-4 font-bold text-blue-600 cursor-pointer hover:underline" onClick={() => { setDetailTab(1); loadDetail(l.ma_lop_hoc); }}>{l.ten_lop}</td>
                   <td className="p-4 font-medium">{l.khoa_hoc?.ten_khoa_hoc || <span className="text-rose-500 italic">Chưa liên kết</span>}</td>
                   <td className="p-4">{l._count.tham_gia} / {l.si_so_toi_da || '∞'}</td>
@@ -173,7 +173,7 @@ export default function QuanLyLopHocPage() {
                 
                 <div className="col-span-2 p-3 bg-blue-50/50 rounded-lg border border-blue-100">
                   <label className="text-xs font-bold text-blue-800">Lịch Học Định Kỳ</label>
-                  <textarea rows={3} placeholder="Ví dụ:&#10;thu 2 - ca 1&#10;thu 4 - ca 2" value={formLop.lich_hoc_text || ''} onChange={e => setFormLop({...formLop, lich_hoc_text: e.target.value})} className="w-full border border-blue-200 p-2 rounded-lg text-sm mt-1 font-mono focus:ring-2 focus:ring-blue-500" />
+                  <textarea rows={3} placeholder="Ví dụ:&10;thu 2 - ca 1&10;thu 4 - ca 2" value={formLop.lich_hoc_text || ''} onChange={e => setFormLop({...formLop, lich_hoc_text: e.target.value})} className="w-full border border-blue-200 p-2 rounded-lg text-sm mt-1 font-mono focus:ring-2 focus:ring-blue-500" />
                 </div>
 
                 <div className="col-span-2 flex justify-end gap-3 pt-4 border-t mt-2">
@@ -437,7 +437,7 @@ const ChiTietKhoaHocTab = ({ detailLop, meta, reloadLop }: { detailLop: any, met
         <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg space-y-2">
           <p className="text-sm font-semibold text-emerald-800">✓ Lớp đang liên kết với Khóa Học:</p>
           <p className="text-xl font-bold text-slate-900">{detailLop.khoa_hoc?.ten_khoa_hoc}</p>
-          <p className="text-xs text-slate-500">Mã định danh khóa học: #{detailLop.ma_khoa_hoc}</p>
+          <p className="text-xs text-slate-500">Mã định danh khóa học: {detailLop.ma_khoa_hoc}</p>
         </div>
       ) : (
         <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 italic">
