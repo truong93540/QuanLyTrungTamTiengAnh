@@ -4,7 +4,6 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
     try {
         const danhSach = await prisma.chuongTrinhHoc.findMany({
-            // Tối ưu hóa: Chỉ select đúng 2 cột cần thiết để làm dropdown
             select: {
                 ma_chuong_trinh: true,
                 ten_chuong_trinh: true

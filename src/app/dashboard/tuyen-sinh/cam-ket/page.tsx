@@ -149,8 +149,8 @@ export default function QuanLyCamKetPage() {
         const fetchData = async () => {
             try {
                 const [resCamKet, resKhoaHoc, resLopHoc] = await Promise.all([
-                    fetch('/api/tuyen-sinh/cam-ket?limit=1000'),
-                    fetch('/api/tuyen-sinh/khoa-hoc?limit=100'),
+                    fetch('/api/tuyen-sinh/cam-ket'),
+                    fetch('/api/tuyen-sinh/khoa-hoc'),
                     fetch('/api/tuyen-sinh/lop-hoc')
                 ]);
 
@@ -727,11 +727,15 @@ export default function QuanLyCamKetPage() {
                     <h1 className="text-2xl font-bold text-[#1d4ed8] flex items-center gap-3 uppercase">
                         <FaShieldAlt className="text-blue-600" /> Quản lý Bản Cam Kết
                     </h1>
-                    <button
-                        onClick={handleStartAddWorkflow}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-[#1d4ed8] text-white rounded-md hover:bg-blue-700 font-medium transition shadow-sm">
-                        <FaPlus /> Thêm cam kết
-                    </button>
+                    
+                    {/* Bọc điều kiện: Chỉ hiện nút thêm khi CHƯA chọn Lớp học (!selectedClassId) */}
+                    {!selectedClassId && (
+                        <button
+                            onClick={handleStartAddWorkflow}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-[#1d4ed8] text-white rounded-md hover:bg-blue-700 font-medium transition shadow-sm">
+                            <FaPlus /> Thêm cam kết
+                        </button>
+                    )}
                 </div>
 
            {/* ========================================================= */}
