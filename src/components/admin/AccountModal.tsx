@@ -63,28 +63,31 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
                 'Quản lý chấm công',
             ],
             'dao-tao': [
-                'Kế hoạch giảng dạy',
+                'Quản lý kế hoạch giảng dạy',
                 'Quản lý chương trình học',
                 'Quản lý nhân sự',
-                'Hồ sơ học viên',
+                'Quản lý hồ sơ học viên',
                 'Quản lý lớp học',
                 'Quản lý phiếu thu học phí',
+                'Quản lý giáo viên'
             ],
             'sale-marketing': [
-                'Chương trình Marketing',
-                'Thông tin khóa học',
-                'Hoạt động ngoại khóa',
-                'Chương trình khuyến mãi',
+                'Quản lý chương trình Marketing',
+                'Quản lý thông tin khóa học',
+                'Quản lý hoạt động ngoại khóa',
+                'Quản lý chương trình khuyến mãi',
                 'Quản lý cam kết',
             ],
             'giao-vien': [
-                'Kế hoạch giảng dạy',
+                'Quản lý kế hoạch giảng dạy',
                 'Quản lý chương trình học',
-                'Hồ sơ học viên',
+                'Quản lý hồ sơ học viên',
                 'Quản lý lớp học',
             ],
             'tro-giang': [
-                'Hồ sơ học viên',
+                'Quản lý kế hoạch giảng dạy',
+                'Quản lý chương trình học',
+                'Quản lý hồ sơ học viên',
                 'Quản lý lớp học',
             ],
             admin: [], // Admin có tất cả quyền
@@ -152,8 +155,6 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
         },
         [quyenList, role, rolePermissions],
     )
-
-
 
     const fetchQuyenList = async () => {
         try {
@@ -254,10 +255,7 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
         e.preventDefault()
         setErrorMsg('')
 
-        if (
-            !isEditMode &&
-            (!formData.ten_dang_nhap || !formData.mat_khau || !formData.ma_id)
-        ) {
+        if (!isEditMode && (!formData.ten_dang_nhap || !formData.mat_khau || !formData.ma_id)) {
             setErrorMsg('Vui lòng điền đầy đủ các trường bắt buộc')
             return
         }
@@ -365,7 +363,10 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Mã {(role === 'giao-vien' || role === 'tro-giang') ? 'giáo viên/trợ giảng' : 'nhân sự'}{' '}
+                                            Mã{' '}
+                                            {role === 'giao-vien' || role === 'tro-giang'
+                                                ? 'giáo viên/trợ giảng'
+                                                : 'nhân sự'}{' '}
                                             <span className="text-red-500">*</span>
                                         </label>
                                         <input
@@ -376,14 +377,18 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
                                             }
                                             onBlur={checkMaNhanSu}
                                             disabled={isEditMode}
-                                            placeholder={`Nhập mã ${(role === 'giao-vien' || role === 'tro-giang') ? 'giáo viên/trợ giảng' : 'nhân sự'}...`}
+                                            placeholder={`Nhập mã ${role === 'giao-vien' || role === 'tro-giang' ? 'giáo viên/trợ giảng' : 'nhân sự'}...`}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500 text-gray-900 bg-white"
                                         />
                                         <div className="mt-1 min-h-[20px]">
                                             {isFetchingNhanSu ? (
-                                                <p className="text-xs text-blue-500">Đang kiểm tra...</p>
+                                                <p className="text-xs text-blue-500">
+                                                    Đang kiểm tra...
+                                                </p>
                                             ) : nhanSuError ? (
-                                                <p className="text-xs text-red-500">{nhanSuError}</p>
+                                                <p className="text-xs text-red-500">
+                                                    {nhanSuError}
+                                                </p>
                                             ) : nhanSuName ? (
                                                 <p className="text-sm text-green-600 font-medium">
                                                     Họ tên: {nhanSuName}
@@ -410,7 +415,6 @@ export default function AccountModal({ account, onClose }: AccountModalProps) {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-900 bg-white"
                                     />
                                 </div>
-
 
                                 {!isEditMode && (
                                     <div>

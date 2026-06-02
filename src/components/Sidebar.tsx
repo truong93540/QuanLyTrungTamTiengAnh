@@ -58,24 +58,24 @@ const menuItems = [
         icon: FaBullhorn,
         children: [
             {
-                title: '3.1 Chương trình Marketing',
+                title: '3.1 Quản lý chương trình Marketing',
                 href: '/dashboard/tuyen-sinh/marketing',
-                role: 'Chương trình Marketing',
+                role: 'Quản lý chương trình Marketing',
             },
             {
-                title: '3.2 Thông tin khóa học',
+                title: '3.2 Quản lý thông tin khóa học',
                 href: '/dashboard/tuyen-sinh/thong-tin',
-                role: 'Thông tin khóa học',
+                role: 'Quản lý thông tin khóa học',
             },
             {
-                title: '3.3 Hoạt động ngoại khóa',
+                title: '3.3 Quản lý hoạt động ngoại khóa',
                 href: '/dashboard/tuyen-sinh/ngoai-khoa',
-                role: 'Hoạt động ngoại khóa',
+                role: 'Quản lý hoạt động ngoại khóa',
             },
             {
-                title: '3.4 Chương trình khuyến mãi',
+                title: '3.4 Quản lý chương trình khuyến mãi',
                 href: '/dashboard/tuyen-sinh/khuyen-mai',
-                role: 'Chương trình khuyến mãi',
+                role: 'Quản lý chương trình khuyến mãi',
             },
             {
                 title: '3.5 Quản lý cam kết',
@@ -89,12 +89,12 @@ const menuItems = [
         icon: FaGraduationCap,
         children: [
             {
-                title: '4.1 Kế hoạch giảng dạy',
+                title: '4.1 Quản lý kế hoạch giảng dạy',
                 href: '/dashboard/dao-tao/ke-hoach-giang-day',
-                role: 'Kế hoạch giảng dạy',
+                role: 'Quản lý kế hoạch giảng dạy',
             },
             {
-                title: '4.2 Chương trình học',
+                title: '4.2 Quản lý chương trình học',
                 href: '/dashboard/dao-tao/chuong-trinh-hoc',
                 role: 'Quản lý chương trình học',
             },
@@ -104,9 +104,9 @@ const menuItems = [
                 role: 'Quản lý nhân sự',
             },
             {
-                title: '4.4 Hồ sơ học viên',
+                title: '4.4 Quản lý hồ sơ học viên',
                 href: '/dashboard/dao-tao/hoc-vien',
-                role: 'Hồ sơ học viên',
+                role: 'Quản lý hồ sơ học viên',
             },
             {
                 title: '4.5 Quản lý lớp học',
@@ -179,7 +179,7 @@ const menuItems = [
                 title: '6.4 Thống kê học viên đăng ký mới',
                 href: '/dashboard/dao-tao/baocaothongke',
                 role: 'Báo cáo thống kê',
-            }
+            },
         ],
     },
 ]
@@ -225,8 +225,8 @@ export default function Sidebar() {
             }
 
             // Nếu là menu có con
-            const filteredChildren = item.children?.filter((child: any) =>
-                !child.role || userRoles.includes(child.role),
+            const filteredChildren = item.children?.filter(
+                (child: any) => !child.role || userRoles.includes(child.role),
             )
             if (filteredChildren && filteredChildren.length > 0) {
                 return { ...item, children: filteredChildren }

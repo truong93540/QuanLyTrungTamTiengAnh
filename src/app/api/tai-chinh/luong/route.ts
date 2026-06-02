@@ -90,131 +90,138 @@ export async function GET(request: Request) {
         });
 
         if (existingBangLuong) {
-            // Map dữ liệu từ DB sang định dạng của frontend
-            const results = existingBangLuong.phieu_luong.map(pl => {
-                const phieuCC = pl.phieu_cham_cong;
-                const luongCoBan = Number(pl.luong_co_ban);
-                
-                // Chi tiết chấm công
-                const so_lan_di_muon = phieuCC?.so_lan_di_muon || 0;
-                const so_lan_ve_som = phieuCC?.so_lan_ve_som || 0;
-                const so_gio_lam_viec_thuong = phieuCC?.so_gio_lam_viec_thuong || 0;
-                const so_gio_tang_ca_ngay_thuong = phieuCC?.so_gio_tang_ca_ngay_thuong || 0;
-                const so_gio_lam_viec_thuong_ngay_nghi = phieuCC?.so_gio_lam_viec_thuong_ngay_nghi || 0;
-                const so_gio_tang_ca_ngay_nghi = phieuCC?.so_gio_tang_ca_ngay_nghi || 0;
-                const tong_so_gio_lam_viec = phieuCC?.tong_so_gio_lam_viec || 0;
-
-                const isNS = !!pl.ma_nhan_su;
-                const soNgayCong = isNS ? ((so_gio_lam_viec_thuong + so_gio_lam_viec_thuong_ngay_nghi) / 8) : (tong_so_gio_lam_viec / 8);
-
-                // Nhân sự: đơn giá giờ = lương cơ bản / standardDays / 8
-                // Giáo viên: đơn giá giờ = lương cơ bản (VD: 100.000đ/giờ)
-                const hourlyRate = isNS ? (luongCoBan / standardDays / 8) : luongCoBan;
-
-                const luong_lam_viec_ngay_thuong = Math.round(so_gio_lam_viec_thuong * hourlyRate);
-                const luong_tang_ca_ngay_thuong = Math.round(so_gio_tang_ca_ngay_thuong * hourlyRate * 1.5);
-                const luong_lam_viec_ngay_nghi = Math.round(so_gio_lam_viec_thuong_ngay_nghi * hourlyRate * 2.0);
-                const luong_tang_ca_ngay_nghi = Math.round(so_gio_tang_ca_ngay_nghi * hourlyRate * 2.0);
-
-                const luongTheoCong = luong_lam_viec_ngay_thuong + luong_tang_ca_ngay_thuong + luong_lam_viec_ngay_nghi + luong_tang_ca_ngay_nghi;
-
-                const hoaHong = Number(pl.tien_hoa_hong || 0);
-                const tongThuong = Number(pl.tong_thuong || 0);
-                const phuCap = Number(pl.chi_tiet_phu_cap ? (pl.chi_tiet_phu_cap as any[])
-                    .filter((pc: any) => pc.ten !== 'Chuyên cần')
-                    .reduce((sum, pc) => sum + Number(pc.soTien || 0), 0) : 0);
-
-                const dsPhieuThuong = existingBangThuong?.phieu_thuong.filter(p => 
-                    (isNS && p.ma_nhan_su === pl.ma_nhan_su) || 
-                    (!isNS && p.ma_giao_vien === pl.ma_giao_vien)
-                ) || [];
-                
-                const thuong_chuyen_can_from_ds = dsPhieuThuong.filter(p => p.loai_thuong === "Chuyên cần").reduce((acc, p) => acc + Number(p.so_tien), 0);
-                const hoaHong_from_ds = dsPhieuThuong.filter(p => p.loai_thuong === "Tiền hoa hồng").reduce((acc, p) => acc + Number(p.so_tien), 0);
-                const dsThuongNong = dsPhieuThuong.filter(p => p.loai_thuong === "Thưởng nóng");
-                const thuong_nong_from_ds = dsThuongNong.reduce((acc, p) => acc + Number(p.so_tien), 0);
-
-                // Fallback: nếu không có phiếu thưởng chi tiết, reconstruct từ các field đã lưu
-                const thuong_chuyen_can = dsPhieuThuong.length > 0
-                    ? thuong_chuyen_can_from_ds
-                    : Math.max(0, tongThuong - hoaHong); // chuyên cần = tổng thưởng - hoa hồng (khi không có phiếu chi tiết)
-                const thuong_nong = dsPhieuThuong.length > 0
-                    ? thuong_nong_from_ds
-                    : 0;
-                const noi_dung_thuong = dsThuongNong.map(p => p.noi_dung).filter(Boolean).join(", ");
-                const chi_tiet_thuong_nong = dsThuongNong.map(p => ({ noi_dung: p.noi_dung || 'Thưởng nóng', so_tien: Number(p.so_tien) }));
-
-                // Build chi_tiet_thuong với fallback khi dsPhieuThuong rỗng
-                const chi_tiet_thuong_base = dsPhieuThuong.length > 0
-                    ? dsPhieuThuong.map(p => ({ loai_thuong: p.loai_thuong, noi_dung: p.noi_dung || '', so_tien: Number(p.so_tien) }))
-                    : [
-                        ...(hoaHong > 0 ? [{ loai_thuong: 'Tiền hoa hồng', noi_dung: '', so_tien: hoaHong }] : []),
-                        ...(thuong_chuyen_can > 0 ? [{ loai_thuong: 'Chuyên cần', noi_dung: '', so_tien: thuong_chuyen_can }] : []),
-                      ];
-
-                return {
-                    ma_id: pl.ma_nhan_su || pl.ma_giao_vien,
-                    ma_chuc_vu: pl.nhan_su?.ma_chuc_vu || pl.giao_vien?.ma_chuc_vu || 0,
-                    loai: isNS ? 'NS' : 'GV',
-                    ho_ten: pl.nhan_su?.ho_ten || pl.giao_vien?.ho_ten || 'N/A',
-                    chuc_vu: pl.nhan_su?.chuc_vu.ten_chuc_vu || pl.giao_vien?.chuc_vu.ten_chuc_vu || 'N/A',
-                    ten_phong_ban: pl.nhan_su?.phong_ban.ten_phong_ban || pl.giao_vien?.phong_ban.ten_phong_ban || 'N/A',
-                    chi_tiet_cham_cong: phieuCC?.chi_tiet_cham_cong || [],
-                    phan_cong_giang_day: pl.giao_vien?.phan_cong_giang_day || [],
-                    luong_co_ban: luongCoBan,
-                    so_ngay_cong: Math.round(soNgayCong * 10) / 10,
-                    luong_theo_cong: luongTheoCong,
-                    phu_cap: phuCap,
-                    hoa_hong: hoaHong,
-                    thuong_chuyen_can: thuong_chuyen_can,
-                    thuong_nong: thuong_nong,
-                    noi_dung_thuong: noi_dung_thuong,
-                    chi_tiet_thuong_nong: chi_tiet_thuong_nong,
-                    chi_tiet_thuong: chi_tiet_thuong_base,
-                    tong_thuong: tongThuong,
-                    bao_hiem: Number(pl.bao_hiem_xa_hoi),
-                    tien_phat: Number((pl as any).tien_phat || 0),
-                    thuc_linh: Number(pl.thuc_linh),
-                    ghi_chu: pl.ghi_chu || "",
-                    chi_tiet_phu_cap: pl.chi_tiet_phu_cap || [],
-                    hop_dong: pl.nhan_su?.hop_dong?.[0] || pl.giao_vien?.hop_dong?.[0],
-                    isLocked: true,
-
+            if (existingBangLuong.phieu_luong.length === 0) {
+                // Tự động xóa bản ghi bảng lương rỗng để dọn dẹp
+                await prisma.bangLuong.delete({
+                    where: { ma_bang_luong: existingBangLuong.ma_bang_luong }
+                });
+            } else {
+                // Map dữ liệu từ DB sang định dạng của frontend
+                const results = existingBangLuong.phieu_luong.map(pl => {
+                    const phieuCC = pl.phieu_cham_cong;
+                    const luongCoBan = Number(pl.luong_co_ban);
+                    
                     // Chi tiết chấm công
-                    so_lan_di_muon,
-                    so_lan_ve_som,
-                    so_gio_lam_viec_thuong,
-                    so_gio_tang_ca_ngay_thuong,
-                    so_gio_lam_viec_thuong_ngay_nghi,
-                    so_gio_tang_ca_ngay_nghi,
-                    tong_so_gio_lam_viec,
+                    const so_lan_di_muon = phieuCC?.so_lan_di_muon || 0;
+                    const so_lan_ve_som = phieuCC?.so_lan_ve_som || 0;
+                    const so_gio_lam_viec_thuong = phieuCC?.so_gio_lam_viec_thuong || 0;
+                    const so_gio_tang_ca_ngay_thuong = phieuCC?.so_gio_tang_ca_ngay_thuong || 0;
+                    const so_gio_lam_viec_thuong_ngay_nghi = phieuCC?.so_gio_lam_viec_thuong_ngay_nghi || 0;
+                    const so_gio_tang_ca_ngay_nghi = phieuCC?.so_gio_tang_ca_ngay_nghi || 0;
+                    const tong_so_gio_lam_viec = phieuCC?.tong_so_gio_lam_viec || 0;
 
-                    // Chi tiết cấu phần lương
-                    luong_lam_viec_ngay_thuong,
-                    luong_tang_ca_ngay_thuong,
-                    luong_lam_viec_ngay_nghi,
-                    luong_tang_ca_ngay_nghi,
+                    const isNS = !!pl.ma_nhan_su;
+                    const soNgayCong = isNS ? ((so_gio_lam_viec_thuong + so_gio_lam_viec_thuong_ngay_nghi) / 8) : (tong_so_gio_lam_viec / 8);
 
-                    // Dữ liệu 31 ngày
-                    ngay_1: phieuCC?.ngay_1 || 0, ngay_2: phieuCC?.ngay_2 || 0, ngay_3: phieuCC?.ngay_3 || 0, ngay_4: phieuCC?.ngay_4 || 0, ngay_5: phieuCC?.ngay_5 || 0,
-                    ngay_6: phieuCC?.ngay_6 || 0, ngay_7: phieuCC?.ngay_7 || 0, ngay_8: phieuCC?.ngay_8 || 0, ngay_9: phieuCC?.ngay_9 || 0, ngay_10: phieuCC?.ngay_10 || 0,
-                    ngay_11: phieuCC?.ngay_11 || 0, ngay_12: phieuCC?.ngay_12 || 0, ngay_13: phieuCC?.ngay_13 || 0, ngay_14: phieuCC?.ngay_14 || 0, ngay_15: phieuCC?.ngay_15 || 0,
-                    ngay_16: phieuCC?.ngay_16 || 0, ngay_17: phieuCC?.ngay_17 || 0, ngay_18: phieuCC?.ngay_18 || 0, ngay_19: phieuCC?.ngay_19 || 0, ngay_20: phieuCC?.ngay_20 || 0,
-                    ngay_21: phieuCC?.ngay_21 || 0, ngay_22: phieuCC?.ngay_22 || 0, ngay_23: phieuCC?.ngay_23 || 0, ngay_24: phieuCC?.ngay_24 || 0, ngay_25: phieuCC?.ngay_25 || 0,
-                    ngay_26: phieuCC?.ngay_26 || 0, ngay_27: phieuCC?.ngay_27 || 0, ngay_28: phieuCC?.ngay_28 || 0, ngay_29: phieuCC?.ngay_29 || 0, ngay_30: phieuCC?.ngay_30 || 0,
-                    ngay_31: phieuCC?.ngay_31 || 0
-                };
-            });
-            return NextResponse.json({ 
-                results, 
-                isLocked: true, 
-                hasPhieuChi: !!existingBangLuong.phieu_chi && existingBangLuong.phieu_chi.trang_thai !== 'Đã hủy', 
-                maPhieuChi: existingBangLuong.phieu_chi?.ma_phieu_chi 
-            }, {
-                headers: {
-                    'Cache-Control': 'no-store, max-age=0, must-revalidate'
-                }
-            });
+                    // Nhân sự: đơn giá giờ = lương cơ bản / standardDays / 8
+                    // Giáo viên: đơn giá giờ = lương cơ bản (VD: 100.000đ/giờ)
+                    const hourlyRate = isNS ? (luongCoBan / standardDays / 8) : luongCoBan;
+
+                    const luong_lam_viec_ngay_thuong = Math.round(so_gio_lam_viec_thuong * hourlyRate);
+                    const luong_tang_ca_ngay_thuong = Math.round(so_gio_tang_ca_ngay_thuong * hourlyRate * 1.5);
+                    const luong_lam_viec_ngay_nghi = Math.round(so_gio_lam_viec_thuong_ngay_nghi * hourlyRate * 2.0);
+                    const luong_tang_ca_ngay_nghi = Math.round(so_gio_tang_ca_ngay_nghi * hourlyRate * 2.0);
+
+                    const luongTheoCong = luong_lam_viec_ngay_thuong + luong_tang_ca_ngay_thuong + luong_lam_viec_ngay_nghi + luong_tang_ca_ngay_nghi;
+
+                    const hoaHong = Number(pl.tien_hoa_hong || 0);
+                    const tongThuong = Number(pl.tong_thuong || 0);
+                    const phuCap = Number(pl.chi_tiet_phu_cap ? (pl.chi_tiet_phu_cap as any[])
+                        .filter((pc: any) => pc.ten !== 'Chuyên cần')
+                        .reduce((sum, pc) => sum + Number(pc.soTien || 0), 0) : 0);
+
+                    const dsPhieuThuong = existingBangThuong?.phieu_thuong.filter(p => 
+                        (isNS && p.ma_nhan_su === pl.ma_nhan_su) || 
+                        (!isNS && p.ma_giao_vien === pl.ma_giao_vien)
+                    ) || [];
+                    
+                    const thuong_chuyen_can_from_ds = dsPhieuThuong.filter(p => p.loai_thuong === "Chuyên cần").reduce((acc, p) => acc + Number(p.so_tien), 0);
+                    const hoaHong_from_ds = dsPhieuThuong.filter(p => p.loai_thuong === "Tiền hoa hồng").reduce((acc, p) => acc + Number(p.so_tien), 0);
+                    const dsThuongNong = dsPhieuThuong.filter(p => p.loai_thuong === "Thưởng nóng");
+                    const thuong_nong_from_ds = dsThuongNong.reduce((acc, p) => acc + Number(p.so_tien), 0);
+
+                    // Fallback: nếu không có phiếu thưởng chi tiết, reconstruct từ các field đã lưu
+                    const thuong_chuyen_can = dsPhieuThuong.length > 0
+                        ? thuong_chuyen_can_from_ds
+                        : Math.max(0, tongThuong - hoaHong); // chuyên cần = tổng thưởng - hoa hồng (khi không có phiếu chi tiết)
+                    const thuong_nong = dsPhieuThuong.length > 0
+                        ? thuong_nong_from_ds
+                        : 0;
+                    const noi_dung_thuong = dsThuongNong.map(p => p.noi_dung).filter(Boolean).join(", ");
+                    const chi_tiet_thuong_nong = dsThuongNong.map(p => ({ noi_dung: p.noi_dung || 'Thưởng nóng', so_tien: Number(p.so_tien) }));
+
+                    // Build chi_tiet_thuong với fallback khi dsPhieuThuong rỗng
+                    const chi_tiet_thuong_base = dsPhieuThuong.length > 0
+                        ? dsPhieuThuong.map(p => ({ loai_thuong: p.loai_thuong, noi_dung: p.noi_dung || '', so_tien: Number(p.so_tien) }))
+                        : [
+                            ...(hoaHong > 0 ? [{ loai_thuong: 'Tiền hoa hồng', noi_dung: '', so_tien: hoaHong }] : []),
+                            ...(thuong_chuyen_can > 0 ? [{ loai_thuong: 'Chuyên cần', noi_dung: '', so_tien: thuong_chuyen_can }] : []),
+                          ];
+
+                    return {
+                        ma_id: pl.ma_nhan_su || pl.ma_giao_vien,
+                        ma_chuc_vu: pl.nhan_su?.ma_chuc_vu || pl.giao_vien?.ma_chuc_vu || 0,
+                        loai: isNS ? 'NS' : 'GV',
+                        ho_ten: pl.nhan_su?.ho_ten || pl.giao_vien?.ho_ten || 'N/A',
+                        chuc_vu: pl.nhan_su?.chuc_vu.ten_chuc_vu || pl.giao_vien?.chuc_vu.ten_chuc_vu || 'N/A',
+                        ten_phong_ban: pl.nhan_su?.phong_ban.ten_phong_ban || pl.giao_vien?.phong_ban.ten_phong_ban || 'N/A',
+                        chi_tiet_cham_cong: phieuCC?.chi_tiet_cham_cong || [],
+                        phan_cong_giang_day: pl.giao_vien?.phan_cong_giang_day || [],
+                        luong_co_ban: luongCoBan,
+                        so_ngay_cong: Math.round(soNgayCong * 10) / 10,
+                        luong_theo_cong: luongTheoCong,
+                        phu_cap: phuCap,
+                        hoa_hong: hoaHong,
+                        thuong_chuyen_can: thuong_chuyen_can,
+                        thuong_nong: thuong_nong,
+                        noi_dung_thuong: noi_dung_thuong,
+                        chi_tiet_thuong_nong: chi_tiet_thuong_nong,
+                        chi_tiet_thuong: chi_tiet_thuong_base,
+                        tong_thuong: tongThuong,
+                        bao_hiem: Number(pl.bao_hiem_xa_hoi),
+                        tien_phat: Number((pl as any).tien_phat || 0),
+                        thuc_linh: Number(pl.thuc_linh),
+                        ghi_chu: pl.ghi_chu || "",
+                        chi_tiet_phu_cap: pl.chi_tiet_phu_cap || [],
+                        hop_dong: pl.nhan_su?.hop_dong?.[0] || pl.giao_vien?.hop_dong?.[0],
+                        isLocked: true,
+
+                        // Chi tiết chấm công
+                        so_lan_di_muon,
+                        so_lan_ve_som,
+                        so_gio_lam_viec_thuong,
+                        so_gio_tang_ca_ngay_thuong,
+                        so_gio_lam_viec_thuong_ngay_nghi,
+                        so_gio_tang_ca_ngay_nghi,
+                        tong_so_gio_lam_viec,
+
+                        // Chi tiết cấu phần lương
+                        luong_lam_viec_ngay_thuong,
+                        luong_tang_ca_ngay_thuong,
+                        luong_lam_viec_ngay_nghi,
+                        luong_tang_ca_ngay_nghi,
+
+                        // Dữ liệu 31 ngày
+                        ngay_1: phieuCC?.ngay_1 || 0, ngay_2: phieuCC?.ngay_2 || 0, ngay_3: phieuCC?.ngay_3 || 0, ngay_4: phieuCC?.ngay_4 || 0, ngay_5: phieuCC?.ngay_5 || 0,
+                        ngay_6: phieuCC?.ngay_6 || 0, ngay_7: phieuCC?.ngay_7 || 0, ngay_8: phieuCC?.ngay_8 || 0, ngay_9: phieuCC?.ngay_9 || 0, ngay_10: phieuCC?.ngay_10 || 0,
+                        ngay_11: phieuCC?.ngay_11 || 0, ngay_12: phieuCC?.ngay_12 || 0, ngay_13: phieuCC?.ngay_13 || 0, ngay_14: phieuCC?.ngay_14 || 0, ngay_15: phieuCC?.ngay_15 || 0,
+                        ngay_16: phieuCC?.ngay_16 || 0, ngay_17: phieuCC?.ngay_17 || 0, ngay_18: phieuCC?.ngay_18 || 0, ngay_19: phieuCC?.ngay_19 || 0, ngay_20: phieuCC?.ngay_20 || 0,
+                        ngay_21: phieuCC?.ngay_21 || 0, ngay_22: phieuCC?.ngay_22 || 0, ngay_23: phieuCC?.ngay_23 || 0, ngay_24: phieuCC?.ngay_24 || 0, ngay_25: phieuCC?.ngay_25 || 0,
+                        ngay_26: phieuCC?.ngay_26 || 0, ngay_27: phieuCC?.ngay_27 || 0, ngay_28: phieuCC?.ngay_28 || 0, ngay_29: phieuCC?.ngay_29 || 0, ngay_30: phieuCC?.ngay_30 || 0,
+                        ngay_31: phieuCC?.ngay_31 || 0
+                    };
+                });
+                return NextResponse.json({ 
+                    results, 
+                    isLocked: true, 
+                    hasPhieuChi: !!existingBangLuong.phieu_chi && existingBangLuong.phieu_chi.trang_thai !== 'Đã hủy', 
+                    maPhieuChi: existingBangLuong.phieu_chi?.ma_phieu_chi 
+                }, {
+                    headers: {
+                        'Cache-Control': 'no-store, max-age=0, must-revalidate'
+                    }
+                });
+            }
         }
 
         // 2. Nếu chưa có, tính toán bản xem trước
@@ -298,6 +305,10 @@ export async function POST(request: Request) {
                     trang_thai: "Đã chốt"
                 });
                 tongBangLuong += item.thuc_linh;
+            }
+
+            if (phieuLuongData.length === 0) {
+                throw new Error("Không có nhân sự nào có phiếu chấm công hợp lệ trong tháng này. Vui lòng tạo bảng chấm công trước khi chốt bảng lương.");
             }
 
             await tx.phieuLuong.createMany({ data: phieuLuongData });
