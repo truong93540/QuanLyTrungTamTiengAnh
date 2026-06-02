@@ -47,11 +47,6 @@ const menuItems = [
                 role: 'Danh mục chức vụ',
             },
             {
-                title: '2.3 DM Chương trình học',
-                href: '/dashboard/danh-muc/chuong-trinh',
-                role: 'Danh mục chương trình học',
-            },
-            {
                 title: '2.4 DM Phòng học',
                 href: '/dashboard/danh-muc/phong-hoc',
                 role: 'Danh mục phòng học',
