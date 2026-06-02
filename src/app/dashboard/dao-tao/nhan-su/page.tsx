@@ -19,6 +19,11 @@ interface ChucVu {
   ten_chuc_vu: string;
 }
 
+interface PhupCapItem {
+  ten: string;
+  soTien: number;
+}
+
 interface HopDongLaoDong {
   ma_hop_dong: number;
   so_hop_dong: string;
@@ -26,6 +31,10 @@ interface HopDongLaoDong {
   ten_cong_viec: string | null;
   tg_thu_viec: string | null;
   tg_het_hop_dong: string | null;
+  ngay_ky: string | null;
+  dong_bao_hiem: boolean | null;
+  phan_tram_hoa_hong: number | null;
+  chi_tiet_phu_cap: PhupCapItem[] | any | null; 
 }
 
 interface HoSoBangCap {
@@ -56,7 +65,6 @@ interface NhanSuDetail extends NhanSu {
 }
 
 export default function NhanSuPage() {
-  // States cho danh sách nhân sự tổng quát
   const [nhanSus, setNhanSus] = useState<NhanSu[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [search, setSearch] = useState<string>("");
@@ -67,13 +75,12 @@ export default function NhanSuPage() {
   const [phongBans, setPhongBans] = useState<PhongBan[]>([]);
   const [chucVus, setChucVus] = useState<ChucVu[]>([]);
 
-  // States chi tiết nhân sự hiện tại
   const [selectedNhanSuId, setSelectedNhanSuId] = useState<number | null>(null);
   const [nhanSuDetail, setNhanSuDetail] = useState<NhanSuDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
-  // Modal 1: Thêm/Sửa thông tin Nhân Sự
+  // Modal 1: Nhân Sự
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalType, setModalType] = useState<"add" | "edit">("add");
   const [formData, setFormData] = useState({
@@ -88,7 +95,7 @@ export default function NhanSuPage() {
     ma_phong_ban: "",
   });
 
-  // Modal 2: Thêm/Sửa Hợp Đồng Lao Động
+  // Modal 2: Hợp Đồng Lao Động
   const [isHdModalOpen, setIsHdModalOpen] = useState<boolean>(false);
   const [hdModalType, setHdModalType] = useState<"add" | "edit">("add");
   const [hdFormData, setHdFormData] = useState({
@@ -98,9 +105,13 @@ export default function NhanSuPage() {
     ten_cong_viec: "",
     tg_thu_viec: "",
     tg_het_hop_dong: "",
+    ngay_ky: "",
+    dong_bao_hiem: "false",
+    phan_tram_hoa_hong: "0",
+    chi_tiet_phu_cap: "", // Dạng text thân thiện: Tên - Số tiền
   });
 
-  // Modal 3: Thêm/Sửa Hồ Sơ Bằng Cấp
+  // Modal 3: Bằng Cấp
   const [isBcModalOpen, setIsBcModalOpen] = useState<boolean>(false);
   const [bcModalType, setBcModalType] = useState<"add" | "edit">("add");
   const [bcFormData, setBcFormData] = useState({
@@ -126,7 +137,6 @@ export default function NhanSuPage() {
     return () => clearTimeout(handler);
   }, [search]);
 
-  // Hàm tải danh sách chính
   const fetchNhanSus = useCallback(async () => {
     setLoading(true);
     try {
@@ -157,7 +167,6 @@ export default function NhanSuPage() {
     }
   };
 
-  // Hàm reload thông tin chi tiết
   const refreshDetail = useCallback(async () => {
     if (!selectedNhanSuId) return;
     setLoadingDetail(true);
@@ -188,7 +197,6 @@ export default function NhanSuPage() {
     fetchMetadata();
   }, []);
 
-  // Mở modal thêm mới nhân sự (Được làm sạch dữ liệu cũ)
   const handleOpenAddNhanSu = () => {
     setModalType("add");
     setFormData({
@@ -205,7 +213,6 @@ export default function NhanSuPage() {
     setIsModalOpen(true);
   };
 
-  // Xử lý nộp Form chính Nhân Sự
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -247,7 +254,6 @@ export default function NhanSuPage() {
             setSelectedNhanSuId(null);
           }
         } else {
-          // THÊM NHÁNH ELSE NÀY ĐỂ HIỂN THỊ LỖI TỪ SERVER TRẢ VỀ
           showToast(result.message || "Xóa hồ sơ nhân sự thất bại", "error");
         }
       } catch (err) {
@@ -275,12 +281,36 @@ export default function NhanSuPage() {
   // ================= THAO TÁC CRUD HỢP ĐỒNG LAO ĐỘNG =================
   const handleOpenAddHd = () => {
     setHdModalType("add");
-    setHdFormData({ ma_hop_dong: "", so_hop_dong: "", luong_co_ban: "", ten_cong_viec: "", tg_thu_viec: "", tg_het_hop_dong: "" });
+    setHdFormData({ 
+      ma_hop_dong: "", 
+      so_hop_dong: "", 
+      luong_co_ban: "", 
+      ten_cong_viec: "", 
+      tg_thu_viec: "", 
+      tg_het_hop_dong: "",
+      ngay_ky: "",
+      dong_bao_hiem: "false",
+      phan_tram_hoa_hong: "0",
+      chi_tiet_phu_cap: "" 
+    });
     setIsHdModalOpen(true);
   };
 
   const handleOpenEditHd = (hd: HopDongLaoDong) => {
     setHdModalType("edit");
+    
+    // Khi bấm Sửa, convert từ mảng JSON trong DB thành chuỗi text "Tên - Số tiền" xuống dòng để hiển thị lên form cho user
+    let userFriendlyText = "";
+    if (hd.chi_tiet_phu_cap) {
+      const phuCapArray = typeof hd.chi_tiet_phu_cap === "string" 
+        ? JSON.parse(hd.chi_tiet_phu_cap) 
+        : hd.chi_tiet_phu_cap;
+      
+      if (Array.isArray(phuCapArray)) {
+        userFriendlyText = phuCapArray.map((item: any) => `${item.ten} - ${item.soTien}`).join("\n");
+      }
+    }
+
     setHdFormData({
       ma_hop_dong: hd.ma_hop_dong.toString(),
       so_hop_dong: hd.so_hop_dong,
@@ -288,19 +318,80 @@ export default function NhanSuPage() {
       ten_cong_viec: hd.ten_cong_viec || "",
       tg_thu_viec: hd.tg_thu_viec || "",
       tg_het_hop_dong: hd.tg_het_hop_dong ? hd.tg_het_hop_dong.substring(0, 10) : "",
+      ngay_ky: hd.ngay_ky ? hd.ngay_ky.substring(0, 10) : "",
+      dong_bao_hiem: hd.dong_bao_hiem ? "true" : "false",
+      phan_tram_hoa_hong: hd.phan_tram_hoa_hong?.toString() || "0",
+      chi_tiet_phu_cap: userFriendlyText,
     });
     setIsHdModalOpen(true);
   };
 
   const handleHdSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    let parsedPhuCap: PhupCapItem[] = [];
+    if (hdFormData.chi_tiet_phu_cap.trim()) {
+      const lines = hdFormData.chi_tiet_phu_cap.split("\n");
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue; // Bỏ qua dòng trống
+
+        // 1. Kiểm tra cấu trúc cơ bản phải có dấu gạch ngang phân tách
+        const parts = line.split("-");
+        if (parts.length < 2) {
+          showToast(`Dòng số ${i + 1} ("${line}") sai định dạng. Cần có dấu gạch ngang phân tách (Ví dụ: Chuyên cần - 500000)`, "error");
+          return;
+        }
+
+        const tenPhuCap = parts[0].trim();
+        const soTienRaw = parts[1].trim();
+
+        // 2. Kiểm tra bắt buộc nhập đầy đủ thông tin
+        if (!tenPhuCap) {
+          showToast(`Dòng số ${i + 1} đang để trống tên khoản phụ cấp.`, "error");
+          return;
+        }
+        if (!soTienRaw) {
+          showToast(`Dòng số ${i + 1} đang để trống số tiền.`, "error");
+          return;
+        }
+
+        // 3. Kiểm tra viết hoa chữ cái đầu tiên (hỗ trợ đầy đủ tiếng Việt Unicode)
+        // Regex này kiểm tra ký tự đầu tiên phải là chữ in hoa (A-Z hoặc các chữ Hoa có dấu tiếng Việt)
+        const uppercaseRegex = /^[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂỂỄỆỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲÝYỶỸ]/;
+        if (!uppercaseRegex.test(tenPhuCap)) {
+          showToast(`Lỗi chính tả tại dòng ${i + 1}: Tên phụ cấp "${tenPhuCap}" phải viết hoa chữ cái đầu tiên.`, "error");
+          return;
+        }
+
+        // 4. Kiểm tra định dạng số tiền (Chỉ cho phép các chữ số từ 0-9, không lẫn chữ hay ký tự đặc biệt)
+        const numberRegex = /^[0-9]+$/;
+        if (!numberRegex.test(soTienRaw)) {
+          showToast(`Lỗi định dạng tại dòng ${i + 1}: Số tiền "${soTienRaw}" không hợp lệ (không được chứa chữ cái hoặc ký tự lạ).`, "error");
+          return;
+        }
+
+        parsedPhuCap.push({
+          ten: tenPhuCap,
+          soTien: Number(soTienRaw)
+        });
+      }
+    }
+
+    // Tiến hành gửi API lên Backend sau khi tất cả các dòng đã vượt qua vòng kiểm tra
     try {
       const isAdd = hdModalType === "add";
       const url = isAdd 
         ? `/api/dao-tao/nhan-su?type=hop-dong` 
         : `/api/dao-tao/nhan-su?type=hop-dong&id=${hdFormData.ma_hop_dong}`;
       
-      const payload = isAdd ? { ...hdFormData, ma_nhan_su: selectedNhanSuId } : hdFormData;
+      const payload = {
+        ...hdFormData,
+        dong_bao_hiem: hdFormData.dong_bao_hiem === "true",
+        chi_tiet_phu_cap: parsedPhuCap, 
+        ma_nhan_su: selectedNhanSuId
+      };
 
       const res = await fetch(url, {
         method: isAdd ? "POST" : "PUT",
@@ -317,7 +408,7 @@ export default function NhanSuPage() {
         showToast(result.message || "Xảy ra lỗi xử lý hợp đồng", "error");
       }
     } catch {
-      showToast("Lỗi hệ thống", "error");
+      showToast("Lỗi kết nối hệ thống", "error");
     }
   };
 
@@ -333,6 +424,14 @@ export default function NhanSuPage() {
     } catch {
       showToast("Lỗi hệ thống khi xóa", "error");
     }
+  };
+
+  const handleInsertSampleText = () => {
+    const sampleText = "Đi lại - 500000\nXăng xe - 300000\nTiền ăn - 400000";
+    setHdFormData({
+      ...hdFormData,
+      chi_tiet_phu_cap: sampleText
+    });
   };
 
   // ================= THAO TÁC CRUD HỒ SƠ BẰNG CẤP =================
@@ -400,8 +499,15 @@ export default function NhanSuPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {toast && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg text-white font-medium ${toast.type === "success" ? "bg-emerald-600" : "bg-rose-600"}`}>
-          {toast.message}
+        <div className={`fixed top-6 right-6 z-[9999] max-w-md px-5 py-3 rounded-lg shadow-2xl text-white font-semibold border border-white/10 animate-bounce-short ${toast.type === "success" ? "bg-emerald-600" : "bg-rose-600"}`}>
+          <div className="flex items-center gap-2">
+            {toast.type === "success" ? (
+              <span>✓ Success: </span>
+            ) : (
+              <span>⚠ Lỗi định dạng: </span>
+            )}
+            <span>{toast.message}</span>
+          </div>
         </div>
       )}
 
@@ -411,7 +517,7 @@ export default function NhanSuPage() {
           <div className="flex items-center justify-between border-b pb-4">
             <div>
               <h1 className="text-2xl font-bold text-slate-800">Chi Tiết Hồ Sơ Nhân Sự</h1>
-              <p className="text-slate-500 text-sm">Mã nhân sự: #{selectedNhanSuId}</p>
+              <p className="text-slate-500 text-sm">Mã nhân sự: NS-{selectedNhanSuId}</p>
             </div>
             <button onClick={() => { setSelectedNhanSuId(null); setNhanSuDetail(null); }} className="border px-4 py-2 rounded-lg text-black font-medium hover:bg-slate-50 transition">
               Quay lại danh sách
@@ -429,7 +535,7 @@ export default function NhanSuPage() {
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Khối 1: Thông tin cơ bản */}
+              {/* Khối 1: Thông tin cá nhân */}
               <div className="bg-white border rounded-xl shadow-sm p-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-black">
                 <div className="md:col-span-2 font-bold text-slate-800 border-b pb-1 mb-2">Thông tin cá nhân</div>
                 <div><span className="text-slate-500">Họ và tên:</span> <span className="font-medium text-slate-900">{nhanSuDetail.ho_ten}</span></div>
@@ -460,11 +566,33 @@ export default function NhanSuPage() {
                           <button onClick={() => handleOpenEditHd(hd)} className="text-indigo-600 hover:underline text-xs">Sửa</button>
                           <button onClick={() => handleDeleteHd(hd.ma_hop_dong)} className="text-rose-600 hover:underline text-xs">Xóa</button>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-black">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-black">
                           <div><span className="text-slate-500">Số HĐ:</span> <span className="font-mono font-semibold text-slate-900">{hd.so_hop_dong}</span></div>
-                          <div><span className="text-slate-500">Vị trí:</span> <span className="font-medium text-slate-900">{hd.ten_cong_viec || "—"}</span></div>
-                          <div><span className="text-slate-500">Lương:</span> <span className="font-medium text-emerald-700">{hd.luong_co_ban ? Number(hd.luong_co_ban).toLocaleString("vi-VN") + " đ" : "—"}</span></div>
+                          <div><span className="text-slate-500">Vị trí công việc:</span> <span className="font-medium text-slate-900">{hd.ten_cong_viec || "—"}</span></div>
+                          <div><span className="text-slate-500">Lương cơ bản:</span> <span className="font-medium text-emerald-700">{hd.luong_co_ban ? Number(hd.luong_co_ban).toLocaleString("vi-VN") + " đ" : "—"}</span></div>
+                          <div><span className="text-slate-500">Thời gian thử việc:</span> <span className="font-medium text-slate-900">{hd.tg_thu_viec || "—"}</span></div>
+                          <div><span className="text-slate-500">Ngày ký kết:</span> <span className="font-medium text-slate-900">{hd.ngay_ky ? new Date(hd.ngay_ky).toLocaleDateString("vi-VN") : "—"}</span></div>
                           <div><span className="text-slate-500">Thời gian hết hạn:</span> <span className="font-medium text-slate-900">{hd.tg_het_hop_dong ? new Date(hd.tg_het_hop_dong).toLocaleDateString("vi-VN") : "Vô thời hạn"}</span></div>
+                          <div><span className="text-slate-500">Đóng bảo hiểm:</span> <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${hd.dong_bao_hiem ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>{hd.dong_bao_hiem ? "Có đóng bảo hiểm" : "Không đóng"}</span></div>
+                          <div><span className="text-slate-500">Tỷ lệ hoa hồng:</span> <span className="font-medium text-slate-900">{hd.phan_tram_hoa_hong || 0}%</span></div>
+                          
+                          {/* Khối hiển thị phụ cấp chi tiết */}
+                          <div className="md:col-span-2 border-t pt-2 mt-1">
+                            <span className="text-slate-500 block mb-1 font-medium text-xs">Chi tiết phụ cấp hệ thống:</span>
+                            {hd.chi_tiet_phu_cap && Array.isArray(hd.chi_tiet_phu_cap) && hd.chi_tiet_phu_cap.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {hd.chi_tiet_phu_cap.map((item: any, idx: number) => (
+                                  <span key={idx} className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded border border-indigo-200">
+                                    <strong>{item.ten}</strong>: {Number(item.soTien || 0).toLocaleString("vi-VN")} đ
+                                  </span>
+                                ))}
+                              </div>
+                            ) : hd.chi_tiet_phu_cap ? (
+                              <pre className="text-xs bg-gray-100 p-2 rounded max-h-24 overflow-y-auto">{typeof hd.chi_tiet_phu_cap === "string" ? hd.chi_tiet_phu_cap : JSON.stringify(hd.chi_tiet_phu_cap)}</pre>
+                            ) : (
+                              <span className="text-slate-400 italic text-xs">Không có phụ cấp cố định.</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -492,9 +620,8 @@ export default function NhanSuPage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-black">
                           <div><span className="text-slate-500">Tên văn bằng:</span> <span className="font-semibold text-slate-900">{bc.ten_bang_cap}</span></div>
-                          <div><span className="text-slate-500">Xếp loại / Cấp độ:</span> <span className="font-medium text-slate-900">{bc.loai_bang_cap || "—"}</span></div>
                           <div><span className="text-slate-500">Nơi cấp:</span> <span className="font-medium text-slate-700">{bc.noi_cap || "—"}</span></div>
-                          <div><span className="text-slate-500">Ngay cấp:</span> <span className="font-medium text-slate-900">{bc.ngay_cap ? new Date(bc.ngay_cap).toLocaleDateString("vi-VN") : "—"}</span></div>
+                          <div><span className="text-slate-500">Ngày cấp bằng:</span> <span className="font-medium text-slate-900">{bc.ngay_cap ? new Date(bc.ngay_cap).toLocaleDateString("vi-VN") : "—"}</span></div>
                         </div>
                       </div>
                     ))}
@@ -505,7 +632,7 @@ export default function NhanSuPage() {
           )}
         </div>
       ) : (
-        /* CHẾ ĐỘ DANH SÁCH */
+        /* CHẾ ĐỘ DANH SÁCH KHÔNG ĐỔI */
         <>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b pb-4">
             <div>
@@ -538,24 +665,13 @@ export default function NhanSuPage() {
                 <tbody className="divide-y divide-slate-100">
                   {nhanSus.map((ns) => (
                     <tr key={ns.ma_nhan_su} className="hover:bg-slate-50/50 transition">
-                      <td className="p-4 text-xs font-mono text-slate-400">#{ns.ma_nhan_su}</td>
+                      <td className="p-4 text-xs font-mono text-slate-400">NS-{ns.ma_nhan_su}</td>
                       <td className="p-4"><button onClick={() => setSelectedNhanSuId(ns.ma_nhan_su)} className="text-indigo-600 hover:underline font-medium">{ns.ho_ten}</button></td>
                       <td className="p-4">{ns.so_dien_thoai || "—"}</td>
                       <td className="p-4">{ns.phong_ban?.ten_phong_ban || "—"}</td>
                       <td className="p-4 text-right space-x-2">
-                        <button
-                          onClick={() => handleOpenEditNhanSu(ns)}
-                          className="text-indigo-600 hover:bg-indigo-50 px-2.5 py-1 rounded text-xs border border-indigo-200"
-                        >
-                          Sửa
-                        </button>
-
-                        <button
-                          onClick={(e) => handleDelete(ns.ma_nhan_su, ns.ho_ten, e)}
-                          className="text-rose-600 hover:bg-rose-50 px-2.5 py-1 rounded text-xs border border-rose-200"
-                        >
-                          Xóa
-                        </button>
+                        <button onClick={() => handleOpenEditNhanSu(ns)} className="text-indigo-600 hover:bg-indigo-50 px-2.5 py-1 rounded text-xs border border-indigo-200">Sửa</button>
+                        <button onClick={(e) => handleDelete(ns.ma_nhan_su, ns.ho_ten, e)} className="text-rose-600 hover:bg-rose-50 px-2.5 py-1 rounded text-xs border border-rose-200">Xóa</button>
                       </td>
                     </tr>
                   ))}
@@ -566,40 +682,81 @@ export default function NhanSuPage() {
         </>
       )}
 
-      {/* ================= MODAL HIỂN THỊ CON PHỤ TRỢ ================= */}
+      {/* ================= MODALS PHỤ TRỢ ================= */}
 
-      {/* 1. Modal Hợp đồng */}
+      {/* Modal Hợp đồng với Input định dạng Thân thiện người dùng */}
       {isHdModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <form onSubmit={handleHdSubmit} className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+          <form onSubmit={handleHdSubmit} className="bg-white rounded-xl shadow-xl w-full max-w-xl overflow-hidden">
             <div className="p-4 bg-slate-50 border-b font-bold text-slate-800">{hdModalType === "add" ? "Thêm hợp đồng mới" : "Chỉnh sửa hợp đồng"}</div>
-            <div className="p-4 space-y-3 text-black">
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Số hợp đồng *</label>
-                <input type="text" required value={hdFormData.so_hop_dong} onChange={(e) => setHdFormData({ ...hdFormData, so_hop_dong: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none" />
+            <div className="p-4 space-y-3 text-black max-h-[70vh] overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Số hợp đồng *</label>
+                  <input type="text" required value={hdFormData.so_hop_dong} onChange={(e) => setHdFormData({ ...hdFormData, so_hop_dong: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none focus:border-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Tên công việc / Vị trí</label>
+                  <input type="text" value={hdFormData.ten_cong_viec} onChange={(e) => setHdFormData({ ...hdFormData, ten_cong_viec: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none focus:border-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Lương cơ bản (VNĐ)</label>
+                  <input type="number" value={hdFormData.luong_co_ban} onChange={(e) => setHdFormData({ ...hdFormData, luong_co_ban: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none focus:border-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Thời gian thử việc</label>
+                  <input type="text" placeholder="Ví dụ: 2 tháng" value={hdFormData.tg_thu_viec} onChange={(e) => setHdFormData({ ...hdFormData, tg_thu_viec: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none focus:border-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Ngày ký hợp đồng</label>
+                  <input type="date" value={hdFormData.ngay_ky} onChange={(e) => setHdFormData({ ...hdFormData, ngay_ky: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none focus:border-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Thời hạn hết hợp đồng</label>
+                  <input type="date" value={hdFormData.tg_het_hop_dong} onChange={(e) => setHdFormData({ ...hdFormData, tg_het_hop_dong: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none focus:border-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Đóng bảo hiểm</label>
+                  <select value={hdFormData.dong_bao_hiem} onChange={(e) => setHdFormData({ ...hdFormData, dong_bao_hiem: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none bg-white focus:border-indigo-500">
+                    <option value="false">Không tham gia đóng bảo hiểm</option>
+                    <option value="true">Có đóng bảo hiểm</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Phần trăm hoa hồng (%)</label>
+                  <input type="number" step="0.01" value={hdFormData.phan_tram_hoa_hong} onChange={(e) => setHdFormData({ ...hdFormData, phan_tram_hoa_hong: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none focus:border-indigo-500" />
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Tên công việc / Vị trí</label>
-                <input type="text" value={hdFormData.ten_cong_viec} onChange={(e) => setHdFormData({ ...hdFormData, ten_cong_viec: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Lương cơ bản (VNĐ)</label>
-                <input type="number" value={hdFormData.luong_co_ban} onChange={(e) => setHdFormData({ ...hdFormData, luong_co_ban: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Thời hạn hết hợp đồng</label>
-                <input type="date" value={hdFormData.tg_het_hop_dong} onChange={(e) => setHdFormData({ ...hdFormData, tg_het_hop_dong: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none" />
+
+              {/* Box nhập danh sách phụ cấp dòng đơn, thân thiện */}
+              <div className="border-t pt-3">
+                <div className="flex justify-between items-center mb-1">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700">Chi tiết khoản phụ cấp *</label>
+                    <span className="text-[10px] text-slate-400 block">Định dạng: Tên phụ cấp - Số tiền (Mỗi dòng một khoản)</span>
+                  </div>
+                  <button type="button" onClick={handleInsertSampleText} className="text-[11px] text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded font-medium transition">
+                    + Nhập mẫu văn bản nhanh
+                  </button>
+                </div>
+                <textarea 
+                  rows={4} 
+                  placeholder={"Ví dụ:\nĐi lại - 500000\nXăng xe - 300000\nTiền ăn - 400000"}
+                  value={hdFormData.chi_tiet_phu_cap} 
+                  onChange={(e) => setHdFormData({ ...hdFormData, chi_tiet_phu_cap: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg font-medium text-sm outline-none bg-slate-50 focus:bg-white focus:border-indigo-500"
+                />
               </div>
             </div>
             <div className="p-3 bg-slate-50 border-t flex justify-end gap-2 text-black">
               <button type="button" onClick={() => setIsHdModalOpen(false)} className="px-4 py-2 border rounded-md">Hủy</button>
-              <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md">Lưu</button>
+              <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md">Lưu hợp đồng</button>
             </div>
           </form>
         </div>
       )}
 
-      {/* 2. Modal Bằng cấp */}
+      {/* Modal Bằng cấp */}
       {isBcModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <form onSubmit={handleBcSubmit} className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
@@ -608,10 +765,6 @@ export default function NhanSuPage() {
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">Tên văn bằng, chứng chỉ *</label>
                 <input type="text" required value={bcFormData.ten_bang_cap} onChange={(e) => setBcFormData({ ...bcFormData, ten_bang_cap: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Xếp loại / Cấp độ</label>
-                <input type="text" placeholder="Ví dụ: Giỏi, Khá, Xuất sắc, Nâng cao" value={bcFormData.loai_bang_cap} onChange={(e) => setBcFormData({ ...bcFormData, loai_bang_cap: e.target.value })} className="w-full px-3 py-2 border rounded-lg outline-none" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">Nơi cấp / Trường cấp</label>
@@ -630,13 +783,11 @@ export default function NhanSuPage() {
         </div>
       )}
 
-      {/* 3. BỔ SUNG: Modal Thêm/Sửa Nhân Sự Chính */}
+      {/* Modal Nhân Sự Chính */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <form onSubmit={handleFormSubmit} className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="p-4 bg-slate-50 border-b font-bold text-slate-800">
-              {modalType === "add" ? "Thêm nhân sự mới" : "Chỉnh sửa hồ sơ nhân sự"}
-            </div>
+            <div className="p-4 bg-slate-50 border-b font-bold text-slate-800">{modalType === "add" ? "Thêm nhân sự mới" : "Chỉnh sửa hồ sơ nhân sự"}</div>
             <div className="p-4 max-h-[75vh] overflow-y-auto space-y-3 text-black">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="md:col-span-2">

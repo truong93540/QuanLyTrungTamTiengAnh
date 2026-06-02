@@ -132,6 +132,11 @@ export const nhanSuService = {
           tg_thu_viec: data.tg_thu_viec || null,
           tg_het_hop_dong: data.tg_het_hop_dong ? new Date(data.tg_het_hop_dong) : null,
           ma_nhan_su: Number(data.ma_nhan_su),
+          // Bổ sung các trường mới theo Schema
+          ngay_ky: data.ngay_ky ? new Date(data.ngay_ky) : null,
+          dong_bao_hiem: data.dong_bao_hiem === true || data.dong_bao_hiem === "true",
+          phan_tram_hoa_hong: data.phan_tram_hoa_hong ? Number(data.phan_tram_hoa_hong) : 0,
+          chi_tiet_phu_cap: data.chi_tiet_phu_cap ? data.chi_tiet_phu_cap : null, // data đã được parse JSON ở route hoặc client
         }
       });
       return { success: true, data: newHd };
@@ -150,6 +155,11 @@ export const nhanSuService = {
           ten_cong_viec: data.ten_cong_viec || null,
           tg_thu_viec: data.tg_thu_viec || null,
           tg_het_hop_dong: data.tg_het_hop_dong ? new Date(data.tg_het_hop_dong) : null,
+          // Bổ sung các trường mới theo Schema
+          ngay_ky: data.ngay_ky ? new Date(data.ngay_ky) : null,
+          dong_bao_hiem: data.dong_bao_hiem === true || data.dong_bao_hiem === "true",
+          phan_tram_hoa_hong: data.phan_tram_hoa_hong ? Number(data.phan_tram_hoa_hong) : 0,
+          chi_tiet_phu_cap: data.chi_tiet_phu_cap ? data.chi_tiet_phu_cap : null,
         }
       });
       return { success: true, data: updatedHd };

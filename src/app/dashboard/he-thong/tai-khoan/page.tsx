@@ -90,7 +90,11 @@ export default function QuanLyTaiKhoan() {
     }
 
     const handleDeleteAccount = async (account: any) => {
-        if (confirm(`Bạn có chắc chắn muốn xóa tài khoản "${account.ten_dang_nhap}" của nhân sự ${account.ho_ten}?`)) {
+        if (
+            confirm(
+                `Bạn có chắc chắn muốn xóa tài khoản "${account.ten_dang_nhap}" của nhân sự ${account.ho_ten}?`,
+            )
+        ) {
             try {
                 const res = await fetch(`/api/admin/tai-khoan/${account.ma_tai_khoan}`, {
                     method: 'DELETE',
@@ -112,7 +116,9 @@ export default function QuanLyTaiKhoan() {
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">Quản lý tài khoản</h1>
-                    <p className="text-gray-500 mt-1">Quản lý thông tin đăng nhập và phân quyền cho nhân sự</p>
+                    <p className="text-gray-500 mt-1">
+                        Quản lý thông tin đăng nhập và phân quyền cho nhân sự
+                    </p>
                 </div>
                 <button
                     onClick={handleOpenAddModal}
@@ -144,8 +150,8 @@ export default function QuanLyTaiKhoan() {
                                     ? status === 'Hoạt động'
                                         ? 'bg-green-600 text-white border-green-600'
                                         : status === 'Bị khóa'
-                                        ? 'bg-red-500 text-white border-red-500'
-                                        : 'bg-blue-600 text-white border-blue-600'
+                                          ? 'bg-red-500 text-white border-red-500'
+                                          : 'bg-blue-600 text-white border-blue-600'
                                     : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
                             }`}>
                             {status === '' ? 'Tất cả' : status}
@@ -162,21 +168,29 @@ export default function QuanLyTaiKhoan() {
                                 <th className="p-2 border border-gray-100 text-center">Mã NS</th>
                                 <th className="p-2 border border-gray-100">Tên nhân sự</th>
                                 <th className="p-2 border border-gray-100">Tên đăng nhập</th>
-                                <th className="p-2 border border-gray-100 max-w-[300px]">Các quyền hiện tại</th>
+                                <th className="p-2 border border-gray-100 max-w-[300px]">
+                                    Các quyền hiện tại
+                                </th>
                                 <th className="p-2 border border-gray-100">Trạng thái</th>
-                                <th className="p-2 border border-gray-100 text-center">Hành động</th>
+                                <th className="p-2 border border-gray-100 text-center">
+                                    Hành động
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={6} className="p-4 text-center text-gray-500 border border-gray-100">
+                                    <td
+                                        colSpan={6}
+                                        className="p-4 text-center text-gray-500 border border-gray-100">
                                         Đang tải dữ liệu...
                                     </td>
                                 </tr>
                             ) : filteredAccounts.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="p-4 text-center text-gray-500 border border-gray-100">
+                                    <td
+                                        colSpan={6}
+                                        className="p-4 text-center text-gray-500 border border-gray-100">
                                         {accounts.length === 0
                                             ? 'Chưa có tài khoản nào trong hệ thống.'
                                             : 'Không tìm thấy tài khoản phù hợp với bộ lọc.'}
@@ -184,7 +198,9 @@ export default function QuanLyTaiKhoan() {
                                 </tr>
                             ) : (
                                 currentItems.map((acc) => (
-                                    <tr key={acc.ma_tai_khoan} className="hover:bg-blue-50/50 transition">
+                                    <tr
+                                        key={acc.ma_tai_khoan}
+                                        className="hover:bg-blue-50/50 transition">
                                         <td className="p-2 border border-gray-100 font-medium text-gray-900 text-center whitespace-nowrap">
                                             {acc.loai === 'Giáo viên'
                                                 ? `GV-${acc.ma_giao_vien || ''}`
@@ -207,18 +223,22 @@ export default function QuanLyTaiKhoan() {
                                                         </span>
                                                     ))
                                                 ) : (
-                                                    <span className="text-gray-400 italic text-xs">Chưa có quyền</span>
+                                                    <span className="text-gray-400 italic text-xs">
+                                                        Chưa có quyền
+                                                    </span>
                                                 )}
                                             </div>
                                         </td>
                                         <td className="p-2 border border-gray-100">
                                             {acc.trang_thai === 'Hoạt động' ? (
                                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[8px] text-xs font-medium bg-green-100 text-green-700">
-                                                    <FaCheckCircle className="text-[10px]" /> Hoạt động
+                                                    <FaCheckCircle className="text-[10px]" /> Hoạt
+                                                    động
                                                 </span>
                                             ) : (
                                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[8px] text-xs font-medium bg-red-100 text-red-700">
-                                                    <FaTimesCircle className="text-[10px]" /> Bị khóa
+                                                    <FaTimesCircle className="text-[10px]" /> Bị
+                                                    khóa
                                                 </span>
                                             )}
                                         </td>
@@ -250,16 +270,20 @@ export default function QuanLyTaiKhoan() {
                     </table>
                 </div>
 
-                {/* Phân trang tài khoản giống danh mục chức vụ */}
+                {/* Phân trang tài khoản */}
                 {!isLoading && filteredAccounts.length > 0 && (
                     <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50/50 font-medium text-gray-600">
                         <div className="text-sm">
                             Hiển thị{' '}
-                            <span className="font-bold text-gray-800">{indexOfFirstItem + 1}</span> đến{' '}
+                            <span className="font-bold text-gray-800">{indexOfFirstItem + 1}</span>{' '}
+                            đến{' '}
                             <span className="font-bold text-gray-800">
                                 {Math.min(indexOfLastItem, filteredAccounts.length)}
                             </span>{' '}
-                            trong tổng số <span className="font-bold text-gray-800">{filteredAccounts.length}</span>{' '}
+                            trong tổng số{' '}
+                            <span className="font-bold text-gray-800">
+                                {filteredAccounts.length}
+                            </span>{' '}
                             tài khoản{searchText || filterStatus ? ' (đã lọc)' : ''}
                         </div>
 
@@ -268,8 +292,8 @@ export default function QuanLyTaiKhoan() {
                                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                                 disabled={currentPage === 1}
                                 className={`px-3 py-1 rounded-[8px] border text-xs font-medium transition ${
-                                    currentPage === 1 
-                                        ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' 
+                                    currentPage === 1
+                                        ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed'
                                         : 'hover:bg-gray-100 hover:cursor-pointer border-gray-300 bg-white text-gray-700'
                                 }`}>
                                 Trước
@@ -289,11 +313,13 @@ export default function QuanLyTaiKhoan() {
                             ))}
 
                             <button
-                                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                                onClick={() =>
+                                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                                }
                                 disabled={currentPage === totalPages}
                                 className={`px-3 py-1 rounded-[8px] border text-xs font-medium transition ${
-                                    currentPage === totalPages 
-                                        ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' 
+                                    currentPage === totalPages
+                                        ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed'
                                         : 'hover:bg-gray-100 hover:cursor-pointer border-gray-300 bg-white text-gray-700'
                                 }`}>
                                 Sau
@@ -303,12 +329,7 @@ export default function QuanLyTaiKhoan() {
                 )}
             </div>
 
-            {isModalOpen && (
-                <AccountModal
-                    account={selectedAccount}
-                    onClose={handleCloseModal}
-                />
-            )}
+            {isModalOpen && <AccountModal account={selectedAccount} onClose={handleCloseModal} />}
 
             {isPasswordModalOpen && selectedAccount && (
                 <ChangePasswordModal

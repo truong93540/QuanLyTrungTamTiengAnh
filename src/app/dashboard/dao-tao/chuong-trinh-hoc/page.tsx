@@ -272,7 +272,7 @@ export default function ChuongTrinhHocGopPage() {
                 ) : (
                   chiTietData.khoa_hoc.map((course: any) => (
                     <tr key={course.ma_khoa_hoc} className="hover:bg-slate-50/40">
-                      <td className="p-4 text-slate-400">#{course.ma_khoa_hoc}</td>
+                      <td className="p-4 text-slate-400">{course.ma_khoa_hoc}</td>
                       <td className="p-4">
                         <p className="font-semibold text-slate-800">{course.ten_khoa_hoc}</p>
                         <p className="text-xs text-slate-400 truncate max-w-xs">{course.mo_ta || "Không có mô tả"}</p>
@@ -465,7 +465,7 @@ export default function ChuongTrinhHocGopPage() {
             ) : (
               dataList.map((item) => (
                 <tr key={item.ma_chuong_trinh} className="hover:bg-slate-50/50 transition">
-                  <td className="p-4 font-semibold text-slate-400">#{item.ma_chuong_trinh}</td>
+                  <td className="p-4 font-semibold text-slate-400">{item.ma_chuong_trinh}</td>
                   <td className="p-4">
                     <button
                       onClick={() => setSelectedProgramId(item.ma_chuong_trinh)}

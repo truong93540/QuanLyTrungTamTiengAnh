@@ -43,6 +43,16 @@ export async function POST(request: Request) {
       if (!body.so_hop_dong || !body.ma_nhan_su) {
         return NextResponse.json({ success: false, message: "Thiếu thông tin số hợp đồng hoặc mã nhân sự." }, { status: 400 });
       }
+      
+      // Đảm bảo chi_tiet_phu_cap là chuỗi JSON hợp lệ thì parse ra trước khi đẩy vào db
+      if (body.chi_tiet_phu_cap && typeof body.chi_tiet_phu_cap === "string") {
+        try {
+          body.chi_tiet_phu_cap = JSON.parse(body.chi_tiet_phu_cap);
+        } catch {
+          return NextResponse.json({ success: false, message: "Định dạng JSON cấu trúc phụ cấp không hợp lệ." }, { status: 400 });
+        }
+      }
+      
       const result = await nhanSuService.createHopDong(body);
       return NextResponse.json(result);
     }
@@ -80,6 +90,13 @@ export async function PUT(request: Request) {
     const body = await request.json();
 
     if (type === "hop-dong") {
+      if (body.chi_tiet_phu_cap && typeof body.chi_tiet_phu_cap === "string") {
+        try {
+          body.chi_tiet_phu_cap = JSON.parse(body.chi_tiet_phu_cap);
+        } catch {
+          return NextResponse.json({ success: false, message: "Định dạng JSON cấu trúc phụ cấp không hợp lệ." }, { status: 400 });
+        }
+      }
       const result = await nhanSuService.updateHopDong(id, body);
       return NextResponse.json(result);
     }
