@@ -73,7 +73,6 @@ export default function QuanLyLopHocPage() {
     const action = formLop.ma_lop_hoc ? 'UPDATE_LOP_HOC' : 'CREATE_LOP_HOC';
     const method = formLop.ma_lop_hoc ? 'PUT' : 'POST';
     
-    // Parse raw text to JSON
     const payload = { ...formLop, lich_hoc: parseLichHocText(formLop.lich_hoc_text) };
 
     const res = await fetch('/api/dao-tao/lop-hoc', {
@@ -92,7 +91,6 @@ export default function QuanLyLopHocPage() {
     if (res.success) { alert(res.message); fetchLopHocs(); } else alert(res.message);
   };
 
-  // --- RENDERS ---
   return (
     <div className="p-6 bg-slate-50 min-h-screen text-slate-800 font-sans">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -101,7 +99,6 @@ export default function QuanLyLopHocPage() {
           <button onClick={() => { setFormLop({}); setIsFormOpen(true); }} className="px-5 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition">+ Tạo Lớp Mới</button>
         </div>
 
-        {/* ... (Giữ nguyên Bảng Lớp học và Tìm kiếm như trước) ... */}
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
           <table className="min-w-full text-left text-sm">
             <thead className="bg-slate-50 border-b font-bold text-slate-600">
@@ -114,7 +111,7 @@ export default function QuanLyLopHocPage() {
                 <tr key={l.ma_lop_hoc} className="border-b hover:bg-slate-50">
                   <td className="p-4 text-slate-400 font-mono">#{l.ma_lop_hoc}</td>
                   <td className="p-4 font-bold text-blue-600 cursor-pointer hover:underline" onClick={() => { setDetailTab(1); loadDetail(l.ma_lop_hoc); }}>{l.ten_lop}</td>
-                  <td className="p-4 font-medium">{l.khoa_hoc?.ten_khoa_hoc}</td>
+                  <td className="p-4 font-medium">{l.khoa_hoc?.ten_khoa_hoc || <span className="text-rose-500 italic">Chưa liên kết</span>}</td>
                   <td className="p-4">{l._count.tham_gia} / {l.si_so_toi_da || '∞'}</td>
                   <td className="p-4">{l.ngay_khai_giang ? new Date(l.ngay_khai_giang).toLocaleDateString('vi-VN') : '—'}</td>
                   <td className="p-4 flex gap-2">
@@ -148,9 +145,9 @@ export default function QuanLyLopHocPage() {
                   <input required value={formLop.ten_lop || ''} onChange={e => setFormLop({...formLop, ten_lop: e.target.value})} className="w-full border p-2 rounded-lg text-sm mt-1 focus:ring-2 focus:ring-blue-500" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-700">Khóa Học *</label>
-                  <select required value={formLop.ma_khoa_hoc || ''} onChange={e => setFormLop({...formLop, ma_khoa_hoc: e.target.value})} className="w-full border p-2 rounded-lg text-sm mt-1">
-                    <option value="">-- Chọn --</option>
+                  <label className="text-xs font-bold text-slate-700">Khóa Học</label>
+                  <select value={formLop.ma_khoa_hoc || ''} onChange={e => setFormLop({...formLop, ma_khoa_hoc: e.target.value})} className="w-full border p-2 rounded-lg text-sm mt-1">
+                    <option value="">-- Chọn sau hoặc để trống --</option>
                     {meta.khoaHocs.map(k => <option key={k.ma_khoa_hoc} value={k.ma_khoa_hoc}>{k.ten_khoa_hoc}</option>)}
                   </select>
                 </div>
@@ -174,11 +171,9 @@ export default function QuanLyLopHocPage() {
                   <input type="number" placeholder="Bỏ trống nếu không giới hạn" value={formLop.si_so_toi_da || ''} onChange={e => setFormLop({...formLop, si_so_toi_da: e.target.value})} className="w-full border p-2 rounded-lg text-sm mt-1" />
                 </div>
                 
-                {/* LỊCH HỌC XỬ LÝ JSON CHUẨN */}
                 <div className="col-span-2 p-3 bg-blue-50/50 rounded-lg border border-blue-100">
-                  <label className="text-xs font-bold text-blue-800">Lịch Học Định Kỳ (Hệ thống tự động biên dịch JSON)</label>
+                  <label className="text-xs font-bold text-blue-800">Lịch Học Định Kỳ</label>
                   <textarea rows={3} placeholder="Ví dụ:&#10;thu 2 - ca 1&#10;thu 4 - ca 2" value={formLop.lich_hoc_text || ''} onChange={e => setFormLop({...formLop, lich_hoc_text: e.target.value})} className="w-full border border-blue-200 p-2 rounded-lg text-sm mt-1 font-mono focus:ring-2 focus:ring-blue-500" />
-                  <p className="text-[11px] text-blue-600 mt-1 italic">Mỗi buổi 1 dòng, định dạng đúng "thu [thứ] - ca [ca]". VD: thu 2 - ca 1</p>
                 </div>
 
                 <div className="col-span-2 flex justify-end gap-3 pt-4 border-t mt-2">
@@ -208,13 +203,12 @@ export default function QuanLyLopHocPage() {
               </div>
 
               <div className="p-5 overflow-y-auto flex-1 bg-slate-50/50">
-                {/* TAB 1: THÔNG TIN CHI TIẾT */}
                 {detailTab === 1 && (
                   <div className="space-y-6">
                     <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                       <h3 className="font-bold text-blue-800 border-b pb-2 mb-3">Thông Số Lớp Học</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-slate-700">
-                        <div><span className="block text-xs text-slate-400">Khóa học</span><strong className="text-slate-900">{detailLop.khoa_hoc?.ten_khoa_hoc}</strong></div>
+                        <div><span className="block text-xs text-slate-400">Khóa học</span><strong className="text-slate-900">{detailLop.khoa_hoc?.ten_khoa_hoc || 'Chưa liên kết'}</strong></div>
                         <div><span className="block text-xs text-slate-400">Phòng học</span><strong className="text-slate-900">{detailLop.phong_hoc?.ten_phong_hoc}</strong></div>
                         <div><span className="block text-xs text-slate-400">Thời gian dự kiến</span><strong className="text-slate-900">{detailLop.ngay_khai_giang?new Date(detailLop.ngay_khai_giang).toLocaleDateString('vi-VN'):'--'} → {detailLop.ngay_ket_thuc?new Date(detailLop.ngay_ket_thuc).toLocaleDateString('vi-VN'):'--'}</strong></div>
                         <div><span className="block text-xs text-slate-400">Sĩ số</span><strong className="text-slate-900">{detailLop.tham_gia.length} / {detailLop.si_so_toi_da || 'Không giới hạn'}</strong></div>
@@ -232,7 +226,6 @@ export default function QuanLyLopHocPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Cột Giáo viên */}
                       <div className="bg-white p-4 border rounded-xl shadow-sm">
                         <h3 className="font-bold text-slate-800 border-b pb-2 mb-3 flex items-center justify-between">Giáo Viên Phụ Trách</h3>
                         <div className="flex gap-2 mb-4">
@@ -257,14 +250,13 @@ export default function QuanLyLopHocPage() {
                         </ul>
                       </div>
 
-                      {/* Cột Học viên */}
                       <div className="bg-white p-4 border rounded-xl shadow-sm">
                         <h3 className="font-bold text-slate-800 border-b pb-2 mb-3">Danh Sách Học Viên <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-sm">{detailLop.tham_gia.length}</span></h3>
                         <div className="flex gap-2 mb-4">
                           <select id="sel-hv" className="border p-2 text-sm rounded-lg flex-1 bg-slate-50">
                             <option value="">Chọn học viên...</option>
                             {meta.hocViens.filter(hv => !detailLop.tham_gia.find((t:any) => t.ma_hoc_vien === hv.ma_hoc_vien)).map(h => (
-                              <option key={h.ma_hoc_vien} value={h.ma_hoc_vien}>{h.ho_ten} - {h.so_dien_thoai}</option>
+                              <option key={h.ma_hoc_vien} value={h.ma_hoc_vien}>{h.ho_ten} - {h.so_dien_thoai} ({h.trang_thai})</option>
                             ))}
                           </select>
                           <button onClick={() => {
@@ -273,19 +265,26 @@ export default function QuanLyLopHocPage() {
                           }} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm">Ghi Danh</button>
                         </div>
                         <ul className="space-y-2 text-sm max-h-64 overflow-y-auto pr-2">
-                          {detailLop.tham_gia.map((t:any) => (
-                            <li key={t.ma_hoc_vien} className="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border">
-                              <span className="font-medium text-slate-700">{t.hoc_vien?.ho_ten}</span>
-                              <button onClick={() => fetch(`/api/dao-tao/lop-hoc?action=REMOVE_HOC_VIEN&ma_lop_hoc=${detailLop.ma_lop_hoc}&ma_hoc_vien=${t.ma_hoc_vien}`, { method: 'DELETE' }).then(()=>loadDetail(detailLop.ma_lop_hoc))} className="text-rose-500 font-bold bg-rose-50 px-2 py-1 rounded text-xs">Loại</button>
-                            </li>
-                          ))}
+                          {detailLop.tham_gia.map((t:any) => {
+                            const biViPham = t.hoc_vien?.cam_ket?.some((c: any) => c.ma_khoa_hoc === detailLop.ma_khoa_hoc && c.bi_vi_pham === true);
+                            const laNghiHoc = t.hoc_vien?.trang_thai === 'Nghỉ học';
+                            return (
+                              <li key={t.ma_hoc_vien} className="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border">
+                                <span className={`font-medium ${biViPham || laNghiHoc ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                                  {t.hoc_vien?.ho_ten} 
+                                  {laNghiHoc && <span className="ml-2 text-xs bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold">Nghỉ học</span>}
+                                  {biViPham && <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">Vi phạm CK</span>}
+                                </span>
+                                <button onClick={() => fetch(`/api/dao-tao/lop-hoc?action=REMOVE_HOC_VIEN&ma_lop_hoc=${detailLop.ma_lop_hoc}&ma_hoc_vien=${t.ma_hoc_vien}`, { method: 'DELETE' }).then(()=>loadDetail(detailLop.ma_lop_hoc))} className="text-rose-500 font-bold bg-rose-50 px-2 py-1 rounded text-xs">Loại</button>
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* TAB 2: BUỔI HỌC (Modal UX cải tiến) */}
                 {detailTab === 2 && (
                   <div>
                      <div className="flex justify-between items-center mb-5 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
@@ -301,21 +300,29 @@ export default function QuanLyLopHocPage() {
                            <p className="font-bold text-blue-800 text-lg">{new Date(bh.ngay_hoc).toLocaleDateString('vi-VN')}</p>
                            <p className="text-sm text-slate-600 mt-1 line-clamp-2 min-h-[40px]">{bh.noi_dung_hoc || 'Chưa có nội dung'}</p>
                            <p className="text-xs text-slate-500 mt-2 font-medium bg-slate-50 p-1.5 rounded">GV: {bh.giao_vien?.ho_ten}</p>
-                           <div className="mt-3 pt-3 border-t border-slate-100 text-center text-xs font-bold text-blue-600 bg-blue-50/50 py-1.5 rounded hover:bg-blue-100 transition">MỞ BẢNG ĐIỂM DANH / NHẬN XÉT / BÀI TEST</div>
+                           <div className="mt-3 pt-3 border-t border-slate-100 text-center text-xs font-bold text-blue-600 bg-blue-50/50 py-1.5 rounded">MỞ QUẢN LÝ CHI TIẾT</div>
                          </div>
                        ))}
                      </div>
                   </div>
                 )}
 
-                {/* TAB 4: KẾ HOẠCH DẠY (Tách Component ra để build UX Modal tốt) */}
+                {/* TAB 3: CHI TIẾT KHÓA HỌC (Đã bổ sung hoàn chỉnh logic đề xuất) */}
+                {detailTab === 3 && (
+                  <ChiTietKhoaHocTab 
+                    detailLop={detailLop} 
+                    meta={meta} 
+                    reloadLop={() => loadDetail(detailLop.ma_lop_hoc)} 
+                  />
+                )}
+
                 {detailTab === 4 && <KeHoachGiangDayTab maKhoaHoc={detailLop.ma_khoa_hoc} giaoViens={meta.giaoViens} dsGvPhanCong={detailLop.phan_cong_giang_day} />}
               </div>
             </div>
           </div>
         )}
 
-        {/* MODAL TẠO BUỔI HỌC (THAY THẾ CHO PROMPT) */}
+        {/* MODAL TẠO BUỔI HỌC */}
         {isTaoBuoiHocOpen && (
            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[70] p-4">
              <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
@@ -358,7 +365,7 @@ export default function QuanLyLopHocPage() {
            </div>
         )}
 
-        {/* NESTED MODAL QUẢN LÝ BUỔI HỌC (Cập nhật Tab Kiểm Tra) */}
+        {/* NESTED MODAL QUẢN LÝ BUỔI HỌC */}
         {selectedBuoiHoc && (
           <div className="fixed inset-0 bg-slate-900/80 flex items-center justify-center z-[60] p-4">
              <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden border border-slate-700">
@@ -377,9 +384,9 @@ export default function QuanLyLopHocPage() {
                </div>
 
                <div className="flex-1 overflow-y-auto p-5 bg-slate-50/50">
-                  {buoiHocTab === 'diemdanh' && <DiemDanhTab maLop={detailLop.ma_lop_hoc} maBuoiHoc={selectedBuoiHoc.ma_buoi_hoc} />}
-                  {buoiHocTab === 'kiemtra' && <KiemTraTab maLop={detailLop.ma_lop_hoc} dsHocVien={detailLop.tham_gia} listBkt={detailLop.bai_kiem_tra} reloadLop={() => loadDetail(detailLop.ma_lop_hoc)} />}
-                  {buoiHocTab === 'nhanxet' && <NhanXetTab maBuoiHoc={selectedBuoiHoc.ma_buoi_hoc} dsHocVien={detailLop.tham_gia} />}
+                  {buoiHocTab === 'diemdanh' && <DiemDanhTab maLop={detailLop.ma_lop_hoc} maBuoiHoc={selectedBuoiHoc.ma_buoi_hoc} maKhoaHoc={detailLop.ma_khoa_hoc} />}
+                  {buoiHocTab === 'kiemtra' && <KiemTraTab maLop={detailLop.ma_lop_hoc} dsHocVien={detailLop.tham_gia} listBkt={detailLop.bai_kiem_tra} reloadLop={() => loadDetail(detailLop.ma_lop_hoc)} maKhoaHoc={detailLop.ma_khoa_hoc} />}
+                  {buoiHocTab === 'nhanxet' && <NhanXetTab maBuoiHoc={selectedBuoiHoc.ma_buoi_hoc} dsHocVien={detailLop.tham_gia} maKhoaHoc={detailLop.ma_khoa_hoc} />}
                </div>
              </div>
           </div>
@@ -389,15 +396,99 @@ export default function QuanLyLopHocPage() {
   );
 }
 
-// ================= COMPONENT CẢI TIẾN TÁCH RỜI =================
+// ================= SUB COMPONENTS TÁCH RỜI =================
 
-// 1. Tab Bài Kiểm Tra Thực Tế (Hoàn chỉnh)
-const KiemTraTab = ({ maLop, dsHocVien, listBkt, reloadLop }: { maLop:number, dsHocVien:any[], listBkt:any[], reloadLop: () => void }) => {
+// 1. Component Tab Chi Tiết Khóa Học (Giải quyết yêu cầu số 1)
+const ChiTietKhoaHocTab = ({ detailLop, meta, reloadLop }: { detailLop: any, meta: MetaData, reloadLop: () => void }) => {
+  const [selectedKhoaHoc, setSelectedKhoaHoc] = useState<number | ''>('');
+  const hasKhoaHoc = !!detailLop.ma_khoa_hoc;
+
+  const handleLinkKhoaHoc = async () => {
+    if (!selectedKhoaHoc) return alert('Vui lòng chọn khóa học liên kết!');
+    
+    const confirmAction = confirm('Xác nhận liên kết khóa học này vào lớp hiện tại? LƯU Ý: Một khi đã nhập khóa học vào lớp này sẽ không thể sửa đổi!');
+    if (!confirmAction) return;
+
+    const res = await fetch('/api/dao-tao/lop-hoc', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'UPDATE_KHOA_HOC_LIEN_KET',
+        payload: { ma_lop_hoc: detailLop.ma_lop_hoc, ma_khoa_hoc: Number(selectedKhoaHoc) }
+      })
+    }).then(r => r.json());
+
+    if (res.success) {
+      alert(res.message);
+      reloadLop();
+    } else {
+      alert(res.error || res.message);
+    }
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+      <div className="border-b pb-3">
+        <h3 className="font-bold text-lg text-slate-800">Thông Tin Khóa Học Đang Liên Kết</h3>
+        <p className="text-xs text-slate-500">Mỗi lớp chỉ được quyền sở hữu duy nhất một khóa học chạy xuyên suốt.</p>
+      </div>
+
+      {hasKhoaHoc ? (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg space-y-2">
+          <p className="text-sm font-semibold text-emerald-800">✓ Lớp đang liên kết với Khóa Học:</p>
+          <p className="text-xl font-bold text-slate-900">{detailLop.khoa_hoc?.ten_khoa_hoc}</p>
+          <p className="text-xs text-slate-500">Mã định danh khóa học: #{detailLop.ma_khoa_hoc}</p>
+        </div>
+      ) : (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 italic">
+          Lớp học này hiện tại chưa được gán liên kết cụ thể với bất kỳ khóa học nào trong hệ thống.
+        </div>
+      )}
+
+      <div className="pt-4 border-t space-y-3">
+        <label className="block text-sm font-bold text-slate-700">Thiết lập/Liên kết Khóa Học Mới</label>
+        <div className="flex gap-3 max-w-xl">
+          <select 
+            disabled={hasKhoaHoc}
+            value={hasKhoaHoc ? detailLop.ma_khoa_hoc : selectedKhoaHoc}
+            onChange={e => setSelectedKhoaHoc(e.target.value ? Number(e.target.value) : '')}
+            className="border p-2.5 text-sm rounded-lg flex-1 bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+          >
+            {hasKhoaHoc ? (
+              <option value={detailLop.ma_khoa_hoc}>{detailLop.khoa_hoc?.ten_khoa_hoc}</option>
+            ) : (
+              <>
+                <option value="">-- Chọn Khóa Học Muốn Gán --</option>
+                {meta.khoaHocs.map(k => (
+                  <option key={k.ma_khoa_hoc} value={k.ma_khoa_hoc}>{k.ten_khoa_hoc}</option>
+                ))}
+              </>
+            )}
+          </select>
+          <button 
+            disabled={hasKhoaHoc}
+            onClick={handleLinkKhoaHoc}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-bold shadow-sm transition"
+          >
+            Thêm Khóa Học
+          </button>
+        </div>
+        {hasKhoaHoc && (
+          <p className="text-xs text-rose-500 italic font-medium">
+            * Nút thêm đã bị vô hiệu hóa vì lớp học này đã cố định khóa học.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// 2. Tab Quản Lý Điểm Kiểm Tra (Giải quyết yêu cầu số 2)
+const KiemTraTab = ({ maLop, dsHocVien, listBkt, reloadLop, maKhoaHoc }: { maLop:number, dsHocVien:any[], listBkt:any[], reloadLop: () => void, maKhoaHoc: number }) => {
   const [selectedBkt, setSelectedBkt] = useState<number|''>('');
   const [ketQuaList, setKetQuaList] = useState<any[]>([]);
   const [isTaoBkt, setIsTaoBkt] = useState(false);
 
-  // Fetch KQ khi chọn bài KT
   useEffect(() => {
     if (selectedBkt) {
       fetch(`/api/dao-tao/lop-hoc?ma_bai_kiem_tra=${selectedBkt}`).then(r=>r.json()).then(res => setKetQuaList(res.data || []));
@@ -438,12 +529,26 @@ const KiemTraTab = ({ maLop, dsHocVien, listBkt, reloadLop }: { maLop:number, ds
             <tbody>
               {dsHocVien.map(hv => {
                 const kq = ketQuaList.find(k => k.ma_hoc_vien === hv.ma_hoc_vien);
+                const biViPham = hv.hoc_vien?.cam_ket?.some((c: any) => c.ma_khoa_hoc === maKhoaHoc && c.bi_vi_pham === true);
+                const laNghiHoc = hv.hoc_vien?.trang_thai === 'Nghỉ học';
+                const biKhoa = biViPham || laNghiHoc;
+
                 return (
-                  <tr key={hv.ma_hoc_vien} className="border-b hover:bg-slate-50">
-                    <td className="p-4 font-medium">{hv.hoc_vien.ho_ten}</td>
-                    <td className="p-4"><input type="number" id={`diem_${hv.ma_hoc_vien}`} defaultValue={kq?.diem_so || ''} step="0.1" min="0" max="10" className="border w-24 p-2 rounded-lg bg-white" placeholder="0 - 10" /></td>
-                    <td className="p-4"><input type="text" id={`nx_kt_${hv.ma_hoc_vien}`} defaultValue={kq?.nhan_xet || ''} className="border w-full p-2 rounded-lg bg-white" placeholder="Ghi chú đánh giá bài làm..." /></td>
-                    <td className="p-4"><button onClick={() => handleSaveKetQua(hv.ma_hoc_vien)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-full shadow-sm">Lưu</button></td>
+                  <tr key={hv.ma_hoc_vien} className={`border-b hover:bg-slate-50 ${biKhoa ? 'bg-slate-100/60' : ''}`}>
+                    <td className="p-4 font-medium">
+                      <span className={biKhoa ? 'text-slate-400 line-through' : ''}>{hv.hoc_vien.ho_ten}</span>
+                      {laNghiHoc && <p className="text-[11px] text-rose-600 font-bold">Đã nghỉ học</p>}
+                      {biViPham && <p className="text-[11px] text-amber-600 font-bold">Vi phạm cam kết</p>}
+                    </td>
+                    <td className="p-4">
+                      <input type="number" disabled={biKhoa} id={`diem_${hv.ma_hoc_vien}`} defaultValue={kq?.diem_so || ''} step="0.1" min="0" max="10" className="border w-24 p-2 rounded-lg bg-white disabled:bg-slate-200" placeholder="0 - 10" />
+                    </td>
+                    <td className="p-4">
+                      <input type="text" disabled={biKhoa} id={`nx_kt_${hv.ma_hoc_vien}`} defaultValue={kq?.nhan_xet || ''} className="border w-full p-2 rounded-lg bg-white disabled:bg-slate-200" placeholder={biKhoa ? "Bị chặn do nghỉ học hoặc vi phạm cam kết" : "Ghi chú đánh giá bài làm..."} />
+                    </td>
+                    <td className="p-4">
+                      <button disabled={biKhoa} onClick={() => handleSaveKetQua(hv.ma_hoc_vien)} className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-full shadow-sm">Lưu</button>
+                    </td>
                   </tr>
                 )
               })}
@@ -453,7 +558,6 @@ const KiemTraTab = ({ maLop, dsHocVien, listBkt, reloadLop }: { maLop:number, ds
       )}
       {!selectedBkt && <div className="text-center p-12 border rounded-xl bg-slate-50/50 border-dashed text-slate-400 font-medium">Vui lòng chọn hoặc tạo bài kiểm tra để nhập điểm.</div>}
 
-      {/* Modal tạo BKT Mini */}
       {isTaoBkt && (
         <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
           <form className="bg-white p-5 rounded-xl shadow-xl w-full max-w-sm" onSubmit={async (e) => {
@@ -477,7 +581,155 @@ const KiemTraTab = ({ maLop, dsHocVien, listBkt, reloadLop }: { maLop:number, ds
   );
 };
 
-// 2. Kế Hoạch Giảng Dạy Modal Hóa UI
+// 3. Component Tab Điểm Danh (Giải quyết yêu cầu số 2)
+const DiemDanhTab = ({ maLop, maBuoiHoc, maKhoaHoc }: { maLop:number, maBuoiHoc:number, maKhoaHoc: number }) => {
+  const [ds, setDs] = useState<any[]>([]);
+  useEffect(() => { 
+    fetch(`/api/dao-tao/lop-hoc?ma_lop_hoc=${maLop}&ma_buoi_hoc=${maBuoiHoc}`).then(r=>r.json()).then(res => setDs(res.data || [])); 
+  }, [maLop, maBuoiHoc]);
+
+  const updateDiemDanh = async (ma_hoc_vien: number, trang_thai: string, ghi_chu: string) => {
+    await fetch('/api/dao-tao/lop-hoc', { method: 'POST', body: JSON.stringify({ action: 'UPSERT_DIEM_DANH', payload: { ma_buoi_hoc: maBuoiHoc, ma_hoc_vien, trang_thai, ghi_chu } }) });
+    setDs(ds.map(d => d.ma_hoc_vien === ma_hoc_vien ? {...d, trang_thai, ghi_chu} : d));
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+      <table className="w-full text-left text-sm">
+        <thead className="bg-slate-50 font-bold border-b text-slate-700"><tr><th className="p-4 w-1/4">Học Viên</th><th className="p-4 w-1/4">Trạng thái</th><th className="p-4">Ghi chú</th></tr></thead>
+        <tbody>
+          {ds.map(d => {
+            const biViPham = d.cam_ket?.some((c: any) => c.ma_khoa_hoc === maKhoaHoc && c.bi_vi_pham === true);
+            const laNghiHoc = d.trang_thai_hv === 'Nghỉ học' || d.trang_thai === 'Nghỉ học';
+            const biKhoa = biViPham || laNghiHoc;
+
+            return (
+              <tr key={d.ma_hoc_vien} className={`border-b hover:bg-slate-50 ${biKhoa ? 'bg-slate-100/60' : ''}`}>
+                <td className="p-4 font-medium">
+                  <span className={biKhoa ? 'text-slate-400 line-through' : ''}>{d.ho_ten}</span>
+                  {laNghiHoc && <span className="ml-2 text-xs text-rose-600 font-bold">(Nghỉ học)</span>}
+                  {biViPham && <span className="ml-2 text-xs text-amber-600 font-bold">(Vi phạm CK)</span>}
+                </td>
+                <td className="p-4">
+                  <select disabled={biKhoa} value={biKhoa ? "Vắng không phép" : d.trang_thai} onChange={(e) => updateDiemDanh(d.ma_hoc_vien, e.target.value, d.ghi_chu)} className={`border p-2 rounded-lg text-sm w-full font-semibold ${d.trang_thai === 'Có mặt' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-50'}`}>
+                    <option value="Chưa điểm danh">Chưa điểm danh</option>
+                    <option value="Có mặt">Có mặt</option>
+                    <option value="Vắng phép">Vắng phép</option>
+                    <option value="Vắng không phép">Vắng không phép</option>
+                    <option value="Đi muộn">Đi muộn</option>
+                  </select>
+                </td>
+                <td className="p-4">
+                  <input type="text" disabled={biKhoa} value={biKhoa ? "Học viên dừng học / vi phạm" : (d.ghi_chu||'')} onBlur={(e) => updateDiemDanh(d.ma_hoc_vien, d.trang_thai, e.target.value)} onChange={(e) => setDs(ds.map(item => item.ma_hoc_vien===d.ma_hoc_vien?{...item, ghi_chu:e.target.value}:item))} className="border w-full p-2 rounded-lg bg-white disabled:bg-slate-200" placeholder="Ghi chú thêm..."/>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+// 4. Component Tab Nhận Xét (Giải quyết hoàn hảo yêu cầu số 2 & số 3)
+const NhanXetTab = ({ maBuoiHoc, dsHocVien, maKhoaHoc }: { maBuoiHoc:number, dsHocVien:any[], maKhoaHoc: number }) => {
+  const [dbNhanXet, setDbNhanXet] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Đồng bộ nạp dữ liệu nhận xét cũ từ CSDL về máy khách khi mở Tab hoặc đổi Buổi học
+  const fetchSavedNhanXet = useCallback(async () => {
+    setLoading(true);
+    const res = await fetch(`/api/dao-tao/lop-hoc?ma_buoi_hoc_nx=${maBuoiHoc}`).then(r => r.json());
+    if (res.success) {
+      setDbNhanXet(res.data || []);
+    }
+    setLoading(false);
+  }, [maBuoiHoc]);
+
+  useEffect(() => {
+    fetchSavedNhanXet();
+  }, [fetchSavedNhanXet]);
+
+  const saveNx = async (ma_hoc_vien: number, da_lam_bt: boolean, nd: string) => {
+    const res = await fetch('/api/dao-tao/lop-hoc', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'UPSERT_NHAN_XET', payload: { ma_buoi_hoc: maBuoiHoc, ma_hoc_vien, da_lam_bai_tap: da_lam_bt, noi_dung_nhan_xet: nd } }) 
+    }).then(r => r.json());
+    
+    if (res.success) {
+      fetchSavedNhanXet(); // Cập nhật lại state cục bộ sau khi lưu
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center p-6 text-sm text-slate-500 font-medium">Đang đồng bộ dữ liệu đánh giá từ server...</div>;
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+      <table className="w-full text-left text-sm">
+        <thead className="bg-slate-50 font-bold border-b text-slate-700"><tr><th className="p-4 w-1/4">Học Viên</th><th className="p-4 text-center w-24">Đã làm BT</th><th className="p-4">Nhận xét chi tiết</th><th className="p-4 w-20">Lưu</th></tr></thead>
+        <tbody>
+          {dsHocVien.map(t => {
+            const biViPham = t.hoc_vien?.cam_ket?.some((c: any) => c.ma_khoa_hoc === maKhoaHoc && c.bi_vi_pham === true);
+            const laNghiHoc = t.hoc_vien?.trang_thai === 'Nghỉ học';
+            const biKhoa = biViPham || laNghiHoc;
+
+            // Tìm nhận xét tương ứng của học viên này trong CSDL đã fetch về
+            const currentRecord = dbNhanXet.find(nx => nx.ma_hoc_vien === t.ma_hoc_vien);
+
+            return (
+              <tr key={t.ma_hoc_vien} className={`border-b hover:bg-slate-50 ${biKhoa ? 'bg-slate-100/60' : ''}`}>
+                <td className="p-4 font-medium">
+                  <span className={biKhoa ? 'text-slate-400 line-through' : ''}>{t.hoc_vien.ho_ten}</span>
+                  {laNghiHoc && <p className="text-[11px] text-rose-600 font-bold">Đã nghỉ học</p>}
+                  {biViPham && <p className="text-[11px] text-amber-600 font-bold">Vi phạm cam kết</p>}
+                </td>
+                <td className="p-4 text-center">
+                  <input 
+                    type="checkbox" 
+                    disabled={biKhoa}
+                    id={`bt_${t.ma_hoc_vien}`} 
+                    key={`bt_key_${currentRecord?.da_lam_bai_tap}`}
+                    defaultChecked={currentRecord?.da_lam_bai_tap || false}
+                    className="w-5 h-5 text-blue-600 rounded disabled:opacity-50" 
+                  />
+                </td>
+                <td className="p-4">
+                  <input 
+                    type="text" 
+                    disabled={biKhoa}
+                    id={`nx_${t.ma_hoc_vien}`} 
+                    defaultValue={currentRecord?.noi_dung_nhan_xet || ''}
+                    className="border w-full p-2 rounded-lg bg-white disabled:bg-slate-200" 
+                    placeholder={biKhoa ? "Không thể nhận xét học viên này" : "Ghi chú đánh giá thái độ học tập..."}
+                  />
+                </td>
+                <td className="p-4">
+                  <button 
+                    disabled={biKhoa}
+                    onClick={() => {
+                      const checked = (document.getElementById(`bt_${t.ma_hoc_vien}`) as HTMLInputElement).checked;
+                      const val = (document.getElementById(`nx_${t.ma_hoc_vien}`) as HTMLInputElement).value;
+                      saveNx(t.ma_hoc_vien, checked, val); 
+                      alert('Đã cập nhật nhận xét học viên thành công!');
+                    }} 
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-full shadow-sm"
+                  >
+                    Lưu
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+// Component Kế Hoạch Giảng Dạy giữ nguyên logic gốc của bạn
 const KeHoachGiangDayTab = ({ maKhoaHoc, giaoViens, dsGvPhanCong }: { maKhoaHoc:number, giaoViens:any[], dsGvPhanCong:any[] }) => {
   const [kh, setKh] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -485,6 +737,7 @@ const KeHoachGiangDayTab = ({ maKhoaHoc, giaoViens, dsGvPhanCong }: { maKhoaHoc:
   const [khMau, setKhMau] = useState<any[]>([]);
 
   const fetchKh = useCallback(async () => {
+    if (!maKhoaHoc) return;
     const res = await fetch(`/api/dao-tao/lop-hoc?ke_hoach_giang_day=${maKhoaHoc}`).then(r=>r.json());
     if (res.success) setKh(res.data);
   }, [maKhoaHoc]);
@@ -514,11 +767,11 @@ const KeHoachGiangDayTab = ({ maKhoaHoc, giaoViens, dsGvPhanCong }: { maKhoaHoc:
            <h3 className="font-bold text-lg text-slate-800">Kế Hoạch Giảng Dạy Khóa Học</h3>
            <p className="text-xs text-slate-500">Giáo án phân bổ cho toàn bộ khóa học liên kết với lớp này.</p>
         </div>
-        <button onClick={() => {setIsModalOpen(true); fetchKhMau();}} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm">+ Thêm Kế Hoạch</button>
+        <button disabled={!maKhoaHoc} onClick={() => {setIsModalOpen(true); fetchKhMau();}} className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm">+ Thêm Kế Hoạch</button>
       </div>
 
       <div className="grid gap-3">
-        {kh.length === 0 && <div className="text-center p-10 bg-white rounded-xl border border-dashed text-slate-400">Chưa thiết lập kế hoạch giảng dạy cho khóa này.</div>}
+        {kh.length === 0 && <div className="text-center p-10 bg-white rounded-xl border border-dashed text-slate-400">Chưa thiết lập kế hoạch giảng dạy cho khóa này hoặc lớp chưa gán khóa học.</div>}
         {kh.map(k => (
           <div key={k.ma_ke_hoach_giang_day} className="border border-slate-200 p-4 rounded-xl bg-white flex justify-between items-center shadow-sm">
             <div>
@@ -550,9 +803,8 @@ const KeHoachGiangDayTab = ({ maKhoaHoc, giaoViens, dsGvPhanCong }: { maKhoaHoc:
             <div className="flex-1 overflow-y-auto p-5 bg-slate-50">
               {tabTao === 'mau' && (
                 <div className="space-y-3">
-                  <p className="text-xs text-slate-500 mb-2 italic">Danh sách các giáo án Kế hoạch được sử dụng gần đây của hệ thống. Nhấp "Áp dụng" để nhân bản cho khóa hiện tại.</p>
                   {khMau.map(m => (
-                    <div key={m.ma_ke_hoach_giang_day} className="bg-white border p-3 rounded-xl flex justify-between items-center hover:shadow-sm">
+                    <div key={m.ma_ke_hoach_giang_day} className="bg-white border p-3 rounded-xl flex justify-between items-center">
                       <div>
                         <p className="font-bold text-sm text-slate-800">{m.noi_dung}</p>
                         <p className="text-xs text-slate-400 mt-1">Từ Khóa: {m.khoa_hoc?.ten_khoa_hoc}</p>
@@ -587,67 +839,6 @@ const KeHoachGiangDayTab = ({ maKhoaHoc, giaoViens, dsGvPhanCong }: { maKhoaHoc:
           </div>
         </div>
       )}
-    </div>
-  );
-};
-
-// Component Điểm Danh và Nhận Xét giữ nguyên vì đã hoạt động ổn định ở bản trước
-const DiemDanhTab = ({ maLop, maBuoiHoc }: { maLop:number, maBuoiHoc:number }) => {
-  const [ds, setDs] = useState<any[]>([]);
-  useEffect(() => { fetch(`/api/dao-tao/lop-hoc?ma_lop_hoc=${maLop}&ma_buoi_hoc=${maBuoiHoc}`).then(r=>r.json()).then(res => setDs(res.data || [])); }, [maLop, maBuoiHoc]);
-  const updateDiemDanh = async (ma_hoc_vien: number, trang_thai: string, ghi_chu: string) => {
-    await fetch('/api/dao-tao/lop-hoc', { method: 'POST', body: JSON.stringify({ action: 'UPSERT_DIEM_DANH', payload: { ma_buoi_hoc: maBuoiHoc, ma_hoc_vien, trang_thai, ghi_chu } }) });
-    setDs(ds.map(d => d.ma_hoc_vien === ma_hoc_vien ? {...d, trang_thai, ghi_chu} : d));
-  };
-  return (
-    <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-      <table className="w-full text-left text-sm">
-        <thead className="bg-slate-50 font-bold border-b text-slate-700"><tr><th className="p-4 w-1/4">Học Viên</th><th className="p-4 w-1/4">Trạng thái</th><th className="p-4">Ghi chú</th></tr></thead>
-        <tbody>
-          {ds.map(d => (
-            <tr key={d.ma_hoc_vien} className="border-b hover:bg-slate-50">
-              <td className="p-4 font-medium">{d.ho_ten}</td>
-              <td className="p-4">
-                <select value={d.trang_thai} onChange={(e) => updateDiemDanh(d.ma_hoc_vien, e.target.value, d.ghi_chu)} className={`border p-2 rounded-lg text-sm w-full font-semibold ${d.trang_thai === 'Có mặt' ? 'bg-green-50 text-green-700 border-green-200' : d.trang_thai.includes('Vắng') ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-slate-50'}`}>
-                  <option value="Chưa điểm danh">Chưa điểm danh</option>
-                  <option value="Có mặt">Có mặt</option>
-                  <option value="Vắng phép">Vắng phép</option>
-                  <option value="Vắng không phép">Vắng không phép</option>
-                  <option value="Đi muộn">Đi muộn</option>
-                </select>
-              </td>
-              <td className="p-4"><input type="text" value={d.ghi_chu||''} onBlur={(e) => updateDiemDanh(d.ma_hoc_vien, d.trang_thai, e.target.value)} onChange={(e) => setDs(ds.map(item => item.ma_hoc_vien===d.ma_hoc_vien?{...item, ghi_chu:e.target.value}:item))} className="border w-full p-2 rounded-lg bg-white" placeholder="Ghi chú thêm..."/></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
-
-const NhanXetTab = ({ maBuoiHoc, dsHocVien }: { maBuoiHoc:number, dsHocVien:any[] }) => {
-  const saveNx = async (ma_hoc_vien: number, da_lam_bt: boolean, nd: string) => {
-    await fetch('/api/dao-tao/lop-hoc', { method: 'POST', body: JSON.stringify({ action: 'UPSERT_NHAN_XET', payload: { ma_buoi_hoc: maBuoiHoc, ma_hoc_vien, da_lam_bai_tap: da_lam_bt, noi_dung_nhan_xet: nd } }) });
-  };
-  return (
-    <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-      <table className="w-full text-left text-sm">
-        <thead className="bg-slate-50 font-bold border-b text-slate-700"><tr><th className="p-4 w-1/4">Học Viên</th><th className="p-4 text-center w-24">Đã làm BT</th><th className="p-4">Nhận xét chi tiết</th><th className="p-4 w-20">Lưu</th></tr></thead>
-        <tbody>
-          {dsHocVien.map(t => (
-            <tr key={t.ma_hoc_vien} className="border-b hover:bg-slate-50">
-              <td className="p-4 font-medium">{t.hoc_vien.ho_ten}</td>
-              <td className="p-4 text-center"><input type="checkbox" id={`bt_${t.ma_hoc_vien}`} className="w-5 h-5 text-blue-600 rounded" /></td>
-              <td className="p-4"><input type="text" id={`nx_${t.ma_hoc_vien}`} className="border w-full p-2 rounded-lg bg-white" placeholder="Ghi chú đánh giá thái độ học tập..."/></td>
-              <td className="p-4"><button onClick={() => {
-                const checked = (document.getElementById(`bt_${t.ma_hoc_vien}`) as HTMLInputElement).checked;
-                const val = (document.getElementById(`nx_${t.ma_hoc_vien}`) as HTMLInputElement).value;
-                saveNx(t.ma_hoc_vien, checked, val); alert('Đã lưu nhận xét!');
-              }} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-full shadow-sm">Lưu</button></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
 };

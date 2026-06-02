@@ -47,12 +47,7 @@ const menuItems = [
                 role: 'Danh mục chức vụ',
             },
             {
-                title: '2.3 DM Chương trình học',
-                href: '/dashboard/danh-muc/chuong-trinh',
-                role: 'Danh mục chương trình học',
-            },
-            {
-                title: '2.4 DM Phòng học',
+                title: '2.3 DM Phòng học',
                 href: '/dashboard/danh-muc/phong-hoc',
                 role: 'Danh mục phòng học',
             },
@@ -180,6 +175,11 @@ const menuItems = [
                 href: '/dashboard/bao-cao/hoat-dong',
                 role: 'Báo cáo thống kê',
             },
+            {
+                title: '6.4 Thống kê học viên đăng ký mới',
+                href: '/dashboard/dao-tao/baocaothongke',
+                role: 'Báo cáo thống kê',
+            }
         ],
     },
 ]

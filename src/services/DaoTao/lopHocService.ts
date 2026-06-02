@@ -2,6 +2,28 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+export async function updateKhoaHocLienKet(ma_lop_hoc: number, ma_khoa_hoc: number) {
+  // Kiểm tra xem lớp học hiện tại đã có khóa học chưa
+  const lopHoc = await prisma.lopHoc.findUnique({
+    where: { ma_lop_hoc }
+  });
+  
+  if (lopHoc && lopHoc.ma_khoa_hoc) {
+    throw new Error("Lớp học này đã được liên kết với một khóa học từ trước và không thể thay đổi.");
+  }
+
+  return await prisma.lopHoc.update({
+    where: { ma_lop_hoc },
+    data: { ma_khoa_hoc }
+  });
+}
+
+export async function getDanhSachNhanXet(ma_buoi_hoc: number) {
+  return await prisma.nhanXet.findMany({
+    where: { ma_buoi_hoc }
+  });
+}
+
 export const lopHocService = {
   // ... (Giữ nguyên các hàm getMetadata, getAllLopHoc, getLopHocDetail, createLopHoc, updateLopHoc, deleteLopHoc, assign/remove GiaoVien/HocVien, BuoiHoc, DiemDanh, NhanXet như cũ) ...
 

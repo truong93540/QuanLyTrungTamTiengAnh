@@ -83,7 +83,6 @@ export async function DELETE(request: Request) {
     if (isNaN(id)) return NextResponse.json({ success: false, message: "ID không hợp lệ." }, { status: 400 });
 
     switch (type) {
-      // Đã cập nhật kết nối đến các hàm xóa cứng dữ liệu trong Service công khai
       case "lop-hoc": return NextResponse.json(await hocVienService.deleteThamGiaLop(id, studentId));
       case "cam-ket": return NextResponse.json(await hocVienService.deleteCamKet(id, studentId));
       case "phieu-thu": return NextResponse.json(await hocVienService.deletePhieuThu(id, studentId));
