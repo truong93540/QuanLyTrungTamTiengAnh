@@ -62,31 +62,27 @@ export default function QuanLyMarketingPage() {
     const [chuongTrinhHocList, setChuongTrinhHocList] = useState<ChuongTrinhHoc[]>([])
     const [isLoading, setIsLoading] = useState(true)
     
-    // Tìm kiếm và lọc
     const currentDate = new Date();
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedMonth, setSelectedMonth] = useState<string>((currentDate.getMonth() + 1).toString()) 
     const [selectedYear, setSelectedYear] = useState<string>(currentDate.getFullYear().toString()) 
     
     const [tuKhoaNhanSu, setTuKhoaNhanSu] = useState("")
-    const [tuKhoaKhoaHoc, setTuKhoaKhoaHoc] = useState("") // Tìm kiếm khóa học
+    const [tuKhoaKhoaHoc, setTuKhoaKhoaHoc] = useState("") 
 
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 5
 
-    // Modal States chính
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isViewMode, setIsViewMode] = useState(false)
     const [editingId, setEditingId] = useState<number | null>(null)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [deletingId, setDeletingId] = useState<number | null>(null)
 
-    // Accordion View States
     const [showKhoaHocDetail, setShowKhoaHocDetail] = useState(false) 
     const [showNhanSuDetail, setShowNhanSuDetail] = useState(false) 
     const [viewData, setViewData] = useState<ChuongTrinhMarketing | null>(null)
 
-    // Modal State Tạo nhanh Khóa Học
     const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false)
     const [isSubmittingCourse, setIsSubmittingCourse] = useState(false)
     const [newCourseData, setNewCourseData] = useState({
@@ -165,7 +161,6 @@ export default function QuanLyMarketingPage() {
         if (formErrors[name]) setFormErrors(prev => ({ ...prev, [name]: '' }));
     }
 
-    // Logic Quản lý Danh sách Nhân sự
     const handleToggleNhanSu = (ma_nhan_su: number, isChecked: boolean) => {
         if (isViewMode) return;
         setFormData(prev => {
@@ -181,7 +176,6 @@ export default function QuanLyMarketingPage() {
         }))
     }
 
-    // Logic Quản lý Danh sách Khóa Học (Multi-select)
     const handleToggleKhoaHoc = (ma_khoa_hoc: number, isChecked: boolean) => {
         if (isViewMode) return;
         setFormData(prev => {
@@ -196,7 +190,6 @@ export default function QuanLyMarketingPage() {
         })
     }
 
-    // Modal Điều khiển
     const openAddModal = () => {
         setIsViewMode(false)
         setEditingId(null)
@@ -243,7 +236,6 @@ export default function QuanLyMarketingPage() {
 
     const closeModal = () => setIsModalOpen(false)
 
-    // Xóa chương trình
     const openDeleteModal = (id: number) => { setDeletingId(id); setIsDeleteModalOpen(true) }
     const closeDeleteModal = () => { setIsDeleteModalOpen(false); setDeletingId(null) }
 
@@ -260,7 +252,6 @@ export default function QuanLyMarketingPage() {
         } catch (error) { showToast('Không thể kết nối đến máy chủ.', 'error') } finally { closeDeleteModal() }
     }
 
-    // Logic Bắt Lỗi và Lưu
     const isValidDateInput = (dateString: string) => {
         const dateObj = new Date(dateString);
         return dateObj instanceof Date && !isNaN(dateObj.getTime());
@@ -338,7 +329,6 @@ export default function QuanLyMarketingPage() {
         } catch (error) { showToast('Không thể kết nối đến máy chủ.', 'error') }
     }
 
-    // --- LOGIC TẠO NHANH KHÓA HỌC ---
     const handleNewCourseChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setNewCourseData({ ...newCourseData, [name]: value });
@@ -375,11 +365,8 @@ export default function QuanLyMarketingPage() {
 
             if (response.ok) {
                 const createdCourse = await response.json();
-                
-                // 1. Thêm vào danh sách khóa học nội bộ
                 setDanhSachKhoaHoc(prev => [createdCourse, ...prev]);
-                
-                // 2. Tự động tích chọn khóa học này vào form Marketing
+            
                 setFormData(prev => ({
                     ...prev,
                     danh_sach_khoa_hoc: [...prev.danh_sach_khoa_hoc, createdCourse.ma_khoa_hoc]
@@ -388,7 +375,6 @@ export default function QuanLyMarketingPage() {
 
                 showToast('Đã tạo và tích chọn Khóa học mới!', 'success');
                 setIsAddCourseModalOpen(false);
-                // Reset form
                 setNewCourseData({ ten_khoa_hoc: '', thoi_luong: '', hoc_phi: '', trinh_do: 'A1', trang_thai: 'Đang mở', ma_chuong_trinh: '' });
             } else {
                 setNewCourseErrors({ general: 'Có lỗi khi lưu khóa học mới.' });
@@ -400,8 +386,6 @@ export default function QuanLyMarketingPage() {
         }
     }
 
-
-    // TÍNH TOÁN LỌC DỮ LIỆU BẢNG CHÍNH
     const filteredData = data.filter(item => {
         const lowerSearch = searchTerm.toLowerCase();
         const matchProgram = item.ten_chuong_trinh_marketing.toLowerCase().includes(lowerSearch) ||
@@ -425,8 +409,6 @@ export default function QuanLyMarketingPage() {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
     const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem)
     const totalPages = Math.ceil(filteredData.length / itemsPerPage)
-
-    // Xử lý danh sách gợi ý
     const nhanSuDaChonIDs = formData.danh_sach_nhan_su.map(i => i.ma_nhan_su);
     const nhanSuTimKiem = tuKhoaNhanSu.trim() === "" ? [] : danhSachNhanSu.filter(ns => 
         ns.ho_ten.toLowerCase().includes(tuKhoaNhanSu.toLowerCase()) && !nhanSuDaChonIDs.includes(ns.ma_nhan_su)
@@ -894,7 +876,6 @@ export default function QuanLyMarketingPage() {
             value={tuKhoaNhanSu} 
             onChange={(e) => {
                 setTuKhoaNhanSu(e.target.value);
-                // Xóa lỗi khi người dùng bắt đầu tìm kiếm
                 if (formErrors.danh_sach_nhan_su) {
                     setFormErrors(prev => ({ ...prev, danh_sach_nhan_su: '' }));
                 }

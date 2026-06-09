@@ -6,9 +6,6 @@ import {
     FaUserPlus,  FaExclamationTriangle,  FaShieldAlt,  FaSync,  FaTasks,  FaClock,  FaFileAlt, FaChevronDown,FaChevronUp,FaBookOpen,FaArrowLeft,FaFolderOpen
 } from 'react-icons/fa'
 
-// ==========================================
-// INTERFACES
-// ==========================================
 interface KhoaHoc {
     ma_khoa_hoc: number
     ten_khoa_hoc: string
@@ -61,28 +58,22 @@ interface CamKet {
 }
 
 export default function QuanLyCamKetPage() {
-    // ==========================================
-    // STATES
-    // ==========================================
+
     const [data, setData] = useState<CamKet[]>([])
     const [danhSachKhoaHoc, setDanhSachKhoaHoc] = useState<KhoaHoc[]>([])
     const [danhSachLopHoc, setDanhSachLopHoc] = useState<LopHoc[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
-    // ĐIỀU HƯỚNG 3 TẦNG (Navigation States)
     const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null)
     const [selectedClassId, setSelectedClassId] = useState<number | null>(null)
 
-    // TÌM KIẾM
     const [tuKhoaKhoaHoc, setTuKhoaKhoaHoc] = useState('')
     const [tuKhoaLopHoc, setTuKhoaLopHoc] = useState('')
     const [searchTerm, setSearchTerm] = useState('')
     
-    // States cho Ẩn/Hiện từng khối chi tiết Modal
     const [showStudentInfo, setShowStudentInfo] = useState(false)
     const [showCourseInfo, setShowCourseInfo] = useState(false)
     
-    // Modal States
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingId, setEditingId] = useState<number | null>(null)
     const [isViewMode, setIsViewMode] = useState(false)
@@ -108,7 +99,6 @@ export default function QuanLyCamKetPage() {
     const [fullCourseInfo, setFullCourseInfo] = useState<any>(null)
     const [isLoadingDetails, setIsLoadingDetails] = useState(false)
 
-    // Modals Thêm học viên
     const [isAskStudentModalOpen, setIsAskStudentModalOpen] = useState(false)
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false)
     const [isSubmittingStudent, setIsSubmittingStudent] = useState(false)
@@ -126,9 +116,6 @@ export default function QuanLyCamKetPage() {
     const [deletingId, setDeletingId] = useState<number | null>(null)
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-    // ==========================================
-    // UTILS & FETCH
-    // ==========================================
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
         setToast({ message, type })
         setTimeout(() => setToast(null), 3000)
@@ -175,9 +162,7 @@ export default function QuanLyCamKetPage() {
         fetchData()
     }, [])
 
-    // ==========================================
-    // HANDLERS MODAL CAM KẾT & HỌC VIÊN
-    // ==========================================
+ 
     const handleStartAddWorkflow = () => setIsAskStudentModalOpen(true)
     const handleHasStudent = () => { setIsAskStudentModalOpen(false); openAddModal() }
     const handleNoStudent = () => {
@@ -230,16 +215,19 @@ export default function QuanLyCamKetPage() {
                     trang_thai: 'Đang hiệu lực', ma_hoc_vien: createdStudent.ma_hoc_vien.toString(),
                     ten_hoc_vien: createdStudent.ho_ten, 
                     ma_khoa_hoc: selectedCourseId ? selectedCourseId.toString() : '', 
-                    so_buoi_vang_cho_phep: 3, tham_gia_thi_day_du: true, so_buoi_di_muon: 3, so_lan_thieu_bai_tap: 3,
+                    so_buoi_vang_cho_phep: '', tham_gia_thi_day_du: true, so_buoi_di_muon: '', so_lan_thieu_bai_tap: '',
                     bi_vi_pham: false, ly_do_vi_pham: '',
                 })
                 setFormErrors({})
                 setActiveTab('info')
                 setIsModalOpen(true)
             } else {
-                setNewStudentErrors({ general: 'Có lỗi xảy ra khi lưu trên máy chủ.' })
-            }
-        } catch (error) {
+                const errorData = await response.json();
+                setNewStudentErrors({ 
+                    general: errorData.error || errorData.message || "Lỗi khi tạo mới học viên"
+                });
+        } } 
+        catch (error) {
             setNewStudentErrors({ general: 'Lỗi kết nối máy chủ.' })
         } finally {
             setIsSubmittingStudent(false)
@@ -290,7 +278,7 @@ export default function QuanLyCamKetPage() {
 
     const selectStudent = (student: any) => {
         setFormData({
-            ...formData,
+            ...formData,                                                                
             ten_hoc_vien: student.ho_ten,
             ma_hoc_vien: student.ma_hoc_vien.toString(),
         })
@@ -459,7 +447,6 @@ export default function QuanLyCamKetPage() {
     const handleSaveCamKet = async () => {
         const newErrors: Record<string, string> = {}
 
-        // Kiểm tra cơ bản
         if (!formData.ten_hoc_vien.trim()) newErrors.ten_hoc_vien = 'Vui lòng nhập tên học viên'
         if (!formData.ma_hoc_vien) newErrors.ma_hoc_vien = 'Vui lòng chọn học viên hợp lệ'
         if (!formData.ma_khoa_hoc) newErrors.ma_khoa_hoc = 'Vui lòng chọn khóa học cam kết'
@@ -484,7 +471,6 @@ export default function QuanLyCamKetPage() {
             else if (formData.trang_thai === 'Đã hết hạn' && expirationDate >= today) newErrors.ngay_het_han = 'Cam kết vẫn còn hạn'
         }
 
-        // Logic kiểm tra chồng chéo khóa học của học viên
         if (formData.ma_hoc_vien && formData.ngay_ky && !newErrors.ngay_het_han) {
             const existingCamKetsOfStudent = data.filter(c => 
                 c.ma_hoc_vien.toString() === formData.ma_hoc_vien && 
@@ -534,8 +520,25 @@ export default function QuanLyCamKetPage() {
 
             if (response.ok) {
                 const savedData = await response.json()
-                if (editingId) setData(data.map((item) => item.ma_cam_ket === savedData.ma_cam_ket ? savedData : item))
-                else setData([...data, savedData])
+                if (editingId) {
+                    setData(data.map((item) => {
+                        if (item.ma_cam_ket === savedData.ma_cam_ket) {
+                            return {
+                                ...item,
+                                ...savedData,
+                                hoc_vien: {
+                                    ...item.hoc_vien,
+                                    ...(savedData.hoc_vien || {}),
+                                    tham_gia_lop: item.hoc_vien?.tham_gia_lop 
+                                },
+                                khoa_hoc: savedData.khoa_hoc || item.khoa_hoc
+                            };
+                        }
+                        return item;
+                    }));
+                } else {
+                    setData([...data, savedData])
+                }
                 showToast(editingId ? 'Cập nhật thành công!' : 'Thêm mới thành công!', 'success')
                 closeModal()
             } else {
@@ -559,7 +562,6 @@ export default function QuanLyCamKetPage() {
                 const dataRes = await response.json()
                 const { updatedCamKet, stats } = dataRes
                 
-                // CẬP NHẬT: Ép kiểu dữ liệu an toàn để chống lỗi tàng hình số
                 setViolationStats({
                     ...stats,
                     bo_thi: typeof stats.bo_thi === 'number' ? stats.bo_thi : (stats.bo_thi ? 1 : 0)
@@ -570,7 +572,23 @@ export default function QuanLyCamKetPage() {
                     bi_vi_pham: updatedCamKet.bi_vi_pham,
                     ly_do_vi_pham: updatedCamKet.ly_do_vi_pham || '',
                 }))
-                setData(data.map((item) => (item.ma_cam_ket === editingId ? updatedCamKet : item)))
+
+                setData(data.map((item) => {
+                    if (item.ma_cam_ket === editingId) {
+                        return {
+                            ...item,
+                            ...updatedCamKet,
+                            hoc_vien: {
+                                ...item.hoc_vien,
+                                ...(updatedCamKet.hoc_vien || {}),
+                                tham_gia_lop: item.hoc_vien?.tham_gia_lop 
+                            },
+                            khoa_hoc: updatedCamKet.khoa_hoc || item.khoa_hoc
+                        };
+                    }
+                    return item;
+                }));
+
                 showToast('Phân tích thành công!', 'success')
             } else {
                 showToast('Lỗi dữ liệu điểm danh', 'error')
@@ -582,16 +600,10 @@ export default function QuanLyCamKetPage() {
         }
     }
 
-    // ==========================================
-    // LOGIC LỌC DỮ LIỆU ĐIỀU HƯỚNG 3 TẦNG
-    // ==========================================
-    
-    // Lọc Khóa học theo Từ khóa ở Tầng 1
     const filteredKhoaHoc = useMemo(() => {
         return danhSachKhoaHoc.filter(kh => kh.ten_khoa_hoc.toLowerCase().includes(tuKhoaKhoaHoc.toLowerCase()))
     }, [danhSachKhoaHoc, tuKhoaKhoaHoc])
 
-    // 1. Dữ liệu gốc đã được lọc theo tìm kiếm
     const baseFilteredData = useMemo(() => {
         return data.filter(item => {
             const lowerSearch = searchTerm.toLowerCase();
@@ -601,13 +613,11 @@ export default function QuanLyCamKetPage() {
         }).sort((a, b) => b.ma_cam_ket - a.ma_cam_ket);
     }, [data, searchTerm]);
 
-    // 2. Lọc theo Khóa học (Tầng 2 & 3)
     const courseFilteredData = useMemo(() => {
         if (!selectedCourseId) return baseFilteredData;
         return baseFilteredData.filter(item => item.ma_khoa_hoc === selectedCourseId);
     }, [baseFilteredData, selectedCourseId]);
 
-    // Lọc ra các Lớp học có trong Khóa học đang chọn
     const classesInSelectedCourse = useMemo(() => {
         if (!selectedCourseId) return [];
         let classes = danhSachLopHoc.filter(lop => Number(lop.ma_khoa_hoc) === Number(selectedCourseId));
@@ -617,7 +627,6 @@ export default function QuanLyCamKetPage() {
         return classes;
     }, [selectedCourseId, danhSachLopHoc, tuKhoaLopHoc]);
 
-    // Đếm số lượng học viên chưa xếp lớp cho khóa đang chọn
     const unassignedStudentsCount = useMemo(() => {
         return courseFilteredData.filter(c => {
             const hasClassInCourse = c.hoc_vien?.tham_gia_lop?.some(tl => 
@@ -627,11 +636,8 @@ export default function QuanLyCamKetPage() {
         }).length;
     }, [courseFilteredData, danhSachLopHoc, selectedCourseId]);
 
-    // 3. Lọc theo Lớp học (Tầng 3)
     const classFilteredData = useMemo(() => {
         if (!selectedClassId) return courseFilteredData;
-        
-        // Nếu chọn "Chưa xếp lớp" (ID = -1)
         if (selectedClassId === -1) {
             return courseFilteredData.filter(item => {
                 const hasClassInCourse = item.hoc_vien?.tham_gia_lop?.some(tl => 
@@ -641,26 +647,20 @@ export default function QuanLyCamKetPage() {
             });
         }
 
-        // Lọc theo lớp bình thường
         return courseFilteredData.filter(item => {
             const cacLopHocCuaHV = item.hoc_vien?.tham_gia_lop?.map(tl => tl.lop_hoc?.ma_lop_hoc) || [];
             return cacLopHocCuaHV.includes(selectedClassId);
         });
     }, [courseFilteredData, selectedClassId, danhSachLopHoc, selectedCourseId]);
 
-    // Phân trang
     const indexOfLastItem = currentPage * itemsPerPage
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
     const currentItems = classFilteredData.slice(indexOfFirstItem, indexOfLastItem)
     const totalPages = Math.ceil(classFilteredData.length / itemsPerPage)
 
-    // Tách dữ liệu cho Tầng 3 (Vi phạm / Không vi phạm)
     const studentsWithoutViolation = currentItems.filter(item => !item.bi_vi_pham);
     const studentsWithViolation = currentItems.filter(item => item.bi_vi_pham);
 
-    // ==========================================
-    // CÁC COMPONENT TÁCH RỜI (RENDER)
-    // ==========================================
     const renderSearchAndFilter = () => (
         <div className="flex flex-col md:flex-row gap-4 mb-6 w-full animate-fade-in-up mt-2">
             <div className="relative w-full md:max-w-md">
@@ -714,7 +714,6 @@ export default function QuanLyCamKetPage() {
 
     return (
         <div className="bg-gray-50 min-h-screen p-6 relative">
-            {/* CSS Tùy chỉnh thanh cuộn dọc (Scrollbar) */}
             <style dangerouslySetInnerHTML={{__html: `
                 .custom-scroll::-webkit-scrollbar { width: 8px; }
                 .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
@@ -727,8 +726,7 @@ export default function QuanLyCamKetPage() {
                     <h1 className="text-2xl font-bold text-[#1d4ed8] flex items-center gap-3 uppercase">
                         <FaShieldAlt className="text-blue-600" /> Quản lý Bản Cam Kết
                     </h1>
-                    
-                    {/* Bọc điều kiện: Chỉ hiện nút thêm khi CHƯA chọn Lớp học (!selectedClassId) */}
+                
                     {!selectedClassId && (
                         <button
                             onClick={handleStartAddWorkflow}
@@ -738,12 +736,9 @@ export default function QuanLyCamKetPage() {
                     )}
                 </div>
 
-           {/* ========================================================= */}
-{/* TẦNG 1: CHỌN KHÓA HỌC (Có khung viền, cuộn dọc, tìm kiếm) */}
-{/* ========================================================= */}
+
 {!selectedCourseId && (
     <div className="animate-fade-in-up space-y-6">
-        {/* Header Tầng 1 */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <h2 className="text-xl font-bold text-gray-800">Chọn Khóa Học:</h2>
             <div className="relative w-full md:w-80">
@@ -760,18 +755,20 @@ export default function QuanLyCamKetPage() {
             </div>
         </div>
 
-        {/* Khung viền chứa danh sách khóa học với thanh cuộn dọc */}
         <div className="border border-gray-200 rounded-xl p-4 bg-white shadow-sm mb-6">
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scroll">
         <div 
             className="h-[100px] flex flex-col items-center justify-center bg-blue-600 text-white rounded-xl shadow-md cursor-pointer hover:bg-blue-700 transition"
-            onClick={() => setSelectedCourseId(null)}
+            onClick={() => {
+                setSelectedCourseId(null);
+                setSearchTerm('');
+                setCurrentPage(1);
+            }}
         >
             <FaFolderOpen className="text-3xl mb-2 text-blue-200" />
             <span className="font-bold text-center">Tất cả khóa học</span>
         </div>
                 
-                {/* Danh sách các khóa học */}
                 {filteredKhoaHoc.length === 0 ? (
                     <div className="col-span-full text-center py-8 text-gray-500 italic border border-dashed border-gray-300 rounded-xl">
                         Không tìm thấy khóa học nào phù hợp.
@@ -783,7 +780,12 @@ export default function QuanLyCamKetPage() {
                             <div 
                                 key={kh.ma_khoa_hoc}
                                 className="h-[120px] flex flex-col justify-between bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-blue-400 hover:shadow-md transition relative"
-                                onClick={() => { setSelectedCourseId(kh.ma_khoa_hoc); setCurrentPage(1); }}
+                                onClick={() => { 
+                                    setSelectedCourseId(kh.ma_khoa_hoc); 
+                                    setTuKhoaLopHoc('');
+                                    setSearchTerm('');
+                                    setCurrentPage(1); 
+                                }}
                             >
                                 <div className="absolute top-3 right-3 bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded">
                                     {soLuongCamKet} hồ sơ
@@ -799,7 +801,6 @@ export default function QuanLyCamKetPage() {
             </div>
         </div>
 
-        {/* Tìm kiếm & Bảng danh sách */}
         {renderSearchAndFilter()}
 
         <div className="overflow-x-auto rounded-t-lg border border-gray-200">
@@ -824,14 +825,16 @@ export default function QuanLyCamKetPage() {
         </div>
     </div>
 )}
-                {/* ========================================================= */}
-                {/* TẦNG 2: CHỌN LỚP HỌC TRONG 1 KHÓA HỌC CỤ THỂ                */}
-                {/* ========================================================= */}
+            
                 {selectedCourseId && !selectedClassId && (
                     <div className="animate-fade-in-right">
                         <div className="flex items-center gap-4 bg-gray-50 border border-gray-200 p-3 rounded-lg mb-6">
                             <button 
-                                onClick={() => setSelectedCourseId(null)}
+                                onClick={() => {
+                                    setSelectedCourseId(null);
+                                    setSearchTerm('');
+                                    setCurrentPage(1);
+                                }}
                                 className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded hover:bg-gray-100 transition text-gray-600"
                             >
                                 <FaArrowLeft />
@@ -864,7 +867,11 @@ export default function QuanLyCamKetPage() {
                             {tuKhoaLopHoc.trim() === '' && (
                                 <div 
                                     className="h-[100px] bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-amber-400 hover:shadow-md transition relative overflow-hidden"
-                                    onClick={() => { setSelectedClassId(-1); setCurrentPage(1); }}
+                                    onClick={() => { 
+                                        setSelectedClassId(-1); 
+                                        setSearchTerm('');
+                                        setCurrentPage(1); 
+                                    }}
                                 >
                                     <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-amber-500"></div>
                                     <div className="text-xs font-bold text-gray-500 mb-1 ml-2">Đang chờ xử lý</div>
@@ -875,7 +882,6 @@ export default function QuanLyCamKetPage() {
                                 </div>
                             )}
 
-                            {/* CÁC THẺ LỚP HỌC */}
                             {classesInSelectedCourse.length === 0 ? (
                                 <div className="col-span-full text-sm text-gray-500 italic p-4 bg-gray-50 rounded border border-gray-200 flex items-center justify-center min-h-[100px]">
                                     Không tìm thấy lớp học nào.
@@ -892,7 +898,11 @@ export default function QuanLyCamKetPage() {
                                         <div 
                                             key={lop.ma_lop_hoc}
                                             className="h-[100px] bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-blue-400 hover:shadow-md transition relative overflow-hidden"
-                                            onClick={() => { setSelectedClassId(lop.ma_lop_hoc); setCurrentPage(1); }}
+                                            onClick={() => { 
+                                                setSelectedClassId(lop.ma_lop_hoc); 
+                                                setSearchTerm('');
+                                                setCurrentPage(1); 
+                                            }}
                                         >
                                             <div className="text-xs font-bold text-gray-500 mb-1">Mã lớp: {lop.ma_lop_hoc}</div>
                                             <h3 className="font-bold text-[#1d4ed8] text-sm mb-2 line-clamp-1" title={lop.ten_lop}>{lop.ten_lop}</h3>
@@ -930,14 +940,15 @@ export default function QuanLyCamKetPage() {
                     </div>
                 )}
 
-                {/* ========================================================= */}
-                {/* TẦNG 3: CHI TIẾT LỚP HỌC (CHIA 2 BẢNG VI PHẠM / KHÔNG)        */}
-                {/* ========================================================= */}
                 {selectedCourseId && selectedClassId && (
                     <div className="animate-fade-in-right">
                         <div className="flex items-center gap-4 bg-gray-50 border border-gray-200 p-3 rounded-lg mb-6">
                             <button 
-                                onClick={() => setSelectedClassId(null)}
+                                onClick={() => {
+                                    setSelectedClassId(null);
+                                    setSearchTerm('');
+                                    setCurrentPage(1);
+                                }}
                                 className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded hover:bg-gray-100 transition text-gray-600"
                             >
                                 <FaArrowLeft />
@@ -952,79 +963,157 @@ export default function QuanLyCamKetPage() {
 
                         {renderSearchAndFilter()}
 
-                        <div className="mb-8">
-                            <h3 className="text-base font-bold text-green-700 mb-3 flex items-center gap-2 border-l-4 border-green-500 pl-3">
-                                <FaCheckCircle /> Học viên tuân thủ cam kết ({studentsWithoutViolation.length})
-                            </h3>
-                            <div className="overflow-x-auto rounded-t-lg border border-green-200 shadow-sm">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="bg-green-600 text-white uppercase font-semibold text-xs border-b">
-                                        <tr>
-                                            <th className="px-4 py-3 text-center">Mã Cam Kết</th>
-                                            <th className="px-4 py-3">Học Viên</th>
-                                            <th className="px-4 py-3 text-center">Ngày Ký</th>
-                                            <th className="px-4 py-3 text-center">Trạng Thái</th>
-                                            <th className="px-4 py-3 text-center w-28">Thao Tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="text-gray-700">
-                                        {studentsWithoutViolation.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-500 italic">Không có dữ liệu</td></tr> : 
-                                        studentsWithoutViolation.map((row, index) => (
-                                            <tr key={row.ma_cam_ket} className={`border-b border-green-100 hover:bg-green-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-green-50/30'}`}>
-                                                <td className="px-4 py-3 text-center font-medium">{row.ma_cam_ket}</td>
-                                                <td className="px-4 py-3 font-bold text-gray-800">{row.hoc_vien?.ho_ten}</td>
-                                                <td className="px-4 py-3 text-center text-gray-600">{formatDateForView(row.ngay_ky)}</td>
-                                                <td className="px-4 py-3 text-center"><span className="px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-semibold border border-green-200 inline-block">{row.trang_thai}</span></td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <button onClick={() => openViewModal(row)} className="text-blue-600 hover:text-blue-800 font-semibold text-xs underline">Xem chi tiết</button>
-                                                </td>
+                        {selectedClassId === -1 ? (
+                            <div className="mb-8 animate-fade-in-up">
+                                <h3 className="text-base font-bold text-gray-700 mb-3 flex items-center gap-2 border-l-4 border-blue-500 pl-3">
+                                    <FaUserGraduate className="text-blue-500" /> Danh sách chờ xếp lớp ({currentItems.length})
+                                </h3>
+                                <div className="overflow-x-auto rounded-t-lg border border-gray-200 shadow-sm">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-[#1d4ed8] text-white uppercase font-semibold text-xs border-b">
+                                            <tr>
+                                                <th className="px-4 py-3 text-center">Mã Cam Kết</th>
+                                                <th className="px-4 py-3">Học Viên</th>
+                                                <th className="px-4 py-3 text-center">Ngày Ký</th>
+                                                <th className="px-4 py-3 text-center">Trạng Thái</th>
+                                                <th className="px-4 py-3 text-center w-28">Thao Tác</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="text-gray-700">
+                                            {currentItems.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-500 italic">Không có học viên chờ</td></tr> : 
+                                            currentItems.map((row, index) => (
+                                                <tr key={row.ma_cam_ket} className={`border-b border-gray-100 hover:bg-blue-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                                                    <td className="px-4 py-3 text-center font-medium">{row.ma_cam_ket}</td>
+                                                    <td className="px-4 py-3 font-bold text-gray-800">{row.hoc_vien?.ho_ten}</td>
+                                                    <td className="px-4 py-3 text-center text-gray-600">{formatDateForView(row.ngay_ky)}</td>
+                                                    <td className="px-4 py-3 text-center">
+                                                        <span className={`px-2 py-1 rounded text-xs font-semibold border inline-block ${row.trang_thai === 'Đang hiệu lực' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-700 border-gray-200'}`}>
+                                                            {row.trang_thai}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-center">
+                                                        <button 
+                                                            onClick={() => openViewModal(row)} 
+                                                            className="text-blue-600 hover:text-blue-800 transition-colors p-1" 
+                                                            title="Xem chi tiết"
+                                                        >
+                                                            <FaEye size={18} className="mx-auto" />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <>
+                                <div className="mb-8">
+                                    <h3 className="text-base font-bold text-green-700 mb-3 flex items-center gap-2 border-l-4 border-green-500 pl-3">
+                                        <FaCheckCircle /> Học viên tuân thủ cam kết ({studentsWithoutViolation.length})
+                                    </h3>
+                                    <div className="overflow-x-auto rounded-t-lg border border-green-200 shadow-sm">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="bg-green-600 text-white uppercase font-semibold text-xs border-b">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-center">Mã Cam Kết</th>
+                                                    <th className="px-4 py-3">Học Viên</th>
+                                                    <th className="px-4 py-3 text-center">Ngày Ký</th>
+                                                    <th className="px-4 py-3 text-center">Trạng Thái</th>
+                                                    <th className="px-4 py-3 text-center w-28">Thao Tác</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="text-gray-700">
+                                                {studentsWithoutViolation.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-500 italic">Không có dữ liệu</td></tr> : 
+                                                studentsWithoutViolation.map((row, index) => (
+                                                    <tr key={row.ma_cam_ket} className={`border-b border-green-100 hover:bg-green-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-green-50/30'}`}>
+                                                        <td className="px-4 py-3 text-center font-medium">{row.ma_cam_ket}</td>
+                                                        <td className="px-4 py-3 font-bold text-gray-800">{row.hoc_vien?.ho_ten}</td>
+                                                        <td className="px-4 py-3 text-center text-gray-600">{formatDateForView(row.ngay_ky)}</td>
+                                                        <td className="px-4 py-3 text-center"><span className="px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-semibold border border-green-200 inline-block">{row.trang_thai}</span></td>
+                                                        <td className="px-4 py-3 text-center">
+                                                            <div className="flex items-center justify-center gap-3">
+                                                                <button 
+                                                                    onClick={() => openViewModal(row)} 
+                                                                    title="Xem chi tiết"
+                                                                    className="text-blue-600 hover:text-blue-800 transition-colors p-1"
+                                                                >
+                                                                    <FaEye size={18} />
+                                                                </button>
+                                                                <span className="text-gray-300">|</span>
+                                                                <button 
+                                                                    onClick={() => openEditModal(row)} 
+                                                                    title="Cập nhật vi phạm"
+                                                                    className="text-orange-500 hover:text-orange-700 transition-colors p-1"
+                                                                >
+                                                                    <FaEdit size={18} />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
 
-                        <div>
-                            <h3 className="text-base font-bold text-red-700 mb-3 flex items-center gap-2 border-l-4 border-red-500 pl-3">
-                                <FaExclamationTriangle /> Học viên vi phạm cam kết ({studentsWithViolation.length})
-                            </h3>
-                            <div className="overflow-x-auto rounded-t-lg border border-red-200 shadow-sm">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="bg-red-600 text-white uppercase font-semibold text-xs border-b">
-                                        <tr>
-                                            <th className="px-4 py-3 text-center">Mã Cam Kết</th>
-                                            <th className="px-4 py-3">Học Viên</th>
-                                            <th className="px-4 py-3 text-center">Ngày Ký</th>
-                                            <th className="px-4 py-3 text-center">Chi tiết vi phạm</th>
-                                            <th className="px-4 py-3 text-center w-28">Thao Tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="text-gray-700">
-                                        {studentsWithViolation.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-500 italic">Lớp học duy trì kỷ luật tốt.</td></tr> : 
-                                        studentsWithViolation.map((row, index) => (
-                                            <tr key={row.ma_cam_ket} className={`border-b border-red-100 hover:bg-red-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-red-50/30'}`}>
-                                                <td className="px-4 py-3 text-center font-medium">{row.ma_cam_ket}</td>
-                                                <td className="px-4 py-3 font-bold text-gray-800">{row.hoc_vien?.ho_ten}</td>
-                                                <td className="px-4 py-3 text-center text-gray-600">{formatDateForView(row.ngay_ky)}</td>
-                                                <td className="px-4 py-3 text-center max-w-[300px]">
-                                                 <span className="text-xs text-red-600 font-semibold whitespace-normal leading-relaxed block text-left mx-auto w-fit" title={row.ly_do_vi_pham || ''}>
-                                                    {row.ly_do_vi_pham || 'Vi phạm nội quy'}
-                                                </span>
-                                                </td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <button onClick={() => { openViewModal(row); setActiveTab('violation'); }} className="text-red-600 hover:text-red-800 font-semibold text-xs underline">Tra cứu</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                                <div>
+                                    <h3 className="text-base font-bold text-red-700 mb-3 flex items-center gap-2 border-l-4 border-red-500 pl-3">
+                                        <FaExclamationTriangle /> Học viên vi phạm cam kết ({studentsWithViolation.length})
+                                    </h3>
+                                    <div className="overflow-x-auto rounded-t-lg border border-red-200 shadow-sm">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="bg-red-600 text-white uppercase font-semibold text-xs border-b">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-center">Mã Cam Kết</th>
+                                                    <th className="px-4 py-3">Học Viên</th>
+                                                    <th className="px-4 py-3 text-center">Ngày Ký</th>
+                                                    <th className="px-4 py-3 text-center">Chi tiết vi phạm</th>
+                                                    <th className="px-4 py-3 text-center w-28">Thao Tác</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="text-gray-700">
+                                                {studentsWithViolation.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-500 italic">Lớp học duy trì kỷ luật tốt.</td></tr> : 
+                                                studentsWithViolation.map((row, index) => (
+                                                    <tr key={row.ma_cam_ket} className={`border-b border-red-100 hover:bg-red-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-red-50/30'}`}>
+                                                        <td className="px-4 py-3 text-center font-medium">{row.ma_cam_ket}</td>
+                                                        <td className="px-4 py-3 font-bold text-gray-800">{row.hoc_vien?.ho_ten}</td>
+                                                        <td className="px-4 py-3 text-center text-gray-600">{formatDateForView(row.ngay_ky)}</td>
+                                                        <td className="px-4 py-3 text-center max-w-[300px]">
+                                                         <span className="text-xs text-red-600 font-semibold whitespace-normal leading-relaxed block text-left mx-auto w-fit" title={row.ly_do_vi_pham || ''}>
+                                                            {row.ly_do_vi_pham || 'Vi phạm nội quy'}
+                                                        </span>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-center">
+                                                            <div className="flex items-center justify-center gap-3">
+                                                                <button 
+                                                                    onClick={() => { openViewModal(row); setActiveTab('violation'); }} 
+                                                                    title="Tra cứu vi phạm"
+                                                                    className="text-red-600 hover:text-red-800 transition-colors p-1"
+                                                                >
+                                                                    <FaEye size={18} />
+                                                                </button>
+                                                                <span className="text-gray-300">|</span>
+                                                                <button 
+                                                                    onClick={() => openEditModal(row)} 
+                                                                    title="Cập nhật vi phạm"
+                                                                    className="text-orange-500 hover:text-orange-700 transition-colors p-1"
+                                                                >
+                                                                    <FaEdit size={18} />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
-
-                {/* Phân trang chung */}
+   
                 {!isLoading && classFilteredData.length > 0 && (
                     <div className="flex flex-col sm:flex-row justify-between items-center mt-6 font-medium text-gray-600 text-sm gap-4">
                         <div>
@@ -1041,7 +1130,6 @@ export default function QuanLyCamKetPage() {
                 )}
             </div>
 
-            {/* MODAL HỎI HỌC VIÊN ĐÃ CÓ HỒ SƠ CHƯA */}
             {isAskStudentModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
                     <div className="bg-white rounded-lg shadow-2xl w-full max-w-md p-6 relative animate-fade-in-up text-center border border-gray-200">
@@ -1061,7 +1149,6 @@ export default function QuanLyCamKetPage() {
                 </div>
             )}
 
-            {/* MODAL THÊM HỌC VIÊN MỚI */}
             {isAddStudentModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
                     <div className="bg-white rounded-lg shadow-2xl w-full max-w-3xl animate-fade-in-up flex flex-col border border-gray-200">
@@ -1128,7 +1215,6 @@ export default function QuanLyCamKetPage() {
                 </div>
             )}
 
-            {/* MODAL GIAO DIỆN TAB (XEM VÀ SỬA CAM KẾT) */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-lg w-full max-w-4xl shadow-2xl animate-fade-in-up flex flex-col max-h-[95vh] overflow-hidden border border-gray-200">
@@ -1145,7 +1231,6 @@ export default function QuanLyCamKetPage() {
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-6 bg-white custom-scroll">
-                            {/* TAB 1: THÔNG TIN VÀ ĐIỀU KHOẢN */}
                             {activeTab === 'info' && (
                                 <div className="space-y-6">
                                     {isViewMode ? (
@@ -1154,7 +1239,6 @@ export default function QuanLyCamKetPage() {
                                                 <div className="flex justify-center items-center py-10"><FaSpinner className="animate-spin text-3xl text-blue-600" /></div>
                                             ) : (
                                                 <div className="space-y-4">
-                                                    {/* 1. KHỐI THÔNG TIN HỌC VIÊN */}
                                                     <div className="bg-white border border-gray-200 rounded-lg shadow-sm relative overflow-hidden mb-4">
                                                         <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-600"></div>
                                                         <div className="flex justify-between items-center p-4 pl-6 cursor-pointer hover:bg-blue-50/30 transition-colors" onClick={() => setShowStudentInfo(!showStudentInfo)}>
@@ -1172,15 +1256,25 @@ export default function QuanLyCamKetPage() {
                                                                     <div><span className="block text-gray-500 text-xs mb-1">Ngày sinh</span><span className="font-semibold text-gray-800">{fullStudentInfo?.ngay_sinh ? new Date(fullStudentInfo.ngay_sinh).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}</span></div>
                                                                     <div><span className="block text-gray-500 text-xs mb-1">Giới tính</span><span className="font-semibold text-gray-800">{fullStudentInfo?.gioi_tinh || 'Chưa cập nhật'}</span></div>
                                                                     <div><span className="block text-gray-500 text-xs mb-1">Số điện thoại</span><span className="font-semibold text-gray-800">{fullStudentInfo?.so_dien_thoai || 'Chưa cập nhật'}</span></div>
-                                                                    <div><span className="block text-gray-500 text-xs mb-1">Email liên hệ</span><span className="font-semibold text-gray-800 truncate block" title={fullStudentInfo?.email}>{fullStudentInfo?.email || 'Chưa cập nhật'}</span></div>
-                                                                    <div className="col-span-2"><span className="block text-gray-500 text-xs mb-1">Địa chỉ</span><span className="font-semibold text-gray-800 truncate block" title={fullStudentInfo?.dia_chi}>{fullStudentInfo?.dia_chi || 'Chưa cập nhật'}</span></div>
+                                                                    <div className="md:col-span-3">
+                                                                        <span className="block text-gray-500 text-xs mb-1">Email liên hệ</span>
+                                                                        <span className="font-semibold text-gray-800 block" title={fullStudentInfo?.email}>
+                                                                         {fullStudentInfo?.email || 'Chưa cập nhật'}
+                                                                        </span>
+                                                                    </div>
+                                    
+                                                                 <div className="col-span-2 md:col-span-4 mt-2">
+                                                                        <span className="block text-gray-500 text-xs mb-1">Địa chỉ</span>
+                                                                        <span className="font-semibold text-gray-800 block" title={fullStudentInfo?.dia_chi}>
+                                                                         {fullStudentInfo?.dia_chi || 'Chưa cập nhật'}
+                                                                        </span>
+                                                                    </div>
                                                                     <div className="col-span-4 border-t pt-4 mt-2"><span className="block text-gray-500 text-xs mb-1">Mục tiêu đầu ra (Chứng chỉ)</span><span className="font-bold text-purple-700">{fullStudentInfo?.dau_ra_chung_chi || 'Chưa cập nhật mục tiêu đầu ra'}</span></div>
                                                                 </div>
                                                             </div>
                                                         )}
                                                     </div>
 
-                                                    {/* 2. KHỐI CHI TIẾT KHÓA HỌC */}
                                                     <div className="bg-white border border-gray-200 rounded-lg shadow-sm relative overflow-hidden mb-6">
                                                         <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-green-500"></div>
                                                         <div className="flex justify-between items-center p-4 pl-6 cursor-pointer hover:bg-green-50/30 transition-colors" onClick={() => setShowCourseInfo(!showCourseInfo)}>
@@ -1200,7 +1294,6 @@ export default function QuanLyCamKetPage() {
                                                         )}
                                                     </div>
 
-                                                    {/* 3. CHI TIẾT BẢN CAM KẾT */}
                                                     <div className="bg-white border border-gray-200 rounded-lg shadow-sm relative overflow-hidden mb-6">
                                                         <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-purple-500"></div>
                                                         <div className="flex justify-between items-center p-4 pl-6 border-b border-gray-100 bg-white">
@@ -1229,7 +1322,6 @@ export default function QuanLyCamKetPage() {
                                             )}
                                         </div>
                                     ) : (
-                                        // GIAO DIỆN FORM ĐỂ THÊM/SỬA
                                         <div className="space-y-6">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                                 <div className="relative">
@@ -1351,7 +1443,6 @@ export default function QuanLyCamKetPage() {
                                 </div>
                             )}
 
-                            {/* TAB 2: KIỂM TRA VI PHẠM */}
                             {activeTab === 'violation' && (
                                 <div className="space-y-6 animate-fade-in-up">
                                     <div className={`p-5 rounded-xl border relative overflow-hidden ${formData.bi_vi_pham ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200 shadow-sm'}`}>
@@ -1417,7 +1508,6 @@ export default function QuanLyCamKetPage() {
                             )}
                         </div>
 
-                        {/* Footer Modal */}
                         <div className="p-5 border-t border-gray-200 bg-gray-50 rounded-b-lg flex justify-end gap-3 shrink-0">
                             {formErrors.general && <div className="mr-auto text-red-600 font-medium self-center text-sm">{formErrors.general}</div>}
                             <button onClick={closeModal} className="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-100 font-semibold transition">Đóng</button>
@@ -1431,7 +1521,6 @@ export default function QuanLyCamKetPage() {
                 </div>
             )}
 
-            {/* MODAL XÓA */}
             {isDeleteModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in-up">
@@ -1451,7 +1540,6 @@ export default function QuanLyCamKetPage() {
                 </div>
             )}
 
-            {/* TOAST NOTIFICATION */}
             {toast && (
                 <div className="fixed top-5 right-5 z-[70] animate-fade-in-down transition-all duration-300">
                     <div className={`flex items-center min-w-[300px] p-4 bg-white rounded shadow-lg border-l-4 ${toast.type === 'success' ? 'border-green-500' : 'border-red-500'}`}>

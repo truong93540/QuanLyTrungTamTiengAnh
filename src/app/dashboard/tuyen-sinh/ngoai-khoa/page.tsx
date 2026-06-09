@@ -75,7 +75,6 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
     const [danhSachTatCaHocVien, setDanhSachTatCaHocVien] = useState<HocVien[]>([])
     const [isLoading, setIsLoading] = useState(true)
     
-    // TÌM KIẾM VÀ LỌC 
     const currentDate = new Date();
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedMonth, setSelectedMonth] = useState<string>((currentDate.getMonth() + 1).toString()) 
@@ -83,19 +82,16 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
     
     const [tuKhoaGiaoVien, setTuKhoaGiaoVien] = useState("")
     
-    // Modal & Form States
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingId, setEditingId] = useState<number | null>(null)
     const [isViewMode, setIsViewMode] = useState(false)
     const [viewData, setViewData] = useState<HoatDong | null>(null)
 
-    // Accordion States (View Mode)
     const [showGiaoVienDetail, setShowGiaoVienDetail] = useState(false)
     const [showHocVienDetail, setShowHocVienDetail] = useState(false)
-    // CẬP NHẬT: Dùng mảng để lưu các lớp đang được mở
+    
     const [openStudentClassIds, setOpenStudentClassIds] = useState<number[]>([])
     
-    // STATE: QUẢN LÝ THÊM HỌC VIÊN VÀ COMBOBOX TÌM LỚP
     const [danhSachThamGia, setDanhSachThamGia] = useState<{ma_hoc_vien: number, ho_ten: string, ten_lop?: string}[]>([])
     const [selectedLopId, setSelectedLopId] = useState<number | null>(null)
     const [hocVienTrongLop, setHocVienTrongLop] = useState<{ma_hoc_vien: number, ho_ten: string, ten_lop: string}[]>([])
@@ -259,7 +255,7 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
         setFormErrors({})
         setShowGiaoVienDetail(false)
         setShowHocVienDetail(false)
-        setOpenStudentClassIds([]) // CẬP NHẬT: Reset mảng khi mở modal
+        setOpenStudentClassIds([]) 
         setIsModalOpen(true)
     }
 
@@ -643,14 +639,12 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                                             <div className="space-y-3">
                                                 {Object.entries(groupedHocVienView).map(([classIdStr, group]) => {
                                                     const classId = Number(classIdStr);
-                                                    // CẬP NHẬT: Kiểm tra xem ID lớp này có trong mảng không
                                                     const isOpen = openStudentClassIds.includes(classId); 
                                                     return (
                                                         <div key={classId} className={`border rounded-lg transition-all ${isOpen ? 'border-green-400 shadow-sm ring-1 ring-green-400' : 'border-gray-200 hover:border-green-300'}`}>
                                                             <div 
                                                                 className={`p-4 flex justify-between items-center cursor-pointer ${isOpen ? 'bg-[#f6fbf7]' : 'bg-white'} rounded-t-lg`}
                                                                 onClick={() => {
-                                                                    // CẬP NHẬT: Toggle thêm/xóa classId vào mảng
                                                                     setOpenStudentClassIds(prev => 
                                                                         prev.includes(classId) 
                                                                             ? prev.filter(id => id !== classId) 
@@ -871,7 +865,7 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                                                                         setShowDropdownLop(false);
                                                                         setSelectedLopId(lop.ma_lop_hoc);
 
-                                                                        // Logic lấy học viên của lớp
+                                                                        
                                                                         const studentsInClass = danhSachTatCaHocVien.filter(hv => 
                                                                             hv.tham_gia_lop?.some(tl => tl.lop_hoc?.ma_lop_hoc === lop.ma_lop_hoc)
                                                                         ).map(hv => ({
@@ -989,7 +983,7 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                                                                 setHocVienTrongLop([]);
                                                                 setIdChonTamThoi([]);
                                                                 setTuKhoaLop("");
-                                                                setTuKhoaTimLop(""); // Xóa text combobox
+                                                                setTuKhoaTimLop(""); 
                                                             }}
                                                             className="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed shadow-sm mt-1"
                                                         >

@@ -7,27 +7,23 @@ export async function GET(request: Request) {
         const search = searchParams.get('search')
         const id = searchParams.get('id')
 
-        // 1. Tìm đích danh theo Mã ID (Dùng khi người dùng gõ/chọn Mã học viên VÀ xem Chi tiết hồ sơ)
         if (id) {
             const hocVien = await prisma.hocVien.findUnique({
                 where: { ma_hoc_vien: Number(id) },
-                // ĐÃ SỬA: Xóa block 'select' ở đây để Prisma trả về TOÀN BỘ thông tin (ngày sinh, giới tính, SĐT, trạng thái...)
             })
             return NextResponse.json(hocVien || null)
         }
 
-        // 2. Tìm kiếm gợi ý theo Tên (Dùng khi gõ vào ô Tên học viên)
         if (search) {
             const danhSachHocVien = await prisma.hocVien.findMany({
                 where: {
                     ho_ten: {
                         contains: search,
-                        mode: 'insensitive' // Tìm kiếm không phân biệt chữ hoa, chữ thường
+                        mode: 'insensitive' 
                     }
                 },
-                // Ở đây vẫn giữ select vì Dropdown gợi ý chỉ cần Mã và Tên cho nhẹ server
                 select: { ma_hoc_vien: true, ho_ten: true },
-                take: 6 // Cắt bớt, chỉ lấy tối đa 6 người để giao diện dropdown không bị quá dài
+                take: 6
             })
             return NextResponse.json(danhSachHocVien)
         }
@@ -38,8 +34,6 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Lỗi truy xuất dữ liệu học viên' }, { status: 500 })
     }
 }
-
-// BỔ SUNG: Hàm POST để lưu hồ sơ học viên mới từ Modal Đăng ký
 export async function POST(request: Request) {
     try {
         const data = await request.json()
@@ -55,11 +49,15 @@ export async function POST(request: Request) {
                 trang_thai: data.trang_thai || 'Đang học',
             }
         })
-
-        // Trả về dữ liệu học viên vừa tạo (để giao diện Cam kết tự động điền Tên và Mã)
         return NextResponse.json(newHocVien)
-    } catch (error) {
+    } catch (error: any) { 
         console.error('Lỗi POST Học Viên:', error)
-        return NextResponse.json({ error: 'Không thể thêm học viên mới' }, { status: 500 })
+        if (error.code === 'P2002') {
+            return NextResponse.json(
+                { error: 'Địa chỉ email này đã được đăng ký cho một học viên khác!' }, 
+                { status: 400 }
+            )
+        }
+        return NextResponse.json({ error: 'Không thể thêm học viên mới do lỗi máy chủ' }, { status: 500 })
     }
 }
