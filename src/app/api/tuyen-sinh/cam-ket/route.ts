@@ -61,8 +61,15 @@ export async function POST(request: Request) {
 
         const camKetMoi = await taoCamKetMoi(duLieuMoi)
         return NextResponse.json(camKetMoi, { status: 201 })
-    } catch (error) { 
+    } catch (error: any) { 
         console.error('LỖI POST API Cam kết:', error);
+        if (error.code === 'P2002') {
+            return NextResponse.json(
+                { error: 'Bản cam kết cho học viên này có thể đã tồn tại hoặc có dữ liệu bị trùng lặp!' }, 
+                { status: 400 }
+            )
+        }
+
         return NextResponse.json({ error: 'Lỗi khi thêm vào CSDL' }, { status: 500 }) 
     }
 }
@@ -73,14 +80,10 @@ export async function PUT(request: Request) {
         const { action, ma_cam_ket, ...rest } = body
 
         if (!ma_cam_ket) return NextResponse.json({ error: 'Thiếu mã cam kết' }, { status: 400 })
-
-        // Xử lý logic đặc biệt: Kiểm tra vi phạm
         if (action === 'check_violation') {
             const result = await kiemTraVaCapNhatViPham(Number(ma_cam_ket));
             return NextResponse.json(result, { status: 200 });
         }
-
-        // Xử lý update thông thường
         const duLieuCapNhat: any = {};
         if (rest.ngay_ky) duLieuCapNhat.ngay_ky = new Date(rest.ngay_ky);
         if (rest.ngay_het_han !== undefined) duLieuCapNhat.ngay_het_han = rest.ngay_het_han ? new Date(rest.ngay_het_han) : null;
@@ -89,7 +92,6 @@ export async function PUT(request: Request) {
         if (rest.ma_hoc_vien) duLieuCapNhat.ma_hoc_vien = Number(rest.ma_hoc_vien);
         if (rest.ma_khoa_hoc) duLieuCapNhat.ma_khoa_hoc = Number(rest.ma_khoa_hoc);
         
-        // Cập nhật các trường số và boolean
         const numericFields = ['so_buoi_vang_cho_phep', 'so_buoi_di_muon', 'so_lan_thieu_bai_tap', 'so_buoi_vang_thuc_te', 'so_buoi_di_muon_thuc_te', 'so_lan_thieu_bai_tap_thuc_te'];
         numericFields.forEach(field => { if (rest[field] !== undefined) duLieuCapNhat[field] = Number(rest[field]); });
         
@@ -101,8 +103,15 @@ export async function PUT(request: Request) {
         const camKetCapNhat = await capNhatCamKet(Number(ma_cam_ket), duLieuCapNhat)
         return NextResponse.json(camKetCapNhat, { status: 200 })
 
-    } catch (error) { 
+    } catch (error: any) { 
         console.error('LỖI PUT API Cam kết:', error);
+        if (error.code === 'P2002') {
+            return NextResponse.json(
+                { error: 'Dữ liệu cập nhật bị trùng lặp với một bản cam kết khác!' }, 
+                { status: 400 }
+            )
+        }
+
         return NextResponse.json({ error: 'Lỗi hệ thống' }, { status: 500 }) 
     }
 }
@@ -113,7 +122,7 @@ export async function DELETE(request: Request) {
         const id = searchParams.get('id')
         if (!id) return NextResponse.json({ error: 'Thiếu mã cam kết' }, { status: 400 })
         
-        await xoaCamKet(Number(id)) // <-- Kiểm tra lại hàm này trong service, nếu là xóa cam kết thì gọi xoaCamKet(Number(id))
+        await xoaCamKet(Number(id)) 
         return NextResponse.json({ message: 'Xóa thành công' }, { status: 200 })
     } catch (error) { 
         console.error('LỖI DELETE API Cam kết:', error);

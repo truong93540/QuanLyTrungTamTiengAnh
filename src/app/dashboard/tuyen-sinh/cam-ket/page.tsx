@@ -230,16 +230,19 @@ export default function QuanLyCamKetPage() {
                     trang_thai: 'Đang hiệu lực', ma_hoc_vien: createdStudent.ma_hoc_vien.toString(),
                     ten_hoc_vien: createdStudent.ho_ten, 
                     ma_khoa_hoc: selectedCourseId ? selectedCourseId.toString() : '', 
-                    so_buoi_vang_cho_phep: 3, tham_gia_thi_day_du: true, so_buoi_di_muon: 3, so_lan_thieu_bai_tap: 3,
+                    so_buoi_vang_cho_phep: '', tham_gia_thi_day_du: true, so_buoi_di_muon: '', so_lan_thieu_bai_tap: '',
                     bi_vi_pham: false, ly_do_vi_pham: '',
                 })
                 setFormErrors({})
                 setActiveTab('info')
                 setIsModalOpen(true)
             } else {
-                setNewStudentErrors({ general: 'Có lỗi xảy ra khi lưu trên máy chủ.' })
-            }
-        } catch (error) {
+                const errorData = await response.json();
+                setNewStudentErrors({ 
+                    general: errorData.error || errorData.message || "Lỗi khi tạo mới học viên"
+                });
+        } } 
+        catch (error) {
             setNewStudentErrors({ general: 'Lỗi kết nối máy chủ.' })
         } finally {
             setIsSubmittingStudent(false)
@@ -290,7 +293,7 @@ export default function QuanLyCamKetPage() {
 
     const selectStudent = (student: any) => {
         setFormData({
-            ...formData,
+            ...formData,                                                        
             ten_hoc_vien: student.ho_ten,
             ma_hoc_vien: student.ma_hoc_vien.toString(),
         })
@@ -459,7 +462,6 @@ export default function QuanLyCamKetPage() {
     const handleSaveCamKet = async () => {
         const newErrors: Record<string, string> = {}
 
-        // Kiểm tra cơ bản
         if (!formData.ten_hoc_vien.trim()) newErrors.ten_hoc_vien = 'Vui lòng nhập tên học viên'
         if (!formData.ma_hoc_vien) newErrors.ma_hoc_vien = 'Vui lòng chọn học viên hợp lệ'
         if (!formData.ma_khoa_hoc) newErrors.ma_khoa_hoc = 'Vui lòng chọn khóa học cam kết'
@@ -484,7 +486,6 @@ export default function QuanLyCamKetPage() {
             else if (formData.trang_thai === 'Đã hết hạn' && expirationDate >= today) newErrors.ngay_het_han = 'Cam kết vẫn còn hạn'
         }
 
-        // Logic kiểm tra chồng chéo khóa học của học viên
         if (formData.ma_hoc_vien && formData.ngay_ky && !newErrors.ngay_het_han) {
             const existingCamKetsOfStudent = data.filter(c => 
                 c.ma_hoc_vien.toString() === formData.ma_hoc_vien && 
@@ -559,7 +560,6 @@ export default function QuanLyCamKetPage() {
                 const dataRes = await response.json()
                 const { updatedCamKet, stats } = dataRes
                 
-                // CẬP NHẬT: Ép kiểu dữ liệu an toàn để chống lỗi tàng hình số
                 setViolationStats({
                     ...stats,
                     bo_thi: typeof stats.bo_thi === 'number' ? stats.bo_thi : (stats.bo_thi ? 1 : 0)
@@ -641,7 +641,6 @@ export default function QuanLyCamKetPage() {
             });
         }
 
-        // Lọc theo lớp bình thường
         return courseFilteredData.filter(item => {
             const cacLopHocCuaHV = item.hoc_vien?.tham_gia_lop?.map(tl => tl.lop_hoc?.ma_lop_hoc) || [];
             return cacLopHocCuaHV.includes(selectedClassId);
@@ -714,7 +713,6 @@ export default function QuanLyCamKetPage() {
 
     return (
         <div className="bg-gray-50 min-h-screen p-6 relative">
-            {/* CSS Tùy chỉnh thanh cuộn dọc (Scrollbar) */}
             <style dangerouslySetInnerHTML={{__html: `
                 .custom-scroll::-webkit-scrollbar { width: 8px; }
                 .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
@@ -727,8 +725,7 @@ export default function QuanLyCamKetPage() {
                     <h1 className="text-2xl font-bold text-[#1d4ed8] flex items-center gap-3 uppercase">
                         <FaShieldAlt className="text-blue-600" /> Quản lý Bản Cam Kết
                     </h1>
-                    
-                    {/* Bọc điều kiện: Chỉ hiện nút thêm khi CHƯA chọn Lớp học (!selectedClassId) */}
+                
                     {!selectedClassId && (
                         <button
                             onClick={handleStartAddWorkflow}
@@ -738,12 +735,9 @@ export default function QuanLyCamKetPage() {
                     )}
                 </div>
 
-           {/* ========================================================= */}
-{/* TẦNG 1: CHỌN KHÓA HỌC (Có khung viền, cuộn dọc, tìm kiếm) */}
-{/* ========================================================= */}
+
 {!selectedCourseId && (
     <div className="animate-fade-in-up space-y-6">
-        {/* Header Tầng 1 */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <h2 className="text-xl font-bold text-gray-800">Chọn Khóa Học:</h2>
             <div className="relative w-full md:w-80">
@@ -760,7 +754,6 @@ export default function QuanLyCamKetPage() {
             </div>
         </div>
 
-        {/* Khung viền chứa danh sách khóa học với thanh cuộn dọc */}
         <div className="border border-gray-200 rounded-xl p-4 bg-white shadow-sm mb-6">
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scroll">
         <div 
@@ -952,79 +945,119 @@ export default function QuanLyCamKetPage() {
 
                         {renderSearchAndFilter()}
 
-                        <div className="mb-8">
-                            <h3 className="text-base font-bold text-green-700 mb-3 flex items-center gap-2 border-l-4 border-green-500 pl-3">
-                                <FaCheckCircle /> Học viên tuân thủ cam kết ({studentsWithoutViolation.length})
-                            </h3>
-                            <div className="overflow-x-auto rounded-t-lg border border-green-200 shadow-sm">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="bg-green-600 text-white uppercase font-semibold text-xs border-b">
-                                        <tr>
-                                            <th className="px-4 py-3 text-center">Mã Cam Kết</th>
-                                            <th className="px-4 py-3">Học Viên</th>
-                                            <th className="px-4 py-3 text-center">Ngày Ký</th>
-                                            <th className="px-4 py-3 text-center">Trạng Thái</th>
-                                            <th className="px-4 py-3 text-center w-28">Thao Tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="text-gray-700">
-                                        {studentsWithoutViolation.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-500 italic">Không có dữ liệu</td></tr> : 
-                                        studentsWithoutViolation.map((row, index) => (
-                                            <tr key={row.ma_cam_ket} className={`border-b border-green-100 hover:bg-green-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-green-50/30'}`}>
-                                                <td className="px-4 py-3 text-center font-medium">{row.ma_cam_ket}</td>
-                                                <td className="px-4 py-3 font-bold text-gray-800">{row.hoc_vien?.ho_ten}</td>
-                                                <td className="px-4 py-3 text-center text-gray-600">{formatDateForView(row.ngay_ky)}</td>
-                                                <td className="px-4 py-3 text-center"><span className="px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-semibold border border-green-200 inline-block">{row.trang_thai}</span></td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <button onClick={() => openViewModal(row)} className="text-blue-600 hover:text-blue-800 font-semibold text-xs underline">Xem chi tiết</button>
-                                                </td>
+                        {selectedClassId === -1 ? (
+                            <div className="mb-8 animate-fade-in-up">
+                                <h3 className="text-base font-bold text-gray-700 mb-3 flex items-center gap-2 border-l-4 border-blue-500 pl-3">
+                                    <FaUserGraduate className="text-blue-500" /> Danh sách chờ xếp lớp ({currentItems.length})
+                                </h3>
+                                <div className="overflow-x-auto rounded-t-lg border border-gray-200 shadow-sm">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-[#1d4ed8] text-white uppercase font-semibold text-xs border-b">
+                                            <tr>
+                                                <th className="px-4 py-3 text-center">Mã Cam Kết</th>
+                                                <th className="px-4 py-3">Học Viên</th>
+                                                <th className="px-4 py-3 text-center">Ngày Ký</th>
+                                                <th className="px-4 py-3 text-center">Trạng Thái</th>
+                                                <th className="px-4 py-3 text-center w-28">Thao Tác</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="text-gray-700">
+                                            {currentItems.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-500 italic">Không có học viên chờ</td></tr> : 
+                                            currentItems.map((row, index) => (
+                                                <tr key={row.ma_cam_ket} className={`border-b border-gray-100 hover:bg-blue-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                                                    <td className="px-4 py-3 text-center font-medium">{row.ma_cam_ket}</td>
+                                                    <td className="px-4 py-3 font-bold text-gray-800">{row.hoc_vien?.ho_ten}</td>
+                                                    <td className="px-4 py-3 text-center text-gray-600">{formatDateForView(row.ngay_ky)}</td>
+                                                    <td className="px-4 py-3 text-center">
+                                                        <span className={`px-2 py-1 rounded text-xs font-semibold border inline-block ${row.trang_thai === 'Đang hiệu lực' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-700 border-gray-200'}`}>
+                                                            {row.trang_thai}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-center">
+                                                        <button onClick={() => openViewModal(row)} className="text-blue-600 hover:text-blue-800 font-semibold text-xs underline">Xem chi tiết</button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <>
+                                <div className="mb-8">
+                                    <h3 className="text-base font-bold text-green-700 mb-3 flex items-center gap-2 border-l-4 border-green-500 pl-3">
+                                        <FaCheckCircle /> Học viên tuân thủ cam kết ({studentsWithoutViolation.length})
+                                    </h3>
+                                    <div className="overflow-x-auto rounded-t-lg border border-green-200 shadow-sm">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="bg-green-600 text-white uppercase font-semibold text-xs border-b">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-center">Mã Cam Kết</th>
+                                                    <th className="px-4 py-3">Học Viên</th>
+                                                    <th className="px-4 py-3 text-center">Ngày Ký</th>
+                                                    <th className="px-4 py-3 text-center">Trạng Thái</th>
+                                                    <th className="px-4 py-3 text-center w-28">Thao Tác</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="text-gray-700">
+                                                {studentsWithoutViolation.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-500 italic">Không có dữ liệu</td></tr> : 
+                                                studentsWithoutViolation.map((row, index) => (
+                                                    <tr key={row.ma_cam_ket} className={`border-b border-green-100 hover:bg-green-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-green-50/30'}`}>
+                                                        <td className="px-4 py-3 text-center font-medium">{row.ma_cam_ket}</td>
+                                                        <td className="px-4 py-3 font-bold text-gray-800">{row.hoc_vien?.ho_ten}</td>
+                                                        <td className="px-4 py-3 text-center text-gray-600">{formatDateForView(row.ngay_ky)}</td>
+                                                        <td className="px-4 py-3 text-center"><span className="px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-semibold border border-green-200 inline-block">{row.trang_thai}</span></td>
+                                                        <td className="px-4 py-3 text-center">
+                                                            <button onClick={() => openViewModal(row)} className="text-blue-600 hover:text-blue-800 font-semibold text-xs underline">Xem chi tiết</button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
 
-                        <div>
-                            <h3 className="text-base font-bold text-red-700 mb-3 flex items-center gap-2 border-l-4 border-red-500 pl-3">
-                                <FaExclamationTriangle /> Học viên vi phạm cam kết ({studentsWithViolation.length})
-                            </h3>
-                            <div className="overflow-x-auto rounded-t-lg border border-red-200 shadow-sm">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="bg-red-600 text-white uppercase font-semibold text-xs border-b">
-                                        <tr>
-                                            <th className="px-4 py-3 text-center">Mã Cam Kết</th>
-                                            <th className="px-4 py-3">Học Viên</th>
-                                            <th className="px-4 py-3 text-center">Ngày Ký</th>
-                                            <th className="px-4 py-3 text-center">Chi tiết vi phạm</th>
-                                            <th className="px-4 py-3 text-center w-28">Thao Tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="text-gray-700">
-                                        {studentsWithViolation.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-500 italic">Lớp học duy trì kỷ luật tốt.</td></tr> : 
-                                        studentsWithViolation.map((row, index) => (
-                                            <tr key={row.ma_cam_ket} className={`border-b border-red-100 hover:bg-red-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-red-50/30'}`}>
-                                                <td className="px-4 py-3 text-center font-medium">{row.ma_cam_ket}</td>
-                                                <td className="px-4 py-3 font-bold text-gray-800">{row.hoc_vien?.ho_ten}</td>
-                                                <td className="px-4 py-3 text-center text-gray-600">{formatDateForView(row.ngay_ky)}</td>
-                                                <td className="px-4 py-3 text-center max-w-[300px]">
-                                                 <span className="text-xs text-red-600 font-semibold whitespace-normal leading-relaxed block text-left mx-auto w-fit" title={row.ly_do_vi_pham || ''}>
-                                                    {row.ly_do_vi_pham || 'Vi phạm nội quy'}
-                                                </span>
-                                                </td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <button onClick={() => { openViewModal(row); setActiveTab('violation'); }} className="text-red-600 hover:text-red-800 font-semibold text-xs underline">Tra cứu</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                                <div>
+                                    <h3 className="text-base font-bold text-red-700 mb-3 flex items-center gap-2 border-l-4 border-red-500 pl-3">
+                                        <FaExclamationTriangle /> Học viên vi phạm cam kết ({studentsWithViolation.length})
+                                    </h3>
+                                    <div className="overflow-x-auto rounded-t-lg border border-red-200 shadow-sm">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="bg-red-600 text-white uppercase font-semibold text-xs border-b">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-center">Mã Cam Kết</th>
+                                                    <th className="px-4 py-3">Học Viên</th>
+                                                    <th className="px-4 py-3 text-center">Ngày Ký</th>
+                                                    <th className="px-4 py-3 text-center">Chi tiết vi phạm</th>
+                                                    <th className="px-4 py-3 text-center w-28">Thao Tác</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="text-gray-700">
+                                                {studentsWithViolation.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-500 italic">Lớp học duy trì kỷ luật tốt.</td></tr> : 
+                                                studentsWithViolation.map((row, index) => (
+                                                    <tr key={row.ma_cam_ket} className={`border-b border-red-100 hover:bg-red-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-red-50/30'}`}>
+                                                        <td className="px-4 py-3 text-center font-medium">{row.ma_cam_ket}</td>
+                                                        <td className="px-4 py-3 font-bold text-gray-800">{row.hoc_vien?.ho_ten}</td>
+                                                        <td className="px-4 py-3 text-center text-gray-600">{formatDateForView(row.ngay_ky)}</td>
+                                                        <td className="px-4 py-3 text-center max-w-[300px]">
+                                                         <span className="text-xs text-red-600 font-semibold whitespace-normal leading-relaxed block text-left mx-auto w-fit" title={row.ly_do_vi_pham || ''}>
+                                                            {row.ly_do_vi_pham || 'Vi phạm nội quy'}
+                                                        </span>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-center">
+                                                            <button onClick={() => { openViewModal(row); setActiveTab('violation'); }} className="text-red-600 hover:text-red-800 font-semibold text-xs underline">Tra cứu</button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
-
-                {/* Phân trang chung */}
+   
                 {!isLoading && classFilteredData.length > 0 && (
                     <div className="flex flex-col sm:flex-row justify-between items-center mt-6 font-medium text-gray-600 text-sm gap-4">
                         <div>
@@ -1172,8 +1205,19 @@ export default function QuanLyCamKetPage() {
                                                                     <div><span className="block text-gray-500 text-xs mb-1">Ngày sinh</span><span className="font-semibold text-gray-800">{fullStudentInfo?.ngay_sinh ? new Date(fullStudentInfo.ngay_sinh).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}</span></div>
                                                                     <div><span className="block text-gray-500 text-xs mb-1">Giới tính</span><span className="font-semibold text-gray-800">{fullStudentInfo?.gioi_tinh || 'Chưa cập nhật'}</span></div>
                                                                     <div><span className="block text-gray-500 text-xs mb-1">Số điện thoại</span><span className="font-semibold text-gray-800">{fullStudentInfo?.so_dien_thoai || 'Chưa cập nhật'}</span></div>
-                                                                    <div><span className="block text-gray-500 text-xs mb-1">Email liên hệ</span><span className="font-semibold text-gray-800 truncate block" title={fullStudentInfo?.email}>{fullStudentInfo?.email || 'Chưa cập nhật'}</span></div>
-                                                                    <div className="col-span-2"><span className="block text-gray-500 text-xs mb-1">Địa chỉ</span><span className="font-semibold text-gray-800 truncate block" title={fullStudentInfo?.dia_chi}>{fullStudentInfo?.dia_chi || 'Chưa cập nhật'}</span></div>
+                                                                    <div className="md:col-span-3">
+                                                <span className="block text-gray-500 text-xs mb-1">Email liên hệ</span>
+                                                <span className="font-semibold text-gray-800 block" title={fullStudentInfo?.email}>
+                                                 {fullStudentInfo?.email || 'Chưa cập nhật'}
+                                                </span>
+                                                </div>
+    
+                                             <div className="col-span-2 md:col-span-4 mt-2">
+                                                <span className="block text-gray-500 text-xs mb-1">Địa chỉ</span>
+                                                <span className="font-semibold text-gray-800 block" title={fullStudentInfo?.dia_chi}>
+                                                 {fullStudentInfo?.dia_chi || 'Chưa cập nhật'}
+                                                </span>
+                                                </div>
                                                                     <div className="col-span-4 border-t pt-4 mt-2"><span className="block text-gray-500 text-xs mb-1">Mục tiêu đầu ra (Chứng chỉ)</span><span className="font-bold text-purple-700">{fullStudentInfo?.dau_ra_chung_chi || 'Chưa cập nhật mục tiêu đầu ra'}</span></div>
                                                                 </div>
                                                             </div>

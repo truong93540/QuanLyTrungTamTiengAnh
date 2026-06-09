@@ -61,7 +61,6 @@ export default function QuanLyKhoaHocPage() {
     const [danhSachMarketing, setDanhSachMarketing] = useState<ChuongTrinhMarketing[]>([])
     const [isLoading, setIsLoading] = useState(true)
     
-    // Tìm kiếm & Lọc
     const [searchTerm, setSearchTerm] = useState('')
     const [filterTrinhDo, setFilterTrinhDo] = useState('all') 
     const [tuKhoaMarketing, setTuKhoaMarketing] = useState('')
@@ -69,22 +68,19 @@ export default function QuanLyKhoaHocPage() {
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 5
 
-    // Modal States
+
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isViewMode, setIsViewMode] = useState(false)
     const [editingId, setEditingId] = useState<number | null>(null)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [deletingId, setDeletingId] = useState<number | null>(null)
-    
-    // Modal Tạo Nhanh Marketing
+
     const [isAddMarketingModalOpen, setIsAddMarketingModalOpen] = useState(false)
     const [isSubmittingMarketing, setIsSubmittingMarketing] = useState(false)
     const [newMarketingData, setNewMarketingData] = useState({
         ten_chuong_trinh_marketing: '', ngan_sach: '', ngay_bat_dau: '', ngay_ket_thuc: '', noi_dung: ''
     })
     const [newMarketingErrors, setNewMarketingErrors] = useState<Record<string, string>>({})
-
-    // View Data State & Accordion State
     const [viewData, setViewData] = useState<KhoaHoc | null>(null)
     const [openClassId, setOpenClassId] = useState<number | null>(null) 
     
@@ -92,7 +88,6 @@ export default function QuanLyKhoaHocPage() {
     const [showMarketingDetail, setShowMarketingDetail] = useState(false)
     const [showLopHocDetail, setShowLopHocDetail] = useState(false)
 
-    // Form States
     const [formData, setFormData] = useState({
         ten_khoa_hoc: '',
         mo_ta: '',

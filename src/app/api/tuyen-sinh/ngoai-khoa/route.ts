@@ -12,13 +12,11 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url)
         const action = searchParams.get('action')
         
-        // API lấy danh sách giáo viên
         if (action === 'get_teachers') {
             const giaoVien = await layDanhSachGiaoVien()
             return NextResponse.json(giaoVien)
         }
 
-        // API lấy danh sách hoạt động
         const filters = { search: searchParams.get('search') }
         const danhSach = await layDanhSachHoatDong(filters)
         return NextResponse.json(danhSach)
@@ -39,7 +37,7 @@ export async function POST(request: Request) {
             dia_diem, 
             chi_phi, 
             danh_sach_giao_vien,
-            danh_sach_hoc_vien // <-- Bổ sung nhận danh sách học viên
+            danh_sach_hoc_vien 
         } = body
 
         if (!ten_hoat_dong || !ngay_to_chuc) {
@@ -75,7 +73,7 @@ export async function PUT(request: Request) {
             dia_diem, 
             chi_phi, 
             danh_sach_giao_vien,
-            danh_sach_hoc_vien // <-- Bổ sung nhận danh sách học viên
+            danh_sach_hoc_vien 
         } = body
 
         if (!ma_hoat_dong_ngoai_khoa) {
@@ -88,13 +86,9 @@ export async function PUT(request: Request) {
             ...(ngay_to_chuc && { ngay_to_chuc: new Date(ngay_to_chuc) }),
             ...(dia_diem !== undefined && { dia_diem: dia_diem ? String(dia_diem) : null }),
             ...(chi_phi !== undefined && { chi_phi: chi_phi !== '' && chi_phi !== null ? Number(chi_phi) : null }),
-            
-            // Xử lý mảng giáo viên
             ...(danh_sach_giao_vien !== undefined && { 
                 danh_sach_giao_vien: Array.isArray(danh_sach_giao_vien) ? danh_sach_giao_vien.map(Number) : [] 
             }),
-            
-            // Bổ sung: Xử lý mảng học viên
             ...(danh_sach_hoc_vien !== undefined && { 
                 danh_sach_hoc_vien: Array.isArray(danh_sach_hoc_vien) ? danh_sach_hoc_vien.map(Number) : [] 
             })

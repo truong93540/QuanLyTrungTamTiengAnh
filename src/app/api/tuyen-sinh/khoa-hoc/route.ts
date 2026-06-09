@@ -16,7 +16,6 @@ export async function POST(request: Request) {
         if (!body.ten_khoa_hoc || !body.hoc_phi || !body.ma_chuong_trinh) {
             return NextResponse.json({ error: 'Thiếu thông tin bắt buộc' }, { status: 400 })
         }
-
         const ketQua = await taoKhoaHocMoi({
             ...body,
             hoc_phi: Number(body.hoc_phi),
