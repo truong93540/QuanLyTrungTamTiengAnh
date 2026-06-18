@@ -250,20 +250,43 @@ export default function QuanLyLopHocPage() {
                         </ul>
                       </div>
 
+                      {/* --- ĐOẠN ĐÃ SỬA THEO YÊU CẦU --- */}
                       <div className="bg-white p-4 border rounded-xl shadow-sm">
                         <h3 className="font-bold text-slate-800 border-b pb-2 mb-3">Danh Sách Học Viên <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-sm">{detailLop.tham_gia.length}</span></h3>
                         <div className="flex gap-2 mb-4">
-                          <select id="sel-hv" className="border p-2 text-sm rounded-lg flex-1 bg-slate-50">
-                            <option value="">Chọn học viên...</option>
+                          <input 
+                            id="sel-hv" 
+                            list="list-hv" 
+                            placeholder="Chọn hoặc nhập thông tin học viên..." 
+                            className="border p-2 text-sm rounded-lg flex-1 bg-slate-50"
+                            autoComplete="off"
+                          />
+                          <datalist id="list-hv">
                             {meta.hocViens.filter(hv => !detailLop.tham_gia.find((t:any) => t.ma_hoc_vien === hv.ma_hoc_vien)).map(h => (
-                              <option key={h.ma_hoc_vien} value={h.ma_hoc_vien}>{h.ho_ten} - {h.so_dien_thoai} ({h.trang_thai})</option>
+                              <option key={h.ma_hoc_vien} value={`${h.ma_hoc_vien} - ${h.ho_ten} - ${h.so_dien_thoai}`}>
+                                ({h.trang_thai})
+                              </option>
                             ))}
-                          </select>
+                          </datalist>
                           <button onClick={() => {
-                            const val = (document.getElementById('sel-hv') as HTMLSelectElement).value;
-                            if(val) fetch('/api/dao-tao/lop-hoc', { method: 'POST', body: JSON.stringify({ action: 'ADD_HOC_VIEN', payload: { ma_lop_hoc: detailLop.ma_lop_hoc, ma_hoc_vien: Number(val) } }) }).then(() => loadDetail(detailLop.ma_lop_hoc));
+                            const inputEl = document.getElementById('sel-hv') as HTMLInputElement;
+                            const val = inputEl?.value;
+                            if(val) {
+                              const ma_hoc_vien = Number(val.split(' - ')[0]);
+                              if(!isNaN(ma_hoc_vien)) {
+                                fetch('/api/dao-tao/lop-hoc', { method: 'POST', body: JSON.stringify({ action: 'ADD_HOC_VIEN', payload: { ma_lop_hoc: detailLop.ma_lop_hoc, ma_hoc_vien } }) }).then(() => {
+                                  loadDetail(detailLop.ma_lop_hoc);
+                                  if(inputEl) {
+                                    inputEl.value = '';
+                                    inputEl.focus();
+                                  }
+                                });
+                              }
+                            }
                           }} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm">Ghi Danh</button>
                         </div>
+                        {/* --- HẾT ĐOẠN SỬA --- */}
+                        
                         <ul className="space-y-2 text-sm max-h-64 overflow-y-auto pr-2">
                           {detailLop.tham_gia.map((t:any) => {
                             const biViPham = t.hoc_vien?.cam_ket?.some((c: any) => c.ma_khoa_hoc === detailLop.ma_khoa_hoc && c.bi_vi_pham === true);
@@ -307,7 +330,6 @@ export default function QuanLyLopHocPage() {
                   </div>
                 )}
 
-                {/* TAB 3: CHI TIẾT KHÓA HỌC (Đã bổ sung hoàn chỉnh logic đề xuất) */}
                 {detailTab === 3 && (
                   <ChiTietKhoaHocTab 
                     detailLop={detailLop} 
@@ -398,7 +420,6 @@ export default function QuanLyLopHocPage() {
 
 // ================= SUB COMPONENTS TÁCH RỜI =================
 
-// 1. Component Tab Chi Tiết Khóa Học (Giải quyết yêu cầu số 1)
 const ChiTietKhoaHocTab = ({ detailLop, meta, reloadLop }: { detailLop: any, meta: MetaData, reloadLop: () => void }) => {
   const [selectedKhoaHoc, setSelectedKhoaHoc] = useState<number | ''>('');
   const hasKhoaHoc = !!detailLop.ma_khoa_hoc;
@@ -483,7 +504,6 @@ const ChiTietKhoaHocTab = ({ detailLop, meta, reloadLop }: { detailLop: any, met
   );
 };
 
-// 2. Tab Quản Lý Điểm Kiểm Tra (Giải quyết yêu cầu số 2)
 const KiemTraTab = ({ maLop, dsHocVien, listBkt, reloadLop, maKhoaHoc }: { maLop:number, dsHocVien:any[], listBkt:any[], reloadLop: () => void, maKhoaHoc: number }) => {
   const [selectedBkt, setSelectedBkt] = useState<number|''>('');
   const [ketQuaList, setKetQuaList] = useState<any[]>([]);
@@ -581,7 +601,6 @@ const KiemTraTab = ({ maLop, dsHocVien, listBkt, reloadLop, maKhoaHoc }: { maLop
   );
 };
 
-// 3. Component Tab Điểm Danh (Giải quyết yêu cầu số 2)
 const DiemDanhTab = ({ maLop, maBuoiHoc, maKhoaHoc }: { maLop:number, maBuoiHoc:number, maKhoaHoc: number }) => {
   const [ds, setDs] = useState<any[]>([]);
   useEffect(() => { 
@@ -631,12 +650,10 @@ const DiemDanhTab = ({ maLop, maBuoiHoc, maKhoaHoc }: { maLop:number, maBuoiHoc:
   );
 };
 
-// 4. Component Tab Nhận Xét (Giải quyết hoàn hảo yêu cầu số 2 & số 3)
 const NhanXetTab = ({ maBuoiHoc, dsHocVien, maKhoaHoc }: { maBuoiHoc:number, dsHocVien:any[], maKhoaHoc: number }) => {
   const [dbNhanXet, setDbNhanXet] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Đồng bộ nạp dữ liệu nhận xét cũ từ CSDL về máy khách khi mở Tab hoặc đổi Buổi học
   const fetchSavedNhanXet = useCallback(async () => {
     setLoading(true);
     const res = await fetch(`/api/dao-tao/lop-hoc?ma_buoi_hoc_nx=${maBuoiHoc}`).then(r => r.json());
@@ -658,7 +675,7 @@ const NhanXetTab = ({ maBuoiHoc, dsHocVien, maKhoaHoc }: { maBuoiHoc:number, dsH
     }).then(r => r.json());
     
     if (res.success) {
-      fetchSavedNhanXet(); // Cập nhật lại state cục bộ sau khi lưu
+      fetchSavedNhanXet();
     }
   };
 
@@ -676,7 +693,6 @@ const NhanXetTab = ({ maBuoiHoc, dsHocVien, maKhoaHoc }: { maBuoiHoc:number, dsH
             const laNghiHoc = t.hoc_vien?.trang_thai === 'Nghỉ học';
             const biKhoa = biViPham || laNghiHoc;
 
-            // Tìm nhận xét tương ứng của học viên này trong CSDL đã fetch về
             const currentRecord = dbNhanXet.find(nx => nx.ma_hoc_vien === t.ma_hoc_vien);
 
             return (
@@ -729,7 +745,6 @@ const NhanXetTab = ({ maBuoiHoc, dsHocVien, maKhoaHoc }: { maBuoiHoc:number, dsH
   );
 };
 
-// Component Kế Hoạch Giảng Dạy giữ nguyên logic gốc của bạn
 const KeHoachGiangDayTab = ({ maKhoaHoc, giaoViens, dsGvPhanCong }: { maKhoaHoc:number, giaoViens:any[], dsGvPhanCong:any[] }) => {
   const [kh, setKh] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -765,7 +780,7 @@ const KeHoachGiangDayTab = ({ maKhoaHoc, giaoViens, dsGvPhanCong }: { maKhoaHoc:
       <div className="flex justify-between items-center mb-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
         <div>
            <h3 className="font-bold text-lg text-slate-800">Kế Hoạch Giảng Dạy Khóa Học</h3>
-           <p className="text-xs text-slate-500">Giáo án phân bổ cho toàn bộ khóa học liên kết với lớp này.</p>
+           <p className="text-xs text-slate-500">Giáo án phân bổ cho toàn bộ khóa học liên kết with lớp này.</p>
         </div>
         <button disabled={!maKhoaHoc} onClick={() => {setIsModalOpen(true); fetchKhMau();}} className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm">+ Thêm Kế Hoạch</button>
       </div>

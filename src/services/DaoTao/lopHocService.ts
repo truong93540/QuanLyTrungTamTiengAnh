@@ -297,9 +297,37 @@ export const lopHocService = {
   },
 
   async upsertNhanXet(ma_buoi_hoc: number, ma_hoc_vien: number, da_lam_bai_tap: boolean, noi_dung_nhan_xet: string) {
-    const exist = await prisma.nhanXet.findFirst({ where: { ma_buoi_hoc, ma_hoc_vien } });
-    if (exist) return prisma.nhanXet.update({ where: { ma_nhan_xet: exist.ma_nhan_xet }, data: { da_lam_bai_tap, noi_dung_nhan_xet } });
-    return prisma.nhanXet.create({ data: { ma_buoi_hoc, ma_hoc_vien, da_lam_bai_tap, noi_dung_nhan_xet } });
+    // Đảm bảo dữ liệu đầu vào luôn đúng định dạng số và boolean
+    const maBuoiHocNum = Number(ma_buoi_hoc);
+    const maHocVienNum = Number(ma_hoc_vien);
+    const daLamBtBool = da_lam_bai_tap === true || (da_lam_bai_tap as any) === 'true';
+
+    // Tìm kiếm bản ghi cũ dựa trên ID đã ép kiểu chuẩn Int
+    const exist = await prisma.nhanXet.findFirst({ 
+      where: { 
+        ma_buoi_hoc: maBuoiHocNum, 
+        ma_hoc_vien: maHocVienNum 
+      } 
+    });
+
+    if (exist) {
+      return prisma.nhanXet.update({ 
+        where: { ma_nhan_xet: exist.ma_nhan_xet }, 
+        data: { 
+          da_lam_bai_tap: daLamBtBool, 
+          noi_dung_nhan_xet 
+        } 
+      });
+    }
+
+    return prisma.nhanXet.create({ 
+      data: { 
+        ma_buoi_hoc: maBuoiHocNum, 
+        ma_hoc_vien: maHocVienNum, 
+        da_lam_bai_tap: daLamBtBool, 
+        noi_dung_nhan_xet 
+      } 
+    });
   },
 
   async createBaiKiemTra(data: { ten_bai_kiem_tra: string, ngay_kiem_tra: string, ma_lop_hoc: number }) {
