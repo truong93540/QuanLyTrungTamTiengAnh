@@ -100,7 +100,15 @@ export async function POST(req: NextRequest) {
           await lopHocService.upsertDiemDanh(payload.ma_buoi_hoc, payload.ma_hoc_vien, payload.trang_thai, payload.ghi_chu);
           return resJson(true, 'Cập nhật điểm danh thành công');
         case 'UPSERT_NHAN_XET':
-          await lopHocService.upsertNhanXet(payload.ma_buoi_hoc, payload.ma_hoc_vien, payload.da_lam_bai_tap, payload.noi_dung_nhan_xet);
+          // Xử lý ép kiểu chính xác cho da_lam_bai_tap và các ID trước khi gọi Service
+          const daLamBtBoolean = payload.da_lam_bai_tap === true || payload.da_lam_bai_tap === 'true';
+          
+          await lopHocService.upsertNhanXet(
+            Number(payload.ma_buoi_hoc), 
+            Number(payload.ma_hoc_vien), 
+            daLamBtBoolean, 
+            payload.noi_dung_nhan_xet
+          );
           return resJson(true, 'Lưu nhận xét thành công');
         case 'CREATE_BAI_KIEM_TRA':
           const newBkt = await lopHocService.createBaiKiemTra(payload);
