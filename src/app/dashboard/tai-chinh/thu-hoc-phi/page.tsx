@@ -28,6 +28,7 @@ interface NhanSu {
 interface HocVien {
     ma_hoc_vien: number
     ho_ten: string
+    so_dien_thoai?: string | null
 }
 
 interface KhoaHoc {
@@ -92,6 +93,28 @@ export default function PhieuThuHocPhiPage() {
         isOpen: false,
         id: null,
     })
+
+    const [studentSearchInput, setStudentSearchInput] = useState('')
+    const [isStudentDropdownOpen, setIsStudentDropdownOpen] = useState(false)
+    const studentDropdownRef = useRef<HTMLDivElement>(null)
+
+    const getStudentName = (maHocVienStr: string) => {
+        if (!maHocVienStr) return null
+        const student = hocVienList.find(hv => hv.ma_hoc_vien.toString() === maHocVienStr)
+        if (student) return student.ho_ten
+
+        // Tìm trong danh sách các lớp học
+        for (const lop of lopHocList) {
+            const match = lop.tham_gia.find(tg => tg.ma_hoc_vien.toString() === maHocVienStr)
+            if (match && match.hoc_vien) return match.hoc_vien.ho_ten
+        }
+
+        // Tìm trong danh sách phiếu thu đã có
+        const receiptMatch = data.find(pt => pt.ma_hoc_vien.toString() === maHocVienStr)
+        if (receiptMatch && receiptMatch.hoc_vien) return receiptMatch.hoc_vien.ho_ten
+
+        return null
+    }
 
     const [formData, setFormData] = useState({
         ma_phieu_thu: '',
@@ -163,7 +186,7 @@ export default function PhieuThuHocPhiPage() {
                 const [phieuThuRes, nhanSuRes, hocVienRes, khoaHocRes, khuyenMaiRes, lopHocRes] = await Promise.all([
                     fetch('/api/tai-chinh/phieu-thu'),
                     fetch('/api/tai-chinh/nhan-vien'),
-                    fetch('/api/dao-tao/hoc-vien'),
+                    fetch('/api/dao-tao/hoc-vien?limit=5000'),
                     fetch('/api/tai-chinh/khoa-hoc'),
                     fetch('/api/tai-chinh/khuyen-mai'),
                     fetch('/api/tai-chinh/lop-hoc'),
@@ -289,6 +312,9 @@ export default function PhieuThuHocPhiPage() {
             if (khuyenMaiDropdownRef.current && !khuyenMaiDropdownRef.current.contains(event.target as Node)) {
                 setIsKhuyenMaiDropdownOpen(false)
             }
+            if (studentDropdownRef.current && !studentDropdownRef.current.contains(event.target as Node)) {
+                setIsStudentDropdownOpen(false)
+            }
         }
         document.addEventListener("mousedown", handleClickOutside)
         return () => document.removeEventListener("mousedown", handleClickOutside)
@@ -312,6 +338,8 @@ export default function PhieuThuHocPhiPage() {
                 ma_khoa_hoc: '',
                 ma_khuyen_mai: '',
             })
+            const name = getStudentName(maHocVienParam)
+            setStudentSearchInput(name || '')
             // Xóa tham số khỏi URL
             window.history.replaceState(null, '', window.location.pathname)
         }
@@ -339,6 +367,7 @@ export default function PhieuThuHocPhiPage() {
             ma_khoa_hoc: '',
             ma_khuyen_mai: '',
         })
+        setStudentSearchInput('')
         setFormError(null)
         setEditingId(null)
     }
@@ -484,6 +513,7 @@ export default function PhieuThuHocPhiPage() {
             ma_khoa_hoc: row.ma_khoa_hoc?.toString() || '',
             ma_khuyen_mai: row.ma_khuyen_mai?.toString() || '',
         })
+        setStudentSearchInput(row.hoc_vien?.ho_ten || '')
         setEditingId(row.ma_phieu_thu)
         setIsModalOpen(true)
     }
@@ -531,9 +561,9 @@ export default function PhieuThuHocPhiPage() {
                                         </div>
                                     )}
 
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col relative" ref={studentDropdownRef}>
                                         <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                                            Mã học viên <span className="text-red-500">*</span>
+                                            Tìm kiếm & Chọn học viên <span className="text-red-500">*</span>
                                         </label>
 
                                         {/* Dropdown chọn nhanh học viên thuộc lớp đang chọn */}
@@ -553,6 +583,16 @@ export default function PhieuThuHocPhiPage() {
                                                                     ...prev,
                                                                     ma_hoc_vien: e.target.value
                                                                 }))
+                                                                const selectedOption = selectedClass.tham_gia.find(tg => tg.hoc_vien.ma_hoc_vien.toString() === e.target.value)
+                                                                if (selectedOption) {
+                                                                    setStudentSearchInput(selectedOption.hoc_vien.ho_ten)
+                                                                }
+                                                            } else {
+                                                                setFormData(prev => ({
+                                                                    ...prev,
+                                                                    ma_hoc_vien: ''
+                                                                }))
+                                                                setStudentSearchInput('')
                                                             }
                                                         }}
                                                         className="w-full border border-gray-300 rounded-[8px] p-2 text-sm bg-white text-slate-800 focus:outline-blue-500 cursor-pointer font-medium"
@@ -568,19 +608,90 @@ export default function PhieuThuHocPhiPage() {
                                             )
                                         })()}
 
-                                        <input
-                                            type="number"
-                                            name="ma_hoc_vien"
-                                            value={formData.ma_hoc_vien}
-                                            onChange={handleChange}
-                                            placeholder="Nhập mã học viên..."
-                                            className="w-full border border-gray-300 rounded-[8px] p-2 focus:outline-blue-500 text-sm"
-                                        />
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={studentSearchInput}
+                                                onChange={(e) => {
+                                                    setStudentSearchInput(e.target.value)
+                                                    setIsStudentDropdownOpen(true)
+                                                    if (!e.target.value) {
+                                                        setFormData(prev => ({ ...prev, ma_hoc_vien: '' }))
+                                                    }
+                                                }}
+                                                onFocus={() => setIsStudentDropdownOpen(true)}
+                                                placeholder="Nhập tên hoặc mã học viên để tìm..."
+                                                className="w-full border border-gray-300 rounded-[8px] p-2 pr-8 focus:outline-blue-500 text-sm"
+                                            />
+                                            {studentSearchInput && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setStudentSearchInput('')
+                                                        setFormData(prev => ({ ...prev, ma_hoc_vien: '' }))
+                                                        setIsStudentDropdownOpen(false)
+                                                    }}
+                                                    className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600 cursor-pointer"
+                                                >
+                                                    <FaTimes size={14} />
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {isStudentDropdownOpen && (
+                                            <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto custom-scrollbar top-full">
+                                                {(() => {
+                                                    const query = studentSearchInput.toLowerCase().trim()
+                                                    const filtered = hocVienList.filter(hv => {
+                                                        const matchName = hv.ho_ten?.toLowerCase().includes(query)
+                                                        const matchId = hv.ma_hoc_vien?.toString().includes(query)
+                                                        return matchName || matchId
+                                                    })
+
+                                                    if (filtered.length === 0) {
+                                                        return (
+                                                            <div className="p-3 text-sm text-gray-500 text-center italic">
+                                                                Không tìm thấy học viên
+                                                            </div>
+                                                        )
+                                                    }
+
+                                                    return filtered.map(hv => (
+                                                        <div
+                                                            key={hv.ma_hoc_vien}
+                                                            onClick={() => {
+                                                                setFormData(prev => ({
+                                                                    ...prev,
+                                                                    ma_hoc_vien: hv.ma_hoc_vien.toString()
+                                                                }))
+                                                                setStudentSearchInput(hv.ho_ten)
+                                                                setIsStudentDropdownOpen(false)
+                                                            }}
+                                                            className={`p-2.5 text-sm cursor-pointer hover:bg-blue-50 border-b border-gray-100 flex justify-between items-center transition ${formData.ma_hoc_vien === hv.ma_hoc_vien.toString() ? 'bg-blue-100/50 font-semibold text-blue-700' : 'text-gray-700'}`}
+                                                        >
+                                                            <div className="text-left">
+                                                                <span className="font-medium">{hv.ho_ten}</span>
+                                                                {hv.so_dien_thoai && (
+                                                                    <span className="text-gray-400 text-xs ml-2">({hv.so_dien_thoai})</span>
+                                                                )}
+                                                            </div>
+                                                            <span className="text-gray-400 text-xs font-mono">Mã: {hv.ma_hoc_vien}</span>
+                                                        </div>
+                                                    ))
+                                                })()}
+                                            </div>
+                                        )}
+
                                         {formData.ma_hoc_vien && (
-                                            <div className="text-xs mt-1.5 font-semibold text-blue-600">
-                                                {hocVienList.some(hv => hv.ma_hoc_vien.toString() === formData.ma_hoc_vien)
-                                                    ? <span>{`Tên học viên: ${hocVienList.find(hv => hv.ma_hoc_vien.toString() === formData.ma_hoc_vien)?.ho_ten}`}</span>
-                                                    : <span className="text-red-500">Không tìm thấy học viên</span>}
+                                            <div className="text-xs mt-1.5 font-semibold text-blue-600 flex items-center justify-between bg-blue-50/50 p-2 rounded border border-blue-100">
+                                                {(() => {
+                                                    const studentName = getStudentName(formData.ma_hoc_vien)
+                                                    return studentName ? (
+                                                        <span>Đang chọn: {studentName} (Mã: {formData.ma_hoc_vien})</span>
+                                                    ) : (
+                                                        <span className="text-red-500">Mã học viên: {formData.ma_hoc_vien} (Không tìm thấy)</span>
+                                                    )
+                                                })()}
                                             </div>
                                         )}
                                     </div>
@@ -1215,8 +1326,7 @@ export default function PhieuThuHocPhiPage() {
                                                             {g.remainingDue > 0 ? (
                                                                 <button
                                                                     onClick={() => {
-                                                                        // Mở modal thêm phiếu thu, tự động điền sẵn học viên
-                                                                        setEditingId(null)
+                                                                        setEditingId(null);
                                                                         setFormData({
                                                                             ma_phieu_thu: '',
                                                                             so_tien: '',
@@ -1228,6 +1338,7 @@ export default function PhieuThuHocPhiPage() {
                                                                             ma_khoa_hoc: g.ma_khoa_hoc.toString(),
                                                                             ma_khuyen_mai: g.rawPromoPayment?.ma_khuyen_mai ? g.rawPromoPayment.ma_khuyen_mai.toString() : '',
                                                                         })
+                                                                        setStudentSearchInput(g.ho_ten)
                                                                         setFormError(null)
                                                                         setIsModalOpen(true)
                                                                     }}
@@ -1351,8 +1462,7 @@ export default function PhieuThuHocPhiPage() {
                                                             {remainingDue > 0 ? (
                                                                 <button
                                                                     onClick={() => {
-                                                                        // Mở modal thêm phiếu thu, tự động điền sẵn học viên
-                                                                        setEditingId(null)
+                                                                        setEditingId(null);
                                                                         setFormData({
                                                                             ma_phieu_thu: '',
                                                                             so_tien: '',
@@ -1364,6 +1474,7 @@ export default function PhieuThuHocPhiPage() {
                                                                             ma_khoa_hoc: lop.ma_khoa_hoc.toString(),
                                                                             ma_khuyen_mai: promoPayment?.ma_khuyen_mai ? promoPayment.ma_khuyen_mai.toString() : '',
                                                                         })
+                                                                        setStudentSearchInput(tg.hoc_vien?.ho_ten || '');
                                                                         setFormError(null)
                                                                         setIsModalOpen(true)
                                                                     }}
