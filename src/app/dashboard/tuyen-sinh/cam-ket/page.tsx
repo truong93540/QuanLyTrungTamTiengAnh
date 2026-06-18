@@ -21,6 +21,7 @@ interface LopHoc {
 
 interface ThamGiaLop {
     lop_hoc?: LopHoc
+    trang_thai?: string
 }
 
 interface HocVien {
@@ -34,7 +35,7 @@ interface HocVien {
 interface CamKet {
     ma_cam_ket: number
     ngay_ky: string
-    ngay_het_han?: string | null
+    ngay_het_han: string
     noi_dung_cam_ket: string
     trang_thai: string
     ma_hoc_vien: number
@@ -111,6 +112,9 @@ export default function QuanLyCamKetPage() {
     const [isSearching, setIsSearching] = useState(false)
 
     const [currentPage, setCurrentPage] = useState(1)
+    const [currentPageCompliant, setCurrentPageCompliant] = useState(1)
+    const [currentPageViolating, setCurrentPageViolating] = useState(1)
+    
     const itemsPerPage = 8
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [deletingId, setDeletingId] = useState<number | null>(null)
@@ -155,6 +159,7 @@ export default function QuanLyCamKetPage() {
                 }
             } catch (error) {
                 console.error('Lỗi fetch API:', error)
+                showToast('Lỗi tải dữ liệu, vui lòng thử lại!', 'error')
             } finally {
                 setIsLoading(false)
             }
@@ -162,7 +167,6 @@ export default function QuanLyCamKetPage() {
         fetchData()
     }, [])
 
- 
     const handleStartAddWorkflow = () => setIsAskStudentModalOpen(true)
     const handleHasStudent = () => { setIsAskStudentModalOpen(false); openAddModal() }
     const handleNoStudent = () => {
@@ -657,9 +661,44 @@ export default function QuanLyCamKetPage() {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
     const currentItems = classFilteredData.slice(indexOfFirstItem, indexOfLastItem)
     const totalPages = Math.ceil(classFilteredData.length / itemsPerPage)
+    const allCompliantStudents = useMemo(() => classFilteredData.filter(item => !item.bi_vi_pham), [classFilteredData]);
+    const totalPagesCompliant = Math.ceil(allCompliantStudents.length / itemsPerPage);
+    const currentCompliantItems = allCompliantStudents.slice((currentPageCompliant - 1) * itemsPerPage, currentPageCompliant * itemsPerPage);
+    const allViolatingStudents = useMemo(() => classFilteredData.filter(item => item.bi_vi_pham), [classFilteredData]);
+    const totalPagesViolating = Math.ceil(allViolatingStudents.length / itemsPerPage);
+    const currentViolatingItems = allViolatingStudents.slice((currentPageViolating - 1) * itemsPerPage, currentPageViolating * itemsPerPage);
 
-    const studentsWithoutViolation = currentItems.filter(item => !item.bi_vi_pham);
-    const studentsWithViolation = currentItems.filter(item => item.bi_vi_pham);
+
+    const renderPagination = (currentPg: number, totalPgs: number, setPgFn: (val: any) => void) => {
+        if (totalPgs <= 1) return null;
+
+        const pages = [];
+        if (totalPgs <= 7) {
+            for (let i = 1; i <= totalPgs; i++) pages.push(i);
+        } else {
+            if (currentPg <= 4) {
+                pages.push(1, 2, 3, 4, 5, '...', totalPgs);
+            } else if (currentPg >= totalPgs - 3) {
+                pages.push(1, '...', totalPgs - 4, totalPgs - 3, totalPgs - 2, totalPgs - 1, totalPgs);
+            } else {
+                pages.push(1, '...', currentPg - 1, currentPg, currentPg + 1, '...', totalPgs);
+            }
+        }
+
+        return (
+            <div className="flex gap-1">
+                <button onClick={() => setPgFn((p: number) => Math.max(p - 1, 1))} disabled={currentPg === 1} className={`px-3 py-1.5 rounded border ${currentPg === 1 ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' : 'hover:bg-gray-100 border-gray-300 text-gray-700 transition'}`}>Trước</button>
+                {pages.map((page, index) => (
+                    page === '...' ? (
+                        <span key={`ellipsis-${index}`} className="px-2 py-1.5 text-gray-400 font-bold tracking-widest cursor-default">...</span>
+                    ) : (
+                        <button key={`page-${page}-${index}`} onClick={() => setPgFn(page as number)} className={`px-3 py-1.5 rounded border transition font-medium ${currentPg === page ? 'bg-[#1d4ed8] text-white border-[#1d4ed8] shadow-sm' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}>{page}</button>
+                    )
+                ))}
+                <button onClick={() => setPgFn((p: number) => Math.min(p + 1, totalPgs))} disabled={currentPg === totalPgs} className={`px-3 py-1.5 rounded border ${currentPg === totalPgs ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' : 'hover:bg-gray-100 border-gray-300 text-gray-700 transition'}`}>Sau</button>
+            </div>
+        );
+    };
 
     const renderSearchAndFilter = () => (
         <div className="flex flex-col md:flex-row gap-4 mb-6 w-full animate-fade-in-up mt-2">
@@ -671,7 +710,12 @@ export default function QuanLyCamKetPage() {
                     type="text"
                     placeholder="Tìm tên, mã học viên hoặc khóa học..."
                     value={searchTerm}
-                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1) }}
+                    onChange={(e) => { 
+                        setSearchTerm(e.target.value); 
+                        setCurrentPage(1);
+                        setCurrentPageCompliant(1);
+                        setCurrentPageViolating(1);
+                    }}
                     className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 shadow-sm focus:border-[#1d4ed8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400"
                 />
             </div>
@@ -763,6 +807,8 @@ export default function QuanLyCamKetPage() {
                 setSelectedCourseId(null);
                 setSearchTerm('');
                 setCurrentPage(1);
+                setCurrentPageCompliant(1);
+                setCurrentPageViolating(1);
             }}
         >
             <FaFolderOpen className="text-3xl mb-2 text-blue-200" />
@@ -785,6 +831,8 @@ export default function QuanLyCamKetPage() {
                                     setTuKhoaLopHoc('');
                                     setSearchTerm('');
                                     setCurrentPage(1); 
+                                    setCurrentPageCompliant(1);
+                                    setCurrentPageViolating(1);
                                 }}
                             >
                                 <div className="absolute top-3 right-3 bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded">
@@ -823,6 +871,16 @@ export default function QuanLyCamKetPage() {
                 </tbody>
             </table>
         </div>
+
+        {!isLoading && classFilteredData.length > 0 && (
+            <div className="flex flex-col sm:flex-row justify-between items-center mt-6 font-medium text-gray-600 text-sm gap-4">
+                <div>
+                    Hiển thị <span className="font-bold text-gray-800">{indexOfFirstItem + 1}</span> đến <span className="font-bold text-gray-800">{Math.min(indexOfLastItem, classFilteredData.length)}</span> trong tổng số <span className="font-bold text-gray-800">{classFilteredData.length}</span> cam kết
+                </div>
+                {renderPagination(currentPage, totalPages, setCurrentPage)}
+            </div>
+        )}
+
     </div>
 )}
             
@@ -834,6 +892,8 @@ export default function QuanLyCamKetPage() {
                                     setSelectedCourseId(null);
                                     setSearchTerm('');
                                     setCurrentPage(1);
+                                    setCurrentPageCompliant(1);
+                                    setCurrentPageViolating(1);
                                 }}
                                 className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded hover:bg-gray-100 transition text-gray-600"
                             >
@@ -870,7 +930,9 @@ export default function QuanLyCamKetPage() {
                                     onClick={() => { 
                                         setSelectedClassId(-1); 
                                         setSearchTerm('');
-                                        setCurrentPage(1); 
+                                        setCurrentPage(1);
+                                        setCurrentPageCompliant(1);
+                                        setCurrentPageViolating(1);
                                     }}
                                 >
                                     <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-amber-500"></div>
@@ -902,6 +964,8 @@ export default function QuanLyCamKetPage() {
                                                 setSelectedClassId(lop.ma_lop_hoc); 
                                                 setSearchTerm('');
                                                 setCurrentPage(1); 
+                                                setCurrentPageCompliant(1);
+                                                setCurrentPageViolating(1);
                                             }}
                                         >
                                             <div className="text-xs font-bold text-gray-500 mb-1">Mã lớp: {lop.ma_lop_hoc}</div>
@@ -937,6 +1001,16 @@ export default function QuanLyCamKetPage() {
                                 </tbody>
                             </table>
                         </div>
+
+                        {!isLoading && classFilteredData.length > 0 && (
+                            <div className="flex flex-col sm:flex-row justify-between items-center mt-6 font-medium text-gray-600 text-sm gap-4">
+                                <div>
+                                    Hiển thị <span className="font-bold text-gray-800">{indexOfFirstItem + 1}</span> đến <span className="font-bold text-gray-800">{Math.min(indexOfLastItem, classFilteredData.length)}</span> trong tổng số <span className="font-bold text-gray-800">{classFilteredData.length}</span> cam kết
+                                </div>
+                                {renderPagination(currentPage, totalPages, setCurrentPage)}
+                            </div>
+                        )}
+
                     </div>
                 )}
 
@@ -948,6 +1022,8 @@ export default function QuanLyCamKetPage() {
                                     setSelectedClassId(null);
                                     setSearchTerm('');
                                     setCurrentPage(1);
+                                    setCurrentPageCompliant(1);
+                                    setCurrentPageViolating(1);
                                 }}
                                 className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded hover:bg-gray-100 transition text-gray-600"
                             >
@@ -1005,12 +1081,21 @@ export default function QuanLyCamKetPage() {
                                         </tbody>
                                     </table>
                                 </div>
+                                
+                                {!isLoading && classFilteredData.length > 0 && (
+                                    <div className="flex flex-col sm:flex-row justify-between items-center mt-6 font-medium text-gray-600 text-sm gap-4">
+                                        <div>
+                                            Hiển thị <span className="font-bold text-gray-800">{indexOfFirstItem + 1}</span> đến <span className="font-bold text-gray-800">{Math.min(indexOfLastItem, classFilteredData.length)}</span> trong tổng số <span className="font-bold text-gray-800">{classFilteredData.length}</span> cam kết
+                                        </div>
+                                        {renderPagination(currentPage, totalPages, setCurrentPage)}
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <>
                                 <div className="mb-8">
                                     <h3 className="text-base font-bold text-green-700 mb-3 flex items-center gap-2 border-l-4 border-green-500 pl-3">
-                                        <FaCheckCircle /> Học viên tuân thủ cam kết ({studentsWithoutViolation.length})
+                                        <FaCheckCircle /> Học viên tuân thủ cam kết ({allCompliantStudents.length})
                                     </h3>
                                     <div className="overflow-x-auto rounded-t-lg border border-green-200 shadow-sm">
                                         <table className="w-full text-sm text-left">
@@ -1024,8 +1109,8 @@ export default function QuanLyCamKetPage() {
                                                 </tr>
                                             </thead>
                                             <tbody className="text-gray-700">
-                                                {studentsWithoutViolation.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-500 italic">Không có dữ liệu</td></tr> : 
-                                                studentsWithoutViolation.map((row, index) => (
+                                                {currentCompliantItems.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-500 italic">Không có dữ liệu</td></tr> : 
+                                                currentCompliantItems.map((row, index) => (
                                                     <tr key={row.ma_cam_ket} className={`border-b border-green-100 hover:bg-green-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-green-50/30'}`}>
                                                         <td className="px-4 py-3 text-center font-medium">{row.ma_cam_ket}</td>
                                                         <td className="px-4 py-3 font-bold text-gray-800">{row.hoc_vien?.ho_ten}</td>
@@ -1055,11 +1140,20 @@ export default function QuanLyCamKetPage() {
                                             </tbody>
                                         </table>
                                     </div>
+                                    
+                                    {allCompliantStudents.length > 0 && (
+                                        <div className="flex flex-col sm:flex-row justify-between items-center mt-3 mb-8 font-medium text-gray-600 text-sm gap-4">
+                                            <div>
+                                                Hiển thị <span className="font-bold text-gray-800">{(currentPageCompliant - 1) * itemsPerPage + 1}</span> đến <span className="font-bold text-gray-800">{Math.min(currentPageCompliant * itemsPerPage, allCompliantStudents.length)}</span> trong tổng số <span className="font-bold text-gray-800">{allCompliantStudents.length}</span> hồ sơ
+                                            </div>
+                                            {renderPagination(currentPageCompliant, totalPagesCompliant, setCurrentPageCompliant)}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div>
                                     <h3 className="text-base font-bold text-red-700 mb-3 flex items-center gap-2 border-l-4 border-red-500 pl-3">
-                                        <FaExclamationTriangle /> Học viên vi phạm cam kết ({studentsWithViolation.length})
+                                        <FaExclamationTriangle /> Học viên vi phạm cam kết ({allViolatingStudents.length})
                                     </h3>
                                     <div className="overflow-x-auto rounded-t-lg border border-red-200 shadow-sm">
                                         <table className="w-full text-sm text-left">
@@ -1073,8 +1167,8 @@ export default function QuanLyCamKetPage() {
                                                 </tr>
                                             </thead>
                                             <tbody className="text-gray-700">
-                                                {studentsWithViolation.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-500 italic">Lớp học duy trì kỷ luật tốt.</td></tr> : 
-                                                studentsWithViolation.map((row, index) => (
+                                                {currentViolatingItems.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-500 italic">Lớp học duy trì kỷ luật tốt.</td></tr> : 
+                                                currentViolatingItems.map((row, index) => (
                                                     <tr key={row.ma_cam_ket} className={`border-b border-red-100 hover:bg-red-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-red-50/30'}`}>
                                                         <td className="px-4 py-3 text-center font-medium">{row.ma_cam_ket}</td>
                                                         <td className="px-4 py-3 font-bold text-gray-800">{row.hoc_vien?.ho_ten}</td>
@@ -1108,26 +1202,22 @@ export default function QuanLyCamKetPage() {
                                             </tbody>
                                         </table>
                                     </div>
+                                    
+                                    {allViolatingStudents.length > 0 && (
+                                        <div className="flex flex-col sm:flex-row justify-between items-center mt-3 font-medium text-gray-600 text-sm gap-4">
+                                            <div>
+                                                Hiển thị <span className="font-bold text-gray-800">{(currentPageViolating - 1) * itemsPerPage + 1}</span> đến <span className="font-bold text-gray-800">{Math.min(currentPageViolating * itemsPerPage, allViolatingStudents.length)}</span> trong tổng số <span className="font-bold text-gray-800">{allViolatingStudents.length}</span> hồ sơ vi phạm
+                                            </div>
+                                            {renderPagination(currentPageViolating, totalPagesViolating, setCurrentPageViolating)}
+                                        </div>
+                                    )}
                                 </div>
                             </>
                         )}
+                        
                     </div>
                 )}
    
-                {!isLoading && classFilteredData.length > 0 && (
-                    <div className="flex flex-col sm:flex-row justify-between items-center mt-6 font-medium text-gray-600 text-sm gap-4">
-                        <div>
-                            Hiển thị <span className="font-bold text-gray-800">{indexOfFirstItem + 1}</span> đến <span className="font-bold text-gray-800">{Math.min(indexOfLastItem, classFilteredData.length)}</span> trong tổng số <span className="font-bold text-gray-800">{classFilteredData.length}</span> cam kết
-                        </div>
-                        <div className="flex gap-1">
-                            <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1} className={`px-3 py-1.5 rounded border ${currentPage === 1 ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' : 'hover:bg-gray-100 border-gray-300 text-gray-700'}`}>Trước</button>
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                                <button key={number} onClick={() => setCurrentPage(number)} className={`px-3 py-1.5 rounded border ${currentPage === number ? 'bg-[#1d4ed8] text-white border-[#1d4ed8]' : 'hover:bg-gray-100 border-gray-300 text-gray-700'}`}>{number}</button>
-                            ))}
-                            <button onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages} className={`px-3 py-1.5 rounded border ${currentPage === totalPages ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed' : 'hover:bg-gray-100 border-gray-300 text-gray-700'}`}>Sau</button>
-                        </div>
-                    </div>
-                )}
             </div>
 
             {isAskStudentModalOpen && (
@@ -1263,13 +1353,31 @@ export default function QuanLyCamKetPage() {
                                                                         </span>
                                                                     </div>
                                     
-                                                                 <div className="col-span-2 md:col-span-4 mt-2">
+                                                                     <div className="col-span-2 md:col-span-4 mt-2">
                                                                         <span className="block text-gray-500 text-xs mb-1">Địa chỉ</span>
                                                                         <span className="font-semibold text-gray-800 block" title={fullStudentInfo?.dia_chi}>
                                                                          {fullStudentInfo?.dia_chi || 'Chưa cập nhật'}
                                                                         </span>
                                                                     </div>
-                                                                    <div className="col-span-4 border-t pt-4 mt-2"><span className="block text-gray-500 text-xs mb-1">Mục tiêu đầu ra (Chứng chỉ)</span><span className="font-bold text-purple-700">{fullStudentInfo?.dau_ra_chung_chi || 'Chưa cập nhật mục tiêu đầu ra'}</span></div>
+                                                                    
+                                                                    {/* CẢI TIẾN 3: Thêm hiển thị thông tin Lớp đang học */}
+                                                                    <div className="col-span-4 border-t border-gray-100 pt-4 mt-2">
+                                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                            <div>
+                                                                                <span className="block text-gray-500 text-xs mb-1">Mục tiêu đầu ra (Chứng chỉ)</span>
+                                                                                <span className="font-bold text-purple-700">{fullStudentInfo?.dau_ra_chung_chi || 'Chưa cập nhật mục tiêu đầu ra'}</span>
+                                                                            </div>
+                                                                            <div>
+                                                                                <span className="block text-gray-500 text-xs mb-1">Lớp đang học</span>
+                                                                                <span className="font-bold text-[#1d4ed8]">
+                                                                                    {fullStudentInfo?.tham_gia_lop && fullStudentInfo.tham_gia_lop.some((tl: any) => tl.trang_thai === 'Đang học')
+                                                                                        ? fullStudentInfo.tham_gia_lop.filter((tl: any) => tl.trang_thai === 'Đang học').map((tl: any) => tl.lop_hoc?.ten_lop).join(', ')
+                                                                                        : 'Chưa có'}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
                                                                 </div>
                                                             </div>
                                                         )}

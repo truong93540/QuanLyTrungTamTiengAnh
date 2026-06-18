@@ -7,7 +7,8 @@ export async function GET() {
             select: {
                 ma_lop_hoc: true,
                 ten_lop: true,
-                ma_khoa_hoc: true 
+                ma_khoa_hoc: true,
+                ngay_ket_thuc: true 
             },
             orderBy: {
                 ten_lop: 'asc'

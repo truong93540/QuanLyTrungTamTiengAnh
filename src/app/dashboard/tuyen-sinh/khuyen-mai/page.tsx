@@ -15,7 +15,6 @@ export default function QuanLyKhuyenMaiPage() {
     const [data, setData] = useState<ChuongTrinhKhuyenMai[]>([])
     const [isLoading, setIsLoading] = useState(true)
     
-    // TÌM KIẾM VÀ LỌC (Mặc định lấy tháng và năm hiện tại)
     const currentDate = new Date();
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedMonth, setSelectedMonth] = useState<string>((currentDate.getMonth() + 1).toString());
@@ -23,15 +22,12 @@ export default function QuanLyKhuyenMaiPage() {
     
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 5
-
-    // Modal States
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isViewMode, setIsViewMode] = useState(false)
     const [editingId, setEditingId] = useState<number | null>(null)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [deletingId, setDeletingId] = useState<number | null>(null)
  
-    // Form States
     const [formData, setFormData] = useState({
         ten_chuong_trinh: '',
         mo_ta: '',
@@ -40,7 +36,6 @@ export default function QuanLyKhuyenMaiPage() {
         ngay_ket_thuc: '',
     })
     
-    // State lưu trữ lỗi cho từng trường dữ liệu
     const [formErrors, setFormErrors] = useState<Record<string, string>>({})
     const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
     
@@ -94,8 +89,6 @@ export default function QuanLyKhuyenMaiPage() {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
         setFormData({ ...formData, [name]: value })
-        
-        // Tự động xóa lỗi khi người dùng bắt đầu nhập lại
         if (formErrors[name]) {
             setFormErrors(prev => ({ ...prev, [name]: '' }))
         }
@@ -105,7 +98,7 @@ export default function QuanLyKhuyenMaiPage() {
         setIsViewMode(false)
         setEditingId(null)
         setFormData({ ten_chuong_trinh: '', mo_ta: '', phan_tram_giam: '', ngay_bat_dau: '', ngay_ket_thuc: '' })
-        setFormErrors({}) // Xóa lỗi cũ khi mở modal
+        setFormErrors({}) 
         setIsModalOpen(true)
     }
 
@@ -119,7 +112,7 @@ export default function QuanLyKhuyenMaiPage() {
             ngay_bat_dau: formatDateForInput(row.ngay_bat_dau),
             ngay_ket_thuc: formatDateForInput(row.ngay_ket_thuc),
         })
-        setFormErrors({}) // Xóa lỗi cũ khi mở modal
+        setFormErrors({}) 
         setIsModalOpen(true)
     }
 
@@ -164,8 +157,6 @@ export default function QuanLyKhuyenMaiPage() {
             closeDeleteModal()
         }
     }
-
-    // Hàm bắt lỗi ngày tháng hợp lệ
     const isValidDateInput = (dateString: string) => {
         const dateObj = new Date(dateString);
         return dateObj instanceof Date && !isNaN(dateObj.getTime());
@@ -173,27 +164,19 @@ export default function QuanLyKhuyenMaiPage() {
 
     const handleSave = async () => {
         const errors: Record<string, string> = {};
-
-        // 1. Kiểm tra Tên chương trình
         if (!formData.ten_chuong_trinh.trim()) {
             errors.ten_chuong_trinh = 'Vui lòng nhập tên chương trình khuyến mãi';
         }
-
-        // 2. Kiểm tra Phần trăm giảm
         if (!formData.phan_tram_giam || formData.phan_tram_giam.trim() === '') {
             errors.phan_tram_giam = 'Vui lòng nhập phần trăm giảm giá';
         } else if (Number(formData.phan_tram_giam) <= 0 || Number(formData.phan_tram_giam) > 100) {
             errors.phan_tram_giam = 'Phần trăm giảm phải lớn hơn 0 và tối đa là 100';
         }
-
-        // 3. Kiểm tra Ngày bắt đầu
         if (!formData.ngay_bat_dau) {
             errors.ngay_bat_dau = 'Vui lòng chọn ngày bắt đầu';
         } else if (!isValidDateInput(formData.ngay_bat_dau)) {
             errors.ngay_bat_dau = 'Ngày bắt đầu không hợp lệ';
         }
-
-        // 4. Kiểm tra Ngày kết thúc (nếu có nhập)
         if (formData.ngay_ket_thuc) {
             if (!isValidDateInput(formData.ngay_ket_thuc)) {
                 errors.ngay_ket_thuc = 'Ngày kết thúc không hợp lệ';
@@ -205,14 +188,12 @@ export default function QuanLyKhuyenMaiPage() {
                 }
             }
         }
-
-        // Nếu có lỗi, cập nhật state và dừng lưu
         if (Object.keys(errors).length > 0) {
             setFormErrors(errors);
             return;
         }
 
-        setFormErrors({}); // Reset lỗi nếu tất cả hợp lệ
+        setFormErrors({}); 
 
         try {
             const method = editingId ? 'PUT' : 'POST'
@@ -248,13 +229,10 @@ export default function QuanLyKhuyenMaiPage() {
             showToast('Không thể kết nối đến máy chủ.', 'error')
         }
     }
-
-    // --- TÍNH TOÁN TÌM KIẾM & PHÂN TRANG KẾT HỢP LỌC KÉP ---
     const filteredData = data.filter(item => {
         const matchSearch = item.ten_chuong_trinh.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             item.ma_khuyen_mai.toString().includes(searchTerm);
         
-        // Lọc theo tháng và năm (Dựa trên ngày bắt đầu áp dụng)
         let matchMonth = true;
         let matchYear = true;
 
@@ -282,8 +260,6 @@ export default function QuanLyKhuyenMaiPage() {
     return (
         <div className="bg-gray-50 min-h-screen p-6 relative">
             <div className="bg-white rounded-lg shadow-md p-6">
-                
-                {/* Header */}
                 <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
                     <h1 className="text-2xl font-bold text-[#1d4ed8] flex items-center gap-3 uppercase">
                         <FaGift className="text-blue-600" />
@@ -293,8 +269,6 @@ export default function QuanLyKhuyenMaiPage() {
                         <FaPlus /> Thêm Chương Trình Khuyến mãi
                     </button>
                 </div>
-
-                {/* THANH CÔNG CỤ: TÌM KIẾM & BỘ LỌC KÉP */}
                 <div className="flex flex-col md:flex-row gap-4 mb-6 w-full items-center">
                     <div className="relative flex-1 md:max-w-md w-full">
                         <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
@@ -341,7 +315,6 @@ export default function QuanLyKhuyenMaiPage() {
                     </div>
                 </div>
 
-                {/* Bảng Dữ Liệu */}
                 <div className="overflow-x-auto rounded-t-lg border border-gray-200">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-[#1d4ed8] text-white uppercase font-semibold text-xs">
@@ -437,7 +410,6 @@ export default function QuanLyKhuyenMaiPage() {
                 )}
             </div>
 
-            {/* MODAL THÊM / SỬA / XEM */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-lg w-full max-w-2xl shadow-2xl animate-fade-in-up flex flex-col max-h-[90vh]">
@@ -520,7 +492,6 @@ export default function QuanLyKhuyenMaiPage() {
                             </div>
                         </div>
 
-                        {/* Footer Modal */}
                         <div className="p-5 border-t bg-gray-50 rounded-b-lg">
                             {Object.keys(formErrors).length > 0 && !isViewMode && (
                                 <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md text-sm font-medium border border-red-100 flex items-center gap-2">
@@ -540,7 +511,6 @@ export default function QuanLyKhuyenMaiPage() {
                 </div>
             )}
 
-            {/* MODAL XÓA */}
             {isDeleteModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in-up">
@@ -558,7 +528,6 @@ export default function QuanLyKhuyenMaiPage() {
                 </div>
             )}
 
-            {/* TOAST */}
             {toast && (
                 <div className="fixed top-5 right-5 z-[70] animate-fade-in-down">
                     <div className={`flex items-center min-w-[300px] p-4 bg-white rounded shadow-lg border-l-4 ${toast.type === 'success' ? 'border-green-500' : 'border-red-500'}`}>
