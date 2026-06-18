@@ -363,7 +363,7 @@ export default function QuanLyKhoaHocPage() {
         return today.getTime() <= endDate.getTime();
     }).map(ct => ct.chuong_trinh_marketing) || [];
 
-    // LỌC DANH SÁCH CHIẾN DỊCH MARKETING HỢP LỆ (Đang chạy hoặc Sắp tới)
+  
     const danhSachMarketingHopLe = useMemo(() => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -371,7 +371,7 @@ export default function QuanLyKhoaHocPage() {
         return danhSachMarketing.filter(mkt => {
             const endDate = new Date(mkt.ngay_ket_thuc);
             endDate.setHours(23, 59, 59, 999);
-            // Chỉ giữ lại chiến dịch mà ngày kết thúc >= ngày hôm nay
+            
             return endDate.getTime() >= today.getTime();
         });
     }, [danhSachMarketing]);
