@@ -414,8 +414,14 @@ export default function QuanLyMarketingPage() {
         ns.ho_ten.toLowerCase().includes(tuKhoaNhanSu.toLowerCase()) && !nhanSuDaChonIDs.includes(ns.ma_nhan_su)
     )
 
+    const danhSachKhoaHocHopLe = useMemo(() => {
+        return danhSachKhoaHoc.filter(kh => 
+            kh.trang_thai === 'Đang mở' || kh.trang_thai === 'Sắp khai giảng'
+        );
+    }, [danhSachKhoaHoc]);
+
     const khoaHocDaChonIDs = formData.danh_sach_khoa_hoc;
-    const khoaHocTimKiem = tuKhoaKhoaHoc.trim() === "" ? [] : danhSachKhoaHoc.filter(kh => 
+    const khoaHocTimKiem = tuKhoaKhoaHoc.trim() === "" ? [] : danhSachKhoaHocHopLe.filter(kh => 
         kh.ten_khoa_hoc.toLowerCase().includes(tuKhoaKhoaHoc.toLowerCase()) && !khoaHocDaChonIDs.includes(kh.ma_khoa_hoc)
     )
 
@@ -814,9 +820,14 @@ export default function QuanLyMarketingPage() {
                                     </div>
                                     {formErrors.danh_sach_khoa_hoc && <p className="text-red-500 text-xs font-medium mt-1">{formErrors.danh_sach_khoa_hoc}</p>}
 
+                                    {/* THÊM ĐIỀU KIỆN LỌC KHÓA HỌC Ở ĐÂY HOẶC SỬ DỤNG currentKhoaHocTimKiem TỪ PHÍA TRÊN */}
+                                    {danhSachKhoaHocHopLe.length === 0 && (
+                                        <p className="text-sm text-red-500 italic mt-2">Không có khóa học nào đang mở hoặc sắp khai giảng để áp dụng.</p>
+                                    )}
+
                                     {tuKhoaKhoaHoc.trim() !== "" && (
                                         <div className="mt-2 bg-white border border-gray-200 p-2 rounded-md shadow-sm max-h-40 overflow-y-auto">
-                                            {khoaHocTimKiem.length === 0 ? <p className="text-xs text-gray-500 italic p-2 text-center">Không tìm thấy khóa học</p> : (
+                                            {khoaHocTimKiem.length === 0 ? <p className="text-xs text-gray-500 italic p-2 text-center">Không tìm thấy khóa học đang mở phù hợp</p> : (
                                                 <div className="flex flex-col gap-1">
                                                     {khoaHocTimKiem.map(kh => (
                                                         <label key={kh.ma_khoa_hoc} className="flex items-center gap-2 hover:bg-gray-50 p-2 rounded cursor-pointer border border-transparent hover:border-gray-100 transition text-sm">
