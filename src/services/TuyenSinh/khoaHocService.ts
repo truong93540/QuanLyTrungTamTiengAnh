@@ -11,14 +11,14 @@ export interface KhoaHocInput {
     danh_sach_marketing?: number[] 
 }
 
-// 1. LẤY DANH SÁCH KHÓA HỌC (READ)
 export const layDanhSachKhoaHoc = async () => {
-    return await prisma.khoaHoc.findMany({
+    const danhSachKhoaHoc = await prisma.khoaHoc.findMany({
         include: {
             chuong_trinh: {
-                select: { ten_chuong_trinh: true, 
-                          muc_tieu: true,
-                          mo_ta: true 
+                select: { 
+                    ten_chuong_trinh: true, 
+                    muc_tieu: true,
+                    mo_ta: true 
                 },
             },
             chi_tiet_marketing: {
@@ -39,12 +39,26 @@ export const layDanhSachKhoaHoc = async () => {
             }
         },
         orderBy: { ma_khoa_hoc: 'asc' }, 
-    })
+    });
+
+    danhSachKhoaHoc.forEach(khoaHoc => {
+        if (khoaHoc.chi_tiet_marketing && khoaHoc.chi_tiet_marketing.length > 0) {
+            khoaHoc.chi_tiet_marketing.sort((a, b) => {
+                const mktB = b.chuong_trinh_marketing;
+                const mktA = a.chuong_trinh_marketing;
+                const timeB = mktB?.ngay_bat_dau ? new Date(mktB.ngay_bat_dau).getTime() : 0;
+                const timeA = mktA?.ngay_bat_dau ? new Date(mktA.ngay_bat_dau).getTime() : 0;
+                
+                return timeB - timeA;
+            });
+        }
+    });
+
+    return danhSachKhoaHoc;
 }
 
-// 2. THÊM MỚI KHÓA HỌC (CREATE)
 export const taoKhoaHocMoi = async (data: KhoaHocInput) => {
-    return await prisma.khoaHoc.create({
+    const khoaHocMoi = await prisma.khoaHoc.create({
         data: {
             ten_khoa_hoc: data.ten_khoa_hoc,
             mo_ta: data.mo_ta,
@@ -63,19 +77,28 @@ export const taoKhoaHocMoi = async (data: KhoaHocInput) => {
             chuong_trinh: { select: { ten_chuong_trinh: true } },
             chi_tiet_marketing: { include: { chuong_trinh_marketing: true } }
         },
-    })
+    });
+
+    if (khoaHocMoi.chi_tiet_marketing && khoaHocMoi.chi_tiet_marketing.length > 0) {
+        khoaHocMoi.chi_tiet_marketing.sort((a, b) => {
+            const timeB = b.chuong_trinh_marketing?.ngay_bat_dau ? new Date(b.chuong_trinh_marketing.ngay_bat_dau).getTime() : 0;
+            const timeA = a.chuong_trinh_marketing?.ngay_bat_dau ? new Date(a.chuong_trinh_marketing.ngay_bat_dau).getTime() : 0;
+            return timeB - timeA;
+        });
+    }
+
+    return khoaHocMoi;
 }
 
-// 3. CẬP NHẬT KHÓA HỌC (UPDATE)
+
 export const capNhatKhoaHoc = async (ma_khoa_hoc: number, data: Partial<KhoaHocInput>) => {
-    // Nếu có cập nhật danh sách marketing, xóa liên kết cũ trong bảng trung gian
     if (data.danh_sach_marketing !== undefined) {
         await prisma.chiTietMarketing.deleteMany({
             where: { ma_khoa_hoc: ma_khoa_hoc }
         })
     }
 
-    return await prisma.khoaHoc.update({
+    const khoaHocCapNhat = await prisma.khoaHoc.update({
         where: { ma_khoa_hoc: ma_khoa_hoc },
         data: {
             ...(data.ten_khoa_hoc && { ten_khoa_hoc: data.ten_khoa_hoc }),
@@ -85,7 +108,6 @@ export const capNhatKhoaHoc = async (ma_khoa_hoc: number, data: Partial<KhoaHocI
             ...(data.trinh_do !== undefined && { trinh_do: data.trinh_do }),
             ...(data.trang_thai !== undefined && { trang_thai: data.trang_thai }),
             ...(data.ma_chuong_trinh && { ma_chuong_trinh: data.ma_chuong_trinh }),
-            // Tạo lại các liên kết mới
             ...(data.danh_sach_marketing !== undefined && {
                 chi_tiet_marketing: {
                     create: data.danh_sach_marketing.map(id => ({
@@ -98,12 +120,19 @@ export const capNhatKhoaHoc = async (ma_khoa_hoc: number, data: Partial<KhoaHocI
             chuong_trinh: { select: { ten_chuong_trinh: true } },
             chi_tiet_marketing: { include: { chuong_trinh_marketing: true } }
         },
-    })
+    });
+    if (khoaHocCapNhat.chi_tiet_marketing && khoaHocCapNhat.chi_tiet_marketing.length > 0) {
+        khoaHocCapNhat.chi_tiet_marketing.sort((a, b) => {
+            const timeB = b.chuong_trinh_marketing?.ngay_bat_dau ? new Date(b.chuong_trinh_marketing.ngay_bat_dau).getTime() : 0;
+            const timeA = a.chuong_trinh_marketing?.ngay_bat_dau ? new Date(a.chuong_trinh_marketing.ngay_bat_dau).getTime() : 0;
+            return timeB - timeA;
+        });
+    }
+
+    return khoaHocCapNhat;
 }
 
-// 4. XÓA KHÓA HỌC (DELETE)
 export const xoaKhoaHoc = async (ma_khoa_hoc: number) => {
-    // Xóa dữ liệu tham chiếu ở bảng trung gian trước để tránh lỗi Foreign Key
     await prisma.chiTietMarketing.deleteMany({
         where: { ma_khoa_hoc: ma_khoa_hoc }
     })

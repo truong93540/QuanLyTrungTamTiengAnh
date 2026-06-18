@@ -34,10 +34,12 @@ export default function BaoCaoHoatDongPage() {
     const [selectedMonth, setSelectedMonth] = useState('all')
 
     const [searchGiaoVien, setSearchGiaoVien] = useState('')
+    const [searchLop, setSearchLop] = useState('')
+    
     const [expandedGiaoVien, setExpandedGiaoVien] = useState<number | null>(null)
     const [expandedLop, setExpandedLop] = useState<number | null>(null)
+    const [inputYear, setInputYear] = useState(String(new Date().getFullYear()))
 
-    // State quản lý Modal chi tiết
     const [activeModal, setActiveModal] = useState<ModalType>(null)
     const [expandedModalItem, setExpandedModalItem] = useState<number | null>(null)
 
@@ -67,13 +69,11 @@ export default function BaoCaoHoatDongPage() {
         return data.filter(item => new Date(item.ngay_to_chuc).getMonth() + 1 === Number(selectedMonth));
     }, [data, selectedMonth]);
 
-    // 1. Dữ liệu tổng quan
     const tongHoatDong = filteredData.length;
     const tongChiPhi = filteredData.reduce((sum, item) => sum + Number(item.chi_phi || 0), 0);
     const tongGiaoVien = new Set(filteredData.flatMap(item => item.phan_cong.map(pc => pc.giao_vien.ma_giao_vien))).size;
     const tongLop = new Set(filteredData.flatMap(hd => hd.tham_gia_hoc_vien.flatMap(tg => tg.hoc_vien.tham_gia_lop.map(tl => tl.lop_hoc.ma_lop_hoc)))).size;
 
-    // 2. Dữ liệu Biểu đồ
     const chartData = useMemo(() => {
         const months = Array.from({ length: 12 }, (_, i) => ({
             name: `Tháng ${i + 1}`, monthNum: i + 1, chi_phi: 0, so_hoat_dong: 0
@@ -86,7 +86,6 @@ export default function BaoCaoHoatDongPage() {
         return months;
     }, [data]);
 
-    // 3. Dữ liệu Giáo viên
     const baseGiaoVienStats = useMemo(() => {
         const stats: Record<number, { ma_giao_vien: number, ho_ten: string, activities: string[] }> = {};
         filteredData.forEach(hd => {
@@ -105,8 +104,7 @@ export default function BaoCaoHoatDongPage() {
         return baseGiaoVienStats;
     }, [baseGiaoVienStats, searchGiaoVien]);
 
-    // 4. Dữ liệu Lớp học & Học viên
-    const lopStats = useMemo(() => {
+    const baseLopStats = useMemo(() => {
         const stats: Record<number, { lop_hoc: LopHoc, activities: string[], hoc_vien_list: HocVien[] }> = {};
         filteredData.forEach(hd => {
             hd.tham_gia_hoc_vien?.forEach(tg => {
@@ -124,20 +122,27 @@ export default function BaoCaoHoatDongPage() {
         return Object.values(stats);
     }, [filteredData]);
 
-    // Hàm đóng Modal
+    const lopStats = useMemo(() => {
+        if (searchLop.trim() !== '') {
+            return baseLopStats.filter(ls => ls.lop_hoc.ten_lop.toLowerCase().includes(searchLop.toLowerCase()));
+        }
+        return baseLopStats;
+    }, [baseLopStats, searchLop]);
+
     const handleCloseModal = () => {
         setActiveModal(null);
         setExpandedModalItem(null);
+        setSearchLop(''); 
+        setSearchGiaoVien('');
     }
 
-    // Giao diện custom Tooltip cho Biểu đồ
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
             return (
                 <div className="bg-white border border-gray-200 p-3 shadow-lg rounded-md outline-none">
                     <p className="text-gray-400 font-medium text-sm mb-1">{label}</p>
                     <p className="text-[#0d9488] font-bold text-sm">
-                        chi_phí : {formatCurrency(payload[0].value)}
+                        chi phí : {formatCurrency(payload[0].value)}
                     </p>
                 </div>
             );
@@ -147,7 +152,6 @@ export default function BaoCaoHoatDongPage() {
 
     return (
         <div className="bg-[#f8fafc] min-h-screen p-6 relative">
-            {/* HEADER */}
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
                     <div className="bg-teal-600 p-2.5 rounded-lg text-white"><FaChartBar size={20} /></div>
@@ -163,9 +167,34 @@ export default function BaoCaoHoatDongPage() {
                         <option value="all">Cả năm</option>
                         {Array.from({ length: 12 }, (_, i) => <option key={i + 1} value={i + 1}>Tháng {i + 1}</option>)}
                     </select>
-                    <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="text-sm font-medium outline-none text-gray-700 bg-transparent px-2">
-                        {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
-                    </select>
+                    <input
+                    type="number"
+                    value={inputYear}
+                    onChange={(e) => {
+                     setInputYear(e.target.value)
+        
+                            }}
+                    onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                    const val = Number(inputYear)
+                        if (val >= 1900 && val <= 2100) {
+                        setSelectedYear(val)  
+                     } else {
+                        setInputYear(String(selectedYear)) 
+                        }
+                    }
+                    }}
+                    onBlur={() => {
+                     const val = Number(inputYear)
+                     if (val >= 1900 && val <= 2100) {
+                         setSelectedYear(val)  
+                    } else {
+                            setInputYear(String(selectedYear)) 
+                    }
+                    }}
+                    placeholder="Nhập năm..."
+                    className="text-sm font-medium outline-none text-gray-700 bg-transparent px-2 w-[80px]"
+                />
                 </div>
             </div>
 
@@ -173,9 +202,7 @@ export default function BaoCaoHoatDongPage() {
                 <div className="text-center py-20 text-gray-500">Đang tải dữ liệu báo cáo...</div>
             ) : (
                 <>
-                    {/* THẺ TỔNG QUAN (CÓ ONCLICK) */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-6">
-                        {/* Card Tổng Chi Phí */}
                         <div onClick={() => setActiveModal('chi_phi')} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:border-red-300 hover:shadow-md transition-all group">
                             <div>
                                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 group-hover:text-red-600 transition-colors">Tổng chi phí <span className="lowercase font-normal text-xs text-red-500 ml-1"></span></p>
@@ -183,7 +210,6 @@ export default function BaoCaoHoatDongPage() {
                             </div>
                             <div className="bg-red-50 p-3 rounded-lg text-red-500 group-hover:bg-red-500 group-hover:text-white transition-colors"><FaMoneyBillWave size={24} /></div>
                         </div>
-                        {/* Card Hoạt Động */}
                         <div onClick={() => setActiveModal('hoat_dong')} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:border-teal-300 hover:shadow-md transition-all group">
                             <div>
                                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 group-hover:text-teal-600 transition-colors">Hoạt động <span className="lowercase font-normal text-xs text-teal-500 ml-1"></span></p>
@@ -191,7 +217,6 @@ export default function BaoCaoHoatDongPage() {
                             </div>
                             <div className="bg-teal-50 p-3 rounded-lg text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-colors"><FaRunning size={24} /></div>
                         </div>
-                        {/* Card Giáo Viên */}
                         <div onClick={() => setActiveModal('giao_vien')} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:border-orange-300 hover:shadow-md transition-all group">
                             <div>
                                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 group-hover:text-orange-600 transition-colors">Giáo viên <span className="lowercase font-normal text-xs text-orange-500 ml-1"></span></p>
@@ -199,7 +224,6 @@ export default function BaoCaoHoatDongPage() {
                             </div>
                             <div className="bg-orange-50 p-3 rounded-lg text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-colors"><FaChalkboardTeacher size={24} /></div>
                         </div>
-                        {/* Card Lớp Tham Gia */}
                         <div onClick={() => setActiveModal('lop')} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:border-blue-300 hover:shadow-md transition-all group">
                             <div>
                                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 group-hover:text-blue-600 transition-colors">Lớp tham gia <span className="lowercase font-normal text-xs text-blue-500 ml-1"></span></p>
@@ -209,7 +233,6 @@ export default function BaoCaoHoatDongPage() {
                         </div>
                     </div>
 
-                    {/* BIỂU ĐỒ */}
                     <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mb-6">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-base font-bold text-gray-800">Biểu đồ Chi phí hoạt động ({selectedYear})</h3>
@@ -221,7 +244,6 @@ export default function BaoCaoHoatDongPage() {
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
                                     <YAxis tickFormatter={(val: any) => `${Number(val || 0) / 1000000}M`} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
                                     
-                                    {/* Sử dụng Custom Tooltip và nền xám khi Hover */}
                                     <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
                                     
                                     <Bar dataKey="chi_phi" fill="#0d9488" radius={[4, 4, 0, 0]} barSize={30} />
@@ -230,10 +252,8 @@ export default function BaoCaoHoatDongPage() {
                         </div>
                     </div>
 
-                    {/* --- CÁC BẢNG BÊN DƯỚI (GIỮ NGUYÊN) --- */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2 space-y-6">
-                            {/* BẢNG CHI PHÍ */}
                             <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                                 <div className="p-5 border-b border-gray-100">
                                     <h3 className="text-base font-bold text-gray-800">Chi tiết chi phí các tháng</h3>
@@ -262,13 +282,22 @@ export default function BaoCaoHoatDongPage() {
                                 </table>
                             </div>
 
-                            {/* DANH SÁCH LỚP */}
-                            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                                <div className="p-5 border-b border-gray-100">
-                                    <h3 className="text-base font-bold text-gray-800">Lớp & Học viên tham gia {selectedMonth !== 'all' ? `(Tháng ${selectedMonth})` : ''}</h3>
+                            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mt-6">
+                                <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                    <h3 className="text-base font-bold text-gray-800 shrink-0">Lớp & Học viên tham gia {selectedMonth !== 'all' ? `(Tháng ${selectedMonth})` : ''}</h3>
+                                    <div className="relative w-full sm:w-64">
+                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><FaSearch size={14} /></span>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Tìm tên lớp..." 
+                                            value={searchLop} 
+                                            onChange={(e) => setSearchLop(e.target.value)} 
+                                            className="w-full border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition bg-gray-50 text-gray-800 font-medium" 
+                                        />
+                                    </div>
                                 </div>
                                 <div className="p-5 space-y-3 bg-gray-50/30 max-h-[400px] overflow-y-auto custom-scrollbar">
-                                    {lopStats.length === 0 ? <div className="text-center text-gray-400 italic py-5 text-sm">Không có lớp tham gia</div> : lopStats.map((ls) => (
+                                    {lopStats.length === 0 ? <div className="text-center text-gray-400 italic py-5 text-sm">Không tìm thấy lớp phù hợp</div> : lopStats.map((ls) => (
                                         <div key={ls.lop_hoc.ma_lop_hoc} className={`border rounded-lg overflow-hidden transition-all shadow-sm ${expandedLop === ls.lop_hoc.ma_lop_hoc ? 'border-teal-300 ring-1 ring-teal-100 bg-white' : 'border-gray-200 bg-white hover:border-teal-200'}`}>
                                             <div className="flex justify-between items-center p-4 cursor-pointer hover:bg-teal-50/50 transition" onClick={() => setExpandedLop(expandedLop === ls.lop_hoc.ma_lop_hoc ? null : ls.lop_hoc.ma_lop_hoc)}>
                                                 <div className="flex items-center gap-3">
@@ -299,7 +328,6 @@ export default function BaoCaoHoatDongPage() {
                             </div>
                         </div>
 
-                        {/* GIÁO VIÊN */}
                         <div className="bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col lg:h-[840px]">
                             <div className="p-5 border-b border-gray-100 pb-4 shrink-0">
                                 <h3 className="text-base font-bold text-gray-800 mb-4">Thống kê Giáo viên {selectedMonth !== 'all' ? `(Tháng ${selectedMonth})` : ''}</h3>
@@ -346,14 +374,10 @@ export default function BaoCaoHoatDongPage() {
                 </>
             )}
 
-            {/* =========================================
-                MODAL CHI TIẾT TỪ CÁC THẺ TỔNG QUAN
-            ========================================= */}
+            
             {activeModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col animate-fade-in-up border border-gray-200 overflow-hidden">
-                        
-                        {/* HEADER MODAL */}
                         <div className="flex justify-between items-center p-5 border-b border-gray-200 bg-gray-50/80">
                             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                                 {activeModal === 'chi_phi' && <><FaMoneyBillWave className="text-red-600"/> Chi tiết Tổng chi phí hoạt động</>}
@@ -364,10 +388,7 @@ export default function BaoCaoHoatDongPage() {
                             <button onClick={handleCloseModal} className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors"><FaTimes size={20} /></button>
                         </div>
 
-                        {/* BODY MODAL */}
                         <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/30">
-                            
-                            {/* --- CONTENT 1: CHI PHÍ --- */}
                             {activeModal === 'chi_phi' && (
                                 <div className="space-y-4">
                                     <div className="bg-red-50 border border-red-200 p-4 rounded-xl flex justify-between items-center shadow-sm mb-4">
@@ -394,8 +415,6 @@ export default function BaoCaoHoatDongPage() {
                                     ))}
                                 </div>
                             )}
-
-                            {/* --- CONTENT 2: HOẠT ĐỘNG --- */}
                             {activeModal === 'hoat_dong' && (
                                 <div className="space-y-4">
                                     {filteredData.length === 0 ? <p className="text-center text-gray-500 italic">Không có dữ liệu</p> : filteredData.map(hd => (
@@ -446,8 +465,6 @@ export default function BaoCaoHoatDongPage() {
                                     ))}
                                 </div>
                             )}
-
-                            {/* --- CONTENT 3: GIÁO VIÊN --- */}
                             {activeModal === 'giao_vien' && (
                                 <div className="space-y-4">
                                     {baseGiaoVienStats.length === 0 ? <p className="text-center text-gray-500 italic">Không có dữ liệu</p> : baseGiaoVienStats.map(gv => (
@@ -480,11 +497,22 @@ export default function BaoCaoHoatDongPage() {
                                 </div>
                             )}
 
-                            {/* --- CONTENT 4: LỚP HỌC --- */}
                             {activeModal === 'lop' && (
-                                <div className="space-y-4">
-                                    {lopStats.length === 0 ? <p className="text-center text-gray-500 italic">Không có dữ liệu</p> : lopStats.map(ls => (
-                                        <div key={ls.lop_hoc.ma_lop_hoc} className={`bg-white border rounded-xl shadow-sm transition-all overflow-hidden ${expandedModalItem === ls.lop_hoc.ma_lop_hoc ? 'border-blue-400 ring-1 ring-blue-100' : 'border-gray-200 hover:border-blue-200'}`}>
+                                <div className="space-y-4 flex flex-col h-full">
+                                    {/* 6. GẮN THANH TÌM KIẾM VÀO BÊN TRONG MODAL CHI TIẾT */}
+                                    <div className="relative shrink-0 mb-2">
+                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><FaSearch size={14} /></span>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Gõ tên lớp để tìm kiếm..." 
+                                            value={searchLop} 
+                                            onChange={(e) => setSearchLop(e.target.value)} 
+                                            className="w-full border border-gray-200 rounded-lg py-2.5 pl-9 pr-3 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition bg-white text-gray-800 font-medium shadow-sm" 
+                                        />
+                                    </div>
+                                    
+                                    {lopStats.length === 0 ? <p className="text-center text-gray-500 italic py-4">Không tìm thấy lớp phù hợp</p> : lopStats.map(ls => (
+                                        <div key={ls.lop_hoc.ma_lop_hoc} className={`bg-white border rounded-xl shadow-sm transition-all overflow-hidden shrink-0 ${expandedModalItem === ls.lop_hoc.ma_lop_hoc ? 'border-blue-400 ring-1 ring-blue-100' : 'border-gray-200 hover:border-blue-200'}`}>
                                             <div onClick={() => setExpandedModalItem(expandedModalItem === ls.lop_hoc.ma_lop_hoc ? null : ls.lop_hoc.ma_lop_hoc)} className="flex justify-between items-center p-4 cursor-pointer hover:bg-blue-50/30">
                                                 <div className="flex items-center gap-4">
                                                     <div className="bg-blue-100 text-blue-700 p-3 rounded-lg"><FaUsers size={20}/></div>

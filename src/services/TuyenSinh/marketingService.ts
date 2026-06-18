@@ -14,8 +14,6 @@ interface ChuongTrinhData {
     danh_sach_khoa_hoc?: number[]; 
     danh_sach_nhan_su?: PhanCongData[];
 }
-
-// LẤY DANH SÁCH CHƯƠNG TRÌNH MARKETING
 export const layDanhSachChuongTrinh = async () => {
     return await prisma.chuongTrinhMarketing.findMany({
         include: {
@@ -51,7 +49,6 @@ export const layDanhSachChuongTrinh = async () => {
     });
 }
 
-// LẤY CẢ NHÂN SỰ PHÒNG MARKETING VÀ SALE
 export const layDanhSachNhanSuMarketingVaSale = async () => {
     return await prisma.nhanSu.findMany({
         where: { 
@@ -66,7 +63,6 @@ export const layDanhSachNhanSuMarketingVaSale = async () => {
     });
 }
 
-// TẠO MỚI
 export const taoChuongTrinhMoi = async (data: ChuongTrinhData) => {
     return await prisma.chuongTrinhMarketing.create({
         data: {
@@ -96,9 +92,7 @@ export const taoChuongTrinhMoi = async (data: ChuongTrinhData) => {
     });
 }
 
-// CẬP NHẬT
 export const capNhatChuongTrinh = async (id: number, data: ChuongTrinhData) => {
-    // Xóa liên kết cũ ở cả 2 bảng trung gian trước khi tạo mới
     await prisma.$transaction([
         prisma.chiTietMarketing.deleteMany({ where: { ma_chuong_trinh_marketing: id } }),
         prisma.phanCongMarketing.deleteMany({ where: { ma_chuong_trinh_marketing: id } })
@@ -132,7 +126,6 @@ export const capNhatChuongTrinh = async (id: number, data: ChuongTrinhData) => {
     });
 }
 
-// XÓA
 export const xoaChuongTrinh = async (id: number) => {
     await prisma.$transaction([
         prisma.chiTietMarketing.deleteMany({ where: { ma_chuong_trinh_marketing: id } }),

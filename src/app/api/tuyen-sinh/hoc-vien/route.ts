@@ -6,14 +6,21 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url)
         const search = searchParams.get('search')
         const id = searchParams.get('id')
+        const limitParam = searchParams.get('limit') 
 
+     
         if (id) {
             const hocVien = await prisma.hocVien.findUnique({
                 where: { ma_hoc_vien: Number(id) },
+                
+                include: {
+                    tham_gia_lop: {
+                        include: { lop_hoc: true }
+                    }
+                }
             })
             return NextResponse.json(hocVien || null)
         }
-
         if (search) {
             const danhSachHocVien = await prisma.hocVien.findMany({
                 where: {
@@ -28,12 +35,29 @@ export async function GET(request: Request) {
             return NextResponse.json(danhSachHocVien)
         }
 
-        return NextResponse.json([])
+        const limit = limitParam ? parseInt(limitParam) : undefined;
+        const danhSachTatCa = await prisma.hocVien.findMany({
+            take: limit,
+            orderBy: {
+                ma_hoc_vien: 'desc'
+            },
+            include: {
+                tham_gia_lop: {
+                    include: {
+                        lop_hoc: true
+                    }
+                }
+            }
+        });
+
+        return NextResponse.json(danhSachTatCa)
+
     } catch (error) {
         console.error('Lỗi GET Học Viên:', error)
         return NextResponse.json({ error: 'Lỗi truy xuất dữ liệu học viên' }, { status: 500 })
     }
 }
+
 export async function POST(request: Request) {
     try {
         const data = await request.json()

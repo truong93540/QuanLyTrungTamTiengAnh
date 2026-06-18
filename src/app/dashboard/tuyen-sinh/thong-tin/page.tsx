@@ -68,7 +68,6 @@ export default function QuanLyKhoaHocPage() {
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 5
 
-
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isViewMode, setIsViewMode] = useState(false)
     const [editingId, setEditingId] = useState<number | null>(null)
@@ -82,7 +81,7 @@ export default function QuanLyKhoaHocPage() {
     })
     const [newMarketingErrors, setNewMarketingErrors] = useState<Record<string, string>>({})
     const [viewData, setViewData] = useState<KhoaHoc | null>(null)
-    const [openClassId, setOpenClassId] = useState<number | null>(null) 
+    const [openClassIds, setOpenClassIds] = useState<number[]>([]) 
     
     const [showChuongTrinhDetail, setShowChuongTrinhDetail] = useState(false)
     const [showMarketingDetail, setShowMarketingDetail] = useState(false)
@@ -191,7 +190,7 @@ export default function QuanLyKhoaHocPage() {
         setShowChuongTrinhDetail(false)
         setShowMarketingDetail(false)
         setShowLopHocDetail(false)
-        setOpenClassId(null) 
+        setOpenClassIds([]) 
         
         setIsModalOpen(true)
     }
@@ -324,7 +323,6 @@ export default function QuanLyKhoaHocPage() {
                 
                 setFormData(prev => {
                     const newList = [...prev.danh_sach_marketing, createdMarketing.ma_chuong_trinh_marketing];
-                    // Tự động clear lỗi sau khi tạo xong và tự check
                     if (formErrors.danh_sach_marketing) {
                         setFormErrors(errs => ({ ...errs, danh_sach_marketing: '' }));
                     }
@@ -491,7 +489,6 @@ export default function QuanLyKhoaHocPage() {
                 )}
             </div>
 
-            {/* MODAL VIEW (BÁO CÁO CHI TIẾT) */}
             {isModalOpen && isViewMode && viewData && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl w-full max-w-4xl shadow-2xl animate-fade-in-up flex flex-col max-h-[95vh]">
@@ -644,12 +641,16 @@ export default function QuanLyKhoaHocPage() {
                                         {viewData.lop_hoc && viewData.lop_hoc.length > 0 ? (
                                             <div className="space-y-3">
                                                 {viewData.lop_hoc.map(lop => {
-                                                    const isOpen = openClassId === lop.ma_lop_hoc;
+                                                    const isOpen = openClassIds.includes(lop.ma_lop_hoc);
                                                     return (
                                                         <div key={lop.ma_lop_hoc} className={`border rounded-lg transition-all ${isOpen ? 'border-green-400 shadow-sm ring-1 ring-green-400' : 'border-gray-200 hover:border-green-300'}`}>
                                                             <div 
                                                                 className={`p-4 flex justify-between items-center cursor-pointer ${isOpen ? 'bg-[#f6fbf7]' : 'bg-white'} rounded-t-lg`}
-                                                                onClick={() => setOpenClassId(isOpen ? null : lop.ma_lop_hoc)}
+                                                                onClick={() => setOpenClassIds(prev => 
+                                                                    isOpen 
+                                                                        ? prev.filter(id => id !== lop.ma_lop_hoc) 
+                                                                        : [...prev, lop.ma_lop_hoc]
+                                                                )}
                                                             >
                                                                 <div className="flex items-center gap-4">
                                                                     <span className="font-bold text-green-700 text-base">{lop.ten_lop}</span>
@@ -705,7 +706,6 @@ export default function QuanLyKhoaHocPage() {
                 </div>
             )}
 
-            {/* MODAL THÊM / SỬA KHÓA HỌC */}
             {isModalOpen && !isViewMode && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-lg w-full max-w-3xl shadow-2xl animate-fade-in-up flex flex-col max-h-[90vh]">
@@ -805,7 +805,6 @@ export default function QuanLyKhoaHocPage() {
 
                             <hr className="border-gray-200" />
 
-                         {/* BLOCK: MULTI-SELECT CHƯƠNG TRÌNH MARKETING */}
 <div className="bg-purple-50/30 p-4 rounded-lg border border-purple-100">
     <div className="flex justify-between items-center mb-2">
         <label className="block text-sm text-purple-800 font-bold flex items-center gap-2">
@@ -846,7 +845,6 @@ export default function QuanLyKhoaHocPage() {
                 className={`w-full border bg-white rounded-md py-2.5 pl-9 pr-3 outline-none text-sm text-gray-900 font-medium transition shadow-sm ${formErrors.danh_sach_marketing ? 'border-red-500 focus:ring-2 focus:ring-red-500' : 'border-gray-300 focus:ring-2 focus:ring-purple-500'}`} 
             />
         </div>
-        {/* Dòng chữ báo lỗi nằm độc lập bên dưới ô input */}
         {formErrors.danh_sach_marketing && <p className="text-red-500 text-sm mt-1.5 font-medium">{formErrors.danh_sach_marketing}</p>}
     </div>
 
@@ -876,7 +874,7 @@ export default function QuanLyKhoaHocPage() {
                             <hr className="border-gray-200" />
 
                             <div>
-                                <label className="block text-sm text-gray-700 mb-1.5 font-bold">Mô tả khóa học</label>
+                                <label className="block text-sm text-gray-700 mb-1.5 font-bold">Mô tả khóa học <span className="text-red-500">*</span></label>
                                 <textarea 
                                     name="mo_ta" 
                                     rows={3} 
@@ -904,7 +902,6 @@ export default function QuanLyKhoaHocPage() {
                 </div>
             )}
 
-            {/* MODAL TẠO NHANH MARKETING */}
             {isAddMarketingModalOpen && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[70] p-4">
                     <div className="bg-white rounded-lg w-full max-w-lg shadow-2xl animate-fade-in-up flex flex-col border border-gray-200">
@@ -1005,7 +1002,6 @@ export default function QuanLyKhoaHocPage() {
                 </div>
             )}
 
-            {/* MODAL XÓA */}
             {isDeleteModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in-up">
@@ -1023,7 +1019,6 @@ export default function QuanLyKhoaHocPage() {
                 </div>
             )}
 
-            {/* TOAST NOTIFICATION */}
             {toast && (
                 <div className="fixed top-5 right-5 z-[70] animate-fade-in-down">
                     <div className={`flex items-center min-w-[300px] p-4 bg-white rounded shadow-xl border-l-4 ${toast.type === 'success' ? 'border-green-500' : 'border-red-500'}`}>

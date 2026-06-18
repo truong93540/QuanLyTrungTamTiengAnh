@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { 
     FaEdit, 
     FaSearch, 
@@ -39,9 +39,12 @@ interface PhanCong {
 interface LopHoc {
     ma_lop_hoc: number
     ten_lop: string
+    ngay_ket_thuc?: string
 }
 
 interface ThamGiaLop {
+    ngay_dang_ky?: string   
+    trang_thai?: string     
     lop_hoc?: LopHoc
 }
 
@@ -50,6 +53,7 @@ interface HocVien {
     ho_ten: string
     so_dien_thoai: string | null
     email: string | null
+    trang_thai?: string
     tham_gia_lop?: ThamGiaLop[]
 }
 
@@ -101,6 +105,21 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
     const [tuKhoaTimLop, setTuKhoaTimLop] = useState("")
     const [showDropdownLop, setShowDropdownLop] = useState(false)
 
+    const dropdownLopRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownLopRef.current && !dropdownLopRef.current.contains(event.target as Node)) {
+                setShowDropdownLop(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     const [formData, setFormData] = useState({
         ten_hoat_dong: '',
         mo_ta: '',
@@ -123,6 +142,23 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
         setTimeout(() => setToast(null), 3000)
     }
 
+    const layLopHienTai = (hoc_vien: any) => {
+        if (!hoc_vien?.tham_gia_lop || hoc_vien.tham_gia_lop.length === 0) {
+            return { ma_lop_hoc: 0, ten_lop: 'Chưa xếp lớp' };
+        }
+        const lopDangHoc = [...hoc_vien.tham_gia_lop]
+            .filter((tl: any) => tl.trang_thai === 'Đang học')
+            .sort((a: any, b: any) => new Date(b.ngay_dang_ky || 0).getTime() - new Date(a.ngay_dang_ky || 0).getTime());
+
+        if (lopDangHoc.length > 0 && lopDangHoc[0].lop_hoc) {
+            return lopDangHoc[0].lop_hoc;
+        }
+        const lopMoiNhat = [...hoc_vien.tham_gia_lop]
+            .sort((a: any, b: any) => new Date(b.ngay_dang_ky || 0).getTime() - new Date(a.ngay_dang_ky || 0).getTime());
+
+        return lopMoiNhat[0].lop_hoc || { ma_lop_hoc: 0, ten_lop: 'Chưa xếp lớp' };
+    }
+
     const formatCurrency = (value: number | null | undefined) => {
         if (value === null || value === undefined) return 'Miễn phí'
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
@@ -131,7 +167,7 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
     const formatDateForView = (isoString: string) => {
         if (!isoString) return '';
         const d = new Date(isoString);
-        return `${d.toLocaleDateString('vi-VN')} - ${d.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}`;
+        return d.toLocaleDateString('vi-VN');
     }
 
     useEffect(() => {
@@ -140,8 +176,8 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                 const [resHD, resGV, resLop, resHV] = await Promise.all([
                     fetch('/api/tuyen-sinh/ngoai-khoa'),
                     fetch('/api/tuyen-sinh/ngoai-khoa?action=get_teachers'),
-                    fetch('/api/dao-tao/lop-hoc?limit=1000'), 
-                    fetch('/api/dao-tao/hoc-vien?limit=5000') 
+                    fetch('/api/tuyen-sinh/lop-hoc'), 
+                    fetch('/api/tuyen-sinh/hoc-vien') 
                 ])
 
                 if (resHD.ok) setData(await resHD.json())
@@ -154,7 +190,13 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                     else if (dataLop.data && Array.isArray(dataLop.data)) mangLop = dataLop.data;
                     else if (dataLop.lop_hoc && Array.isArray(dataLop.lop_hoc)) mangLop = dataLop.lop_hoc;
                     else if (dataLop.items && Array.isArray(dataLop.items)) mangLop = dataLop.items;
-                    setDanhSachLopHoc(mangLop);
+                    const homNay = new Date();
+                    const cacLopDangHoatDong = mangLop.filter((lop: LopHoc) => {
+                        if (!lop.ngay_ket_thuc) return true; 
+                        const ngayKetThucLop = new Date(lop.ngay_ket_thuc);
+                        return ngayKetThucLop >= homNay; 
+                    });
+                    setDanhSachLopHoc(cacLopDangHoatDong);
                 }
 
                 if (resHV.ok) {
@@ -197,18 +239,19 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
 
     const fillFormData = (row: HoatDong) => {
         const assignedTeachers = row.phan_cong?.map(pc => pc.ma_giao_vien) || []
-        const assignedStudents = row.tham_gia_hoc_vien?.map(th => ({
-            ma_hoc_vien: th.hoc_vien?.ma_hoc_vien || 0,
-            ho_ten: th.hoc_vien?.ho_ten || '',
-            ten_lop: th.hoc_vien?.tham_gia_lop && th.hoc_vien.tham_gia_lop.length > 0 
-                ? th.hoc_vien.tham_gia_lop[0].lop_hoc?.ten_lop 
-                : 'Chưa xếp lớp'
-        })) || []
+        const assignedStudents = row.tham_gia_hoc_vien?.map(th => {
+            const lopHT = layLopHienTai(th.hoc_vien);
+            return {
+                ma_hoc_vien: th.hoc_vien?.ma_hoc_vien || 0,
+                ho_ten: th.hoc_vien?.ho_ten || '',
+                ten_lop: lopHT.ten_lop
+            };
+        }) || []
 
         setFormData({
             ten_hoat_dong: row.ten_hoat_dong,
             mo_ta: row.mo_ta || '',
-            ngay_to_chuc: new Date(row.ngay_to_chuc).toISOString().slice(0, 16), 
+            ngay_to_chuc: new Date(row.ngay_to_chuc).toISOString().slice(0, 10), 
             dia_diem: row.dia_diem || '',
             chi_phi: row.chi_phi !== null && row.chi_phi !== undefined ? row.chi_phi.toString() : '',
             danh_sach_giao_vien: assignedTeachers
@@ -229,23 +272,25 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
         setTuKhoaTimLop('')
         setTuKhoaGiaoVien('') 
         setFormErrors({})
+        setShowDropdownLop(false)
         setIsModalOpen(true)
     }
 
-    const openEditModal = (row: HoatDong) => { 
-        fillFormData(row)
-        setIsViewMode(false)
-        setEditingId(row.ma_hoat_dong_ngoai_khoa)
-        setTuKhoaGiaoVien('') 
-        setSelectedLopId(null)
-        setHocVienTrongLop([])
-        setIdChonTamThoi([])
-        setTuKhoaLop('')
-        setTuKhoaTuDo('')
-        setTuKhoaTimLop('')
-        setFormErrors({})
-        setIsModalOpen(true)
-    }
+        const openEditModal = (row: HoatDong) => { 
+            fillFormData(row)
+            setIsViewMode(false)
+            setEditingId(row.ma_hoat_dong_ngoai_khoa)
+            setTuKhoaGiaoVien('') 
+            setSelectedLopId(null)
+            setHocVienTrongLop([])
+            setIdChonTamThoi([])
+            setTuKhoaLop('')
+            setTuKhoaTuDo('')
+            setTuKhoaTimLop('')
+            setFormErrors({})
+            setShowDropdownLop(false)
+            setIsModalOpen(true)
+        }
 
     const openViewModal = (row: HoatDong) => { 
         setIsViewMode(true)
@@ -263,6 +308,7 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
         setIsModalOpen(false)
         setEditingId(null)
         setIsViewMode(false)
+        setShowDropdownLop(false)
     }
 
     const openDeleteModal = (id: number) => {
@@ -297,13 +343,12 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
 
         if (!formData.ten_hoat_dong.trim()) errors.ten_hoat_dong = 'Vui lòng nhập tên hoạt động ngoại khóa';
         if (!formData.dia_diem.trim()) errors.dia_diem = 'Vui lòng nhập địa điểm tổ chức';
-        
         if (!formData.ngay_to_chuc) {
-            errors.ngay_to_chuc = 'Vui lòng chọn ngày giờ tổ chức';
+            errors.ngay_to_chuc = 'Vui lòng chọn ngày tổ chức';
         } else {
             const dateObj = new Date(formData.ngay_to_chuc);
             if (!(dateObj instanceof Date && !isNaN(dateObj.getTime()))) {
-                errors.ngay_to_chuc = 'Ngày giờ tổ chức không hợp lệ';
+                errors.ngay_to_chuc = 'Ngày tổ chức không hợp lệ';
             }
         }
 
@@ -379,27 +424,18 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
         gv.ho_ten.toLowerCase().includes(tuKhoaGiaoVien.toLowerCase())
     )
 
-    const hocVienTuDoLoc = tuKhoaTuDo.trim() === "" ? [] : danhSachTatCaHocVien.filter(hv => 
-        hv.ho_ten.toLowerCase().includes(tuKhoaTuDo.toLowerCase()) || 
-        hv.ma_hoc_vien.toString().includes(tuKhoaTuDo)
-    )
-
     const groupedHocVienView = useMemo(() => {
         if (!viewData?.tham_gia_hoc_vien) return {};
         return viewData.tham_gia_hoc_vien.reduce((acc, current) => {
             const hv = current.hoc_vien;
             if (!hv) return acc;
+            const lopHT = layLopHienTai(hv);
             
-            const lops = hv.tham_gia_lop && hv.tham_gia_lop.length > 0 ? hv.tham_gia_lop : [{ lop_hoc: { ma_lop_hoc: 0, ten_lop: 'Chưa xếp lớp' } }];
-
-            lops.forEach(tl => {
-                const lop = tl.lop_hoc;
-                if (!lop) return;
-                if (!acc[lop.ma_lop_hoc]) acc[lop.ma_lop_hoc] = { ten_lop: lop.ten_lop, danh_sach: [] };
-                if (!acc[lop.ma_lop_hoc].danh_sach.find((x: any) => x.ma_hoc_vien === hv.ma_hoc_vien)) {
-                    acc[lop.ma_lop_hoc].danh_sach.push(hv);
-                }
-            });
+            if (!acc[lopHT.ma_lop_hoc]) acc[lopHT.ma_lop_hoc] = { ten_lop: lopHT.ten_lop, danh_sach: [] };
+            if (!acc[lopHT.ma_lop_hoc].danh_sach.find((x: any) => x.ma_hoc_vien === hv.ma_hoc_vien)) {
+                acc[lopHT.ma_lop_hoc].danh_sach.push(hv);
+            }
+            
             return acc;
         }, {} as Record<number, { ten_lop: string, danh_sach: HocVien[] }>);
     }, [viewData]);
@@ -535,7 +571,6 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                 )}
             </div>
 
-            {/* MODAL VIEW (BÁO CÁO CHI TIẾT) */}
             {isModalOpen && isViewMode && viewData && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl w-full max-w-4xl shadow-2xl animate-fade-in-up flex flex-col max-h-[95vh]">
@@ -704,7 +739,6 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                 </div>
             )}
 
-            {/* MODAL THÊM/SỬA */}
             {isModalOpen && !isViewMode && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-lg w-full max-w-3xl shadow-2xl animate-fade-in-up flex flex-col border border-gray-200 max-h-[95vh]">
@@ -732,10 +766,12 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
                                         <label className="block text-[14px] text-gray-700 mb-1.5 font-bold flex items-center gap-1">Ngày tổ chức <span className="text-red-500">*</span></label>
+                                        
                                         <input 
-                                            type="datetime-local" name="ngay_to_chuc" value={formData.ngay_to_chuc} onChange={handleChange} 
+                                            type="date" name="ngay_to_chuc" value={formData.ngay_to_chuc} onChange={handleChange} 
                                             className={`w-full border rounded-md px-3 py-2.5 outline-none text-gray-900 font-medium text-[15px] transition ${formErrors.ngay_to_chuc ? 'border-red-500 focus:ring-2 focus:ring-red-500' : 'border-gray-300 focus:ring-2 focus:ring-blue-500'}`} 
                                         />
+                                        
                                         {formErrors.ngay_to_chuc && <p className="text-red-500 text-xs mt-1 font-medium">{formErrors.ngay_to_chuc}</p>}
                                     </div>
                                     <div>
@@ -770,7 +806,7 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><FaSearch /></span>
                                     <input
                                         type="text"
-                                        placeholder="🔍 Tìm kiếm tên giáo viên..."
+                                        placeholder="Tìm kiếm tên giáo viên..."
                                         value={tuKhoaGiaoVien}
                                         onChange={(e) => setTuKhoaGiaoVien(e.target.value)}
                                         className="w-full border border-gray-300 rounded-md py-2.5 pl-10 pr-3 outline-none text-sm text-gray-900 font-medium placeholder-gray-500 focus:ring-2 focus:ring-blue-500 shadow-sm"
@@ -825,49 +861,72 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
 
                             <hr className="border-gray-200" />
 
-                            {/* MODULE THÊM HỌC VIÊN VÀO GIỎ */}
                             <div className="bg-gray-50/50 p-4 rounded-lg border border-gray-200">
                                 <label className="block text-sm text-[#1d4ed8] font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
                                     <FaUserGraduate /> Thêm học viên tham gia
                                 </label>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                    {/* Cột 1: Chọn lớp */}
-                                    <div>
-                                        <span className="block text-xs font-semibold text-gray-500 mb-1">Thêm nhanh từ lớp:</span>
+                                    <div ref={dropdownLopRef}>
+                                        <span className="block text-xs font-semibold text-gray-500 mb-1">Thêm từ lớp:</span>
                                         <div className="relative">
+                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 pointer-events-none">
+                                                <FaSearch size={14}/>
+                                            </span>
+                                            
                                             <input
                                                 type="text"
-                                                placeholder="🔍 Tìm tên lớp..."
+                                                placeholder="Tìm tên lớp..."
                                                 value={tuKhoaTimLop}
                                                 onChange={(e) => {
-                                                    setTuKhoaTimLop(e.target.value);
+                                                    const newVal = e.target.value;
+                                                    setTuKhoaTimLop(newVal);
                                                     setShowDropdownLop(true);
+                                                    
+                                                    if (newVal.trim() === "") {
+                                                        setSelectedLopId(null);
+                                                        setHocVienTrongLop([]);
+                                                        setIdChonTamThoi([]);
+                                                        setTuKhoaLop("");
+                                                    }
                                                 }}
+                                                onClick={() => setShowDropdownLop(true)}
                                                 onFocus={() => setShowDropdownLop(true)}
-                                                className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm outline-none focus:border-blue-500 bg-white text-gray-900 font-medium transition"
+                                                className="w-full border border-gray-300 rounded-md py-2.5 pl-10 pr-10 text-sm outline-none focus:border-blue-500 bg-white text-gray-900 font-medium transition shadow-sm"
                                             />
+
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowDropdownLop(!showDropdownLop)}
+                                                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-[#1d4ed8] transition"
+                                                title={showDropdownLop ? "Thu gọn danh sách" : "Mở rộng danh sách"}
+                                            >
+                                                {showDropdownLop ? <FaChevronUp size={14} /> : <FaChevronDown size={14} />}
+                                            </button>
                                             
-                                            {/* Dropdown danh sách lớp đã lọc */}
                                             {showDropdownLop && (
                                                 <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
-                                                    {danhSachLopHoc.filter(l => l.ten_lop.toLowerCase().includes(tuKhoaTimLop.toLowerCase())).length === 0 ? (
+                                                    {danhSachLopHoc.filter(l => (l.ten_lop || '').toLowerCase().includes(tuKhoaTimLop.toLowerCase())).length === 0 ? (
                                                         <div className="px-3 py-2 text-sm text-gray-400 italic">Không tìm thấy lớp</div>
                                                     ) : (
                                                         danhSachLopHoc
-                                                            .filter(l => l.ten_lop.toLowerCase().includes(tuKhoaTimLop.toLowerCase()))
+                                                            .filter(l => (l.ten_lop || '').toLowerCase().includes(tuKhoaTimLop.toLowerCase()))
                                                             .map(lop => (
                                                                 <div 
                                                                     key={lop.ma_lop_hoc}
                                                                     className="px-3 py-2.5 text-sm hover:bg-blue-50 cursor-pointer text-gray-800 font-medium border-b border-gray-50 last:border-0"
                                                                     onClick={() => {
                                                                         setTuKhoaTimLop(lop.ten_lop);
-                                                                        setShowDropdownLop(false);
+                                                                        setShowDropdownLop(false); // Chọn xong thì tự động thu gọn
                                                                         setSelectedLopId(lop.ma_lop_hoc);
 
-                                                                        
+                                                                        // Lọc và ép kiểu Number
                                                                         const studentsInClass = danhSachTatCaHocVien.filter(hv => 
-                                                                            hv.tham_gia_lop?.some(tl => tl.lop_hoc?.ma_lop_hoc === lop.ma_lop_hoc)
+                                                                            hv.tham_gia_lop?.some(tl => {
+                                                                                const idLop = tl.lop_hoc?.ma_lop_hoc || (tl as any).ma_lop_hoc;
+                                                                                return Number(idLop) === Number(lop.ma_lop_hoc);
+                                                                            }) && 
+                                                                            hv.trang_thai !== 'Nghỉ học' && hv.trang_thai !== 'Bảo lưu'
                                                                         ).map(hv => ({
                                                                             ma_hoc_vien: hv.ma_hoc_vien,
                                                                             ho_ten: hv.ho_ten,
@@ -887,177 +946,198 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                                             )}
                                         </div>
 
-                                        {/* Khung tìm kiếm/Chọn học viên bên trong lớp */}
-                                        {hocVienTrongLop.length > 0 && (() => {
-                                            const hocVienLopFiltered = hocVienTrongLop.filter(hv => 
-                                                hv.ho_ten.toLowerCase().includes(tuKhoaLop.toLowerCase()) || 
-                                                hv.ma_hoc_vien.toString().includes(tuKhoaLop)
-                                            );
+                                        {selectedLopId !== null && (
+                                            <div className="animate-fade-in-down mt-3">
+                                                {hocVienTrongLop.length > 0 ? (
+                                                    (() => {
+                                                        const danhSachIdDaChon = danhSachThamGia.map(item => item.ma_hoc_vien);
 
-                                            const isAllFilteredSelected = hocVienLopFiltered.length > 0 && 
-                                                hocVienLopFiltered.every(hv => idChonTamThoi.includes(hv.ma_hoc_vien));
+                                                        const hocVienLopFiltered = hocVienTrongLop.filter(hv => 
+                                                            !danhSachIdDaChon.includes(hv.ma_hoc_vien) && 
+                                                            (hv.ho_ten.toLowerCase().includes(tuKhoaLop.toLowerCase()) || 
+                                                             hv.ma_hoc_vien.toString().includes(tuKhoaLop))
+                                                        );
 
-                                            return (
-                                                <div className="animate-fade-in-down mt-3">
-                                                    <div className="bg-white border border-blue-200 rounded-md p-3 shadow-sm flex flex-col gap-3">
-                                                        
-                                                        {/* Thanh tìm kiếm nội bộ */}
-                                                        <div className="relative">
-                                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                                                <FaSearch size={14}/>
-                                                            </span>
-                                                            <input 
-                                                                type="text" 
-                                                                placeholder="Tìm nhanh học viên trong lớp..." 
-                                                                value={tuKhoaLop}
-                                                                onChange={(e) => setTuKhoaLop(e.target.value)}
-                                                                className="w-full border border-gray-300 rounded py-2 pl-9 pr-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white text-gray-900 font-medium placeholder-gray-500 transition shadow-sm"
-                                                            />
-                                                        </div>
+                                                        const tatCaDaDuocThem = hocVienTrongLop.every(hv => danhSachIdDaChon.includes(hv.ma_hoc_vien));
 
-                                                        {/* Thanh thao tác */}
-                                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                                                            <label className="flex items-center gap-2 cursor-pointer text-sm font-semibold text-gray-700 hover:text-blue-600 transition select-none">
-                                                                <input 
-                                                                    type="checkbox" 
-                                                                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
-                                                                    checked={isAllFilteredSelected}
-                                                                    onChange={(e) => {
-                                                                        if (e.target.checked) {
-                                                                            const newIds = [...idChonTamThoi];
-                                                                            hocVienLopFiltered.forEach(hv => {
-                                                                                if (!newIds.includes(hv.ma_hoc_vien)) newIds.push(hv.ma_hoc_vien);
-                                                                            });
-                                                                            setIdChonTamThoi(newIds);
-                                                                        } else {
-                                                                            const filteredIds = hocVienLopFiltered.map(hv => hv.ma_hoc_vien);
-                                                                            setIdChonTamThoi(idChonTamThoi.filter(id => !filteredIds.includes(id)));
-                                                                        }
-                                                                    }}
-                                                                />
-                                                                Chọn tất cả ({idChonTamThoi.length}/{hocVienTrongLop.length})
-                                                            </label>
-                                                        </div>
+                                                        const isAllFilteredSelected = hocVienLopFiltered.length > 0 && 
+                                                            hocVienLopFiltered.every(hv => idChonTamThoi.includes(hv.ma_hoc_vien));
 
-                                                        {/* Danh sách lọc hiển thị */}
-                                                        <div className="max-h-[140px] overflow-y-auto custom-scrollbar flex flex-col gap-1">
-                                                            {hocVienLopFiltered.length === 0 ? (
-                                                                <p className="text-xs text-gray-400 italic text-center py-2">Không tìm thấy học viên khớp từ khóa.</p>
-                                                            ) : (
-                                                                hocVienLopFiltered.map(hv => (
-                                                                    <label key={hv.ma_hoc_vien} className="flex items-center gap-2.5 cursor-pointer text-sm text-gray-700 hover:bg-blue-50 p-1.5 rounded transition select-none">
-                                                                        <input 
-                                                                            type="checkbox" 
-                                                                            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
-                                                                            checked={idChonTamThoi.includes(hv.ma_hoc_vien)}
-                                                                            onChange={(e) => {
-                                                                                if (e.target.checked) {
-                                                                                    setIdChonTamThoi(prev => [...prev, hv.ma_hoc_vien]);
-                                                                                } else {
-                                                                                    setIdChonTamThoi(prev => prev.filter(id => id !== hv.ma_hoc_vien));
-                                                                                }
-                                                                            }}
-                                                                        />
-                                                                        <span className="truncate text-gray-900 font-medium">{hv.ho_ten}</span>
-                                                                    </label>
-                                                                ))
-                                                            )}
-                                                        </div>
-
-                                                        <button 
-                                                            type="button"
-                                                            disabled={idChonTamThoi.length === 0}
-                                                            onClick={() => {
-                                                                const selected = hocVienTrongLop.filter(hv => idChonTamThoi.includes(hv.ma_hoc_vien));
+                                                        return (
+                                                            <div className="bg-white border border-blue-200 rounded-md p-3 shadow-sm flex flex-col gap-3">
                                                                 
-                                                                setDanhSachThamGia(prev => {
-                                                                    const mangMoi = [...prev];
-                                                                    selected.forEach(hvMoi => {
-                                                                        if (!mangMoi.find(item => item.ma_hoc_vien === hvMoi.ma_hoc_vien)) {
-                                                                            mangMoi.push(hvMoi);
-                                                                        }
-                                                                    });
-                                                                    return mangMoi;
-                                                                });
-                                                                setSelectedLopId(null);
-                                                                setHocVienTrongLop([]);
-                                                                setIdChonTamThoi([]);
-                                                                setTuKhoaLop("");
-                                                                setTuKhoaTimLop(""); 
-                                                            }}
-                                                            className="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed shadow-sm mt-1"
-                                                        >
-                                                            Đưa {idChonTamThoi.length} người vào danh sách tham gia
-                                                        </button>
+                                                                {tatCaDaDuocThem ? (
+                                                                    <div className="text-center py-4 text-sm font-medium text-green-600 bg-green-50 rounded-md border border-green-100">
+                                                                        <FaCheckCircle className="inline-block mr-2 mb-1 text-lg" />
+                                                                        <br/>
+                                                                        Tất cả học viên của lớp này đã được thêm vào danh sách!
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        <div className="relative">
+                                                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                                                                <FaSearch size={14}/>
+                                                                            </span>
+                                                                            <input 
+                                                                                type="text" 
+                                                                                placeholder="Tìm học viên trong lớp..." 
+                                                                                value={tuKhoaLop}
+                                                                                onChange={(e) => setTuKhoaLop(e.target.value)}
+                                                                                className="w-full border border-gray-300 rounded py-2 pl-9 pr-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white text-gray-900 font-medium placeholder-gray-500 transition shadow-sm"
+                                                                            />
+                                                                        </div>
+
+                                                                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+                                                                            <label className="flex items-center gap-2 cursor-pointer text-sm font-semibold text-gray-700 hover:text-blue-600 transition select-none">
+                                                                                <input 
+                                                                                    type="checkbox" 
+                                                                                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                                                                                    checked={isAllFilteredSelected}
+                                                                                    onChange={(e) => {
+                                                                                        if (e.target.checked) {
+                                                                                            const newIds = [...idChonTamThoi];
+                                                                                            hocVienLopFiltered.forEach(hv => {
+                                                                                                if (!newIds.includes(hv.ma_hoc_vien)) newIds.push(hv.ma_hoc_vien);
+                                                                                            });
+                                                                                            setIdChonTamThoi(newIds);
+                                                                                        } else {
+                                                                                            const filteredIds = hocVienLopFiltered.map(hv => hv.ma_hoc_vien);
+                                                                                            setIdChonTamThoi(idChonTamThoi.filter(id => !filteredIds.includes(id)));
+                                                                                        }
+                                                                                    }}
+                                                                                />
+                                                                                Chọn tất cả ({idChonTamThoi.length}/{hocVienLopFiltered.length})
+                                                                            </label>
+                                                                        </div>
+
+                                                                        <div className="max-h-[140px] overflow-y-auto custom-scrollbar flex flex-col gap-1">
+                                                                            {hocVienLopFiltered.length === 0 ? (
+                                                                                <p className="text-xs text-gray-400 italic text-center py-2">Không tìm thấy học viên khớp từ khóa.</p>
+                                                                            ) : (
+                                                                                hocVienLopFiltered.map(hv => (
+                                                                                    <label key={hv.ma_hoc_vien} className="flex items-center gap-2.5 cursor-pointer text-sm text-gray-700 hover:bg-blue-50 p-1.5 rounded transition select-none">
+                                                                                        <input 
+                                                                                            type="checkbox" 
+                                                                                            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                                                                                            checked={idChonTamThoi.includes(hv.ma_hoc_vien)}
+                                                                                            onChange={(e) => {
+                                                                                                if (e.target.checked) {
+                                                                                                    setIdChonTamThoi(prev => [...prev, hv.ma_hoc_vien]);
+                                                                                                } else {
+                                                                                                    setIdChonTamThoi(prev => prev.filter(id => id !== hv.ma_hoc_vien));
+                                                                                                }
+                                                                                            }}
+                                                                                        />
+                                                                                        <span className="truncate text-gray-900 font-medium">{hv.ho_ten}</span>
+                                                                                    </label>
+                                                                                ))
+                                                                            )}
+                                                                        </div>
+
+                                                                        <button 
+                                                                            type="button"
+                                                                            disabled={idChonTamThoi.length === 0}
+                                                                            onClick={() => {
+                                                                                const selected = hocVienTrongLop.filter(hv => idChonTamThoi.includes(hv.ma_hoc_vien));
+                                                                                
+                                                                                setDanhSachThamGia(prev => {
+                                                                                    const mangMoi = [...prev];
+                                                                                    selected.forEach(hvMoi => {
+                                                                                        if (!mangMoi.find(item => item.ma_hoc_vien === hvMoi.ma_hoc_vien)) {
+                                                                                            mangMoi.push(hvMoi);
+                                                                                        }
+                                                                                    });
+                                                                                    return mangMoi;
+                                                                                });
+                                                                                setSelectedLopId(null);
+                                                                                setHocVienTrongLop([]);
+                                                                                setIdChonTamThoi([]);
+                                                                                setTuKhoaLop("");
+                                                                                setTuKhoaTimLop(""); 
+                                                                            }}
+                                                                            className="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed shadow-sm mt-1"
+                                                                        >
+                                                                            Đưa {idChonTamThoi.length} người vào danh sách tham gia
+                                                                        </button>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })()
+                                                ) : (
+                                                    <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center shadow-inner">
+                                                        <p className="text-sm text-gray-500 italic font-medium">Lớp học này hiện tại chưa có học viên nào.</p>
                                                     </div>
-                                                </div>
-                                            )
-                                        })()}
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {/* Cột 2: Thêm học viên tự do / chưa xếp lớp */}
                                     <div>
-                                        <span className="block text-xs font-semibold text-gray-500 mb-1">Thêm học viên lẻ (chưa xếp lớp):</span>
+                                        <span className="block text-xs font-semibold text-gray-500 mb-1">Thêm học viên :</span>
                                         <div className="relative">
                                             <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><FaSearch size={14}/></span>
                                             <input
                                                 type="text"
-                                                placeholder="🔍 Nhập tên hoặc mã học viên..."
+                                                placeholder=" Nhập tên hoặc mã học viên..."
                                                 value={tuKhoaTuDo}
                                                 onChange={(e) => setTuKhoaTuDo(e.target.value)}
                                                 className="w-full border border-gray-300 rounded-md py-2.5 pl-10 pr-3 outline-none text-sm text-gray-900 font-medium placeholder-gray-500 focus:ring-2 focus:ring-blue-500 shadow-sm bg-white"
                                             />
                                         </div>
                                         
-                                        {tuKhoaTuDo.trim() !== "" && (
-                                            <div className="bg-white border border-gray-200 p-2 rounded-md shadow-sm max-h-[220px] overflow-y-auto mt-2 animate-fade-in-down custom-scrollbar">
-                                                {danhSachTatCaHocVien.filter(hv => hv.ho_ten.toLowerCase().includes(tuKhoaTuDo.toLowerCase()) || hv.ma_hoc_vien.toString().includes(tuKhoaTuDo)).length === 0 ? (
-                                                    <p className="text-xs text-gray-500 italic p-2 text-center">Không tìm thấy học viên.</p>
-                                                ) : (
-                                                    <div className="flex flex-col gap-1">
-                                                        {danhSachTatCaHocVien.filter(hv => hv.ho_ten.toLowerCase().includes(tuKhoaTuDo.toLowerCase()) || hv.ma_hoc_vien.toString().includes(tuKhoaTuDo)).map(hv => {
-                                                            const isAdded = danhSachThamGia.some(item => item.ma_hoc_vien === hv.ma_hoc_vien);
-                                                            const tenLop = hv.tham_gia_lop && hv.tham_gia_lop.length > 0 
-                                                                ? hv.tham_gia_lop[0].lop_hoc?.ten_lop 
-                                                                : 'Chưa xếp lớp';
-                                                            
-                                                            return (
-                                                                <div 
-                                                                    key={`free-${hv.ma_hoc_vien}`} 
-                                                                    className={`flex items-center justify-between p-2 rounded border transition text-sm ${isAdded ? 'bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed' : 'hover:bg-blue-50 border-transparent hover:border-blue-100 cursor-pointer'}`}
-                                                                    onClick={() => {
-                                                                        if (isAdded) return;
-                                                                        setDanhSachThamGia(prev => [...prev, { 
-                                                                            ma_hoc_vien: hv.ma_hoc_vien, 
-                                                                            ho_ten: hv.ho_ten, 
-                                                                            ten_lop: tenLop 
-                                                                        }]);
-                                                                        setTuKhoaTuDo("");
-                                                                    }}
-                                                                >
-                                                                    <div className="flex flex-col">
-                                                                        <span className="font-semibold text-gray-800">{hv.ho_ten} <span className="text-xs font-normal text-gray-400">({hv.ma_hoc_vien})</span></span>
-                                                                        <span className="text-[10px] text-gray-500">{tenLop}</span>
-                                                                    </div>
-                                                                    {isAdded ? (
-                                                                        <FaCheckCircle className="text-green-500" />
-                                                                    ) : (
+                                        {tuKhoaTuDo.trim() !== "" && (() => {
+                                            const danhSachIdDaChon = danhSachThamGia.map(item => item.ma_hoc_vien);
+
+                                            const hocVienTuDoFiltered = danhSachTatCaHocVien.filter(hv => 
+                                                !danhSachIdDaChon.includes(hv.ma_hoc_vien) && 
+                                                hv.trang_thai !== 'Nghỉ học' && hv.trang_thai !== 'Bảo lưu' &&
+                                                (hv.ho_ten.toLowerCase().includes(tuKhoaTuDo.toLowerCase()) || 
+                                                hv.ma_hoc_vien.toString().includes(tuKhoaTuDo))
+                                            );
+
+                                            return (
+                                                <div className="bg-white border border-gray-200 p-2 rounded-md shadow-sm max-h-[220px] overflow-y-auto mt-2 animate-fade-in-down custom-scrollbar">
+                                                    {hocVienTuDoFiltered.length === 0 ? (
+                                                        <p className="text-xs text-gray-500 italic p-2 text-center">Không tìm thấy học viên mới phù hợp.</p>
+                                                    ) : (
+                                                        <div className="flex flex-col gap-1">
+                                                            {hocVienTuDoFiltered.map(hv => {
+                                                                const lopHT = layLopHienTai(hv);
+                                                                const tenLop = lopHT.ten_lop;
+                                                                
+                                                                return (
+                                                                    <div 
+                                                                        key={`free-${hv.ma_hoc_vien}`} 
+                                                                        className="flex items-center justify-between p-2 rounded border transition text-sm hover:bg-blue-50 border-transparent hover:border-blue-100 cursor-pointer"
+                                                                        onClick={() => {
+                                                                            setDanhSachThamGia(prev => [...prev, { 
+                                                                                ma_hoc_vien: hv.ma_hoc_vien, 
+                                                                                ho_ten: hv.ho_ten, 
+                                                                                ten_lop: tenLop 
+                                                                            }]);
+                                                                            setTuKhoaTuDo("");
+                                                                        }}
+                                                                    >
+                                                                        <div className="flex flex-col">
+                                                                            <span className="font-semibold text-gray-800">{hv.ho_ten} <span className="text-xs font-normal text-gray-400">({hv.ma_hoc_vien})</span></span>
+                                                                            <span className="text-[10px] text-gray-500">{tenLop}</span>
+                                                                        </div>
                                                                         <FaPlus className="text-blue-500" />
-                                                                    )}
-                                                                </div>
-                                                            )
-                                                        })}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
+                                                                    </div>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
                                 </div>
 
-                                {/* Hiển thị giỏ danh sách tham gia */}
                                 {danhSachThamGia.length > 0 && (
                                     <div className="mt-2 pt-4 border-t border-gray-200">
-                                        <span className="block text-xs font-semibold text-green-700 mb-2 uppercase">Giỏ học viên đã chọn ({danhSachThamGia.length}):</span>
+                                        <span className="block text-xs font-semibold text-green-700 mb-2 uppercase">Danh sách học viên đã chọn ({danhSachThamGia.length}):</span>
                                         <div className="flex flex-wrap gap-2 max-h-[150px] overflow-y-auto custom-scrollbar pr-2">
                                             {danhSachThamGia.map(hv => (
                                                 <span key={`cart-${hv.ma_hoc_vien}`} className="flex items-center gap-1.5 bg-white border border-green-200 px-3 py-1 rounded-full text-sm font-semibold shadow-sm text-gray-800 hover:bg-red-50 hover:border-red-200 transition group cursor-default">
@@ -1096,7 +1176,6 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                 </div>
             )}
 
-            {/* Modal Xóa */}
             {isDeleteModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in-up">
@@ -1116,7 +1195,6 @@ export default function QuanLyHoatDongNgoaiKhoaPage() {
                 </div>
             )}
 
-            {/* Toast Notification */}
             {toast && (
                 <div className="fixed top-5 right-5 z-[70] animate-fade-in-down transition-all duration-300">
                     <div className={`flex items-center min-w-[300px] p-4 bg-white rounded shadow-lg border-l-4 ${toast.type === 'success' ? 'border-green-500' : 'border-red-500'}`}>

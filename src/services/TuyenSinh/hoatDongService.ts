@@ -21,7 +21,6 @@ export const layDanhSachGiaoVien = async () => {
     });
 }
 
-// 1. LẤY DANH SÁCH HOẠT ĐỘNG (KÈM GIÁO VIÊN VÀ HỌC VIÊN + LỚP)
 export const layDanhSachHoatDong = async (filters: HoatDongFilter) => {
     const { search } = filters
     const whereClause: any = {}
@@ -63,7 +62,6 @@ export const layDanhSachHoatDong = async (filters: HoatDongFilter) => {
     })
 }
 
-// 2. THÊM MỚI HOẠT ĐỘNG
 export const taoHoatDong = async (data: HoatDongData) => {
     return await prisma.hoatDongNgoaiKhoa.create({
         data: {
@@ -72,7 +70,6 @@ export const taoHoatDong = async (data: HoatDongData) => {
             ngay_to_chuc: data.ngay_to_chuc,
             dia_diem: data.dia_diem,
             chi_phi: data.chi_phi,
-            // Thêm phân công giáo viên vào bảng trung gian
             ...(data.danh_sach_giao_vien && data.danh_sach_giao_vien.length > 0 && {
                 phan_cong: { 
                     create: data.danh_sach_giao_vien.map(idGV => ({
@@ -80,7 +77,7 @@ export const taoHoatDong = async (data: HoatDongData) => {
                     }))
                 }
             }),
-            // Bổ sung: Thêm học viên vào bảng trung gian ThamGiaNgoaiKhoa
+
             ...(data.danh_sach_hoc_vien && data.danh_sach_hoc_vien.length > 0 && {
                 tham_gia_hoc_vien: {
                     create: data.danh_sach_hoc_vien.map(idHV => ({
@@ -96,9 +93,7 @@ export const taoHoatDong = async (data: HoatDongData) => {
     })
 }
 
-// 3. CẬP NHẬT HOẠT ĐỘNG
 export const capNhatHoatDong = async (ma_hoat_dong: number, data: Partial<HoatDongData>) => {
-    // 3.1 Cập nhật thông tin cơ bản
     const hoatDongDuocCapNhat = await prisma.hoatDongNgoaiKhoa.update({
         where: { ma_hoat_dong_ngoai_khoa: ma_hoat_dong },
         data: {
@@ -107,8 +102,6 @@ export const capNhatHoatDong = async (ma_hoat_dong: number, data: Partial<HoatDo
             ...(data.ngay_to_chuc && { ngay_to_chuc: data.ngay_to_chuc }),
             ...(data.dia_diem !== undefined && { dia_diem: data.dia_diem }),
             ...(data.chi_phi !== undefined && { chi_phi: data.chi_phi }),
-            
-            // Cập nhật lại danh sách giáo viên (Xóa hết rồi tạo lại)
             ...(data.danh_sach_giao_vien !== undefined && {
                 phan_cong: { 
                     deleteMany: {}, 
@@ -117,8 +110,6 @@ export const capNhatHoatDong = async (ma_hoat_dong: number, data: Partial<HoatDo
                     }))
                 }
             }),
-
-            // Bổ sung: Cập nhật lại danh sách học viên tham gia (Xóa hết rồi tạo lại)
             ...(data.danh_sach_hoc_vien !== undefined && {
                 tham_gia_hoc_vien: {
                     deleteMany: {},
@@ -137,9 +128,7 @@ export const capNhatHoatDong = async (ma_hoat_dong: number, data: Partial<HoatDo
     return hoatDongDuocCapNhat;
 }
 
-// 4. XÓA HOẠT ĐỘNG
 export const xoaHoatDong = async (ma_hoat_dong: number) => {
-    // Để an toàn và tránh lỗi khóa ngoại, sử dụng transaction để xóa dữ liệu ở bảng trung gian trước
     await prisma.$transaction([
         prisma.phanCongHoatDong.deleteMany({
             where: { ma_hoat_dong_ngoai_khoa: ma_hoat_dong }

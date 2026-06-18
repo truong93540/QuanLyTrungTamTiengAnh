@@ -564,7 +564,6 @@ export default function QuanLyMarketingPage() {
                 )}
             </div>
 
-            {/* MODAL VIEW (BÁO CÁO CHI TIẾT) */}
             {isModalOpen && isViewMode && viewData && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl w-full max-w-4xl shadow-2xl animate-fade-in-up flex flex-col max-h-[95vh]">
@@ -587,19 +586,18 @@ export default function QuanLyMarketingPage() {
                                 </div>
                             </div>
 
-                            {/* Khối 2: Liên kết Khóa Học */}
                            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-    <div 
-        className="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition" 
-        onClick={() => setShowKhoaHocDetail(!showKhoaHocDetail)}
-    >
-        <h3 className="text-lg font-bold text-gray-900 border-l-4 border-green-500 pl-3 flex items-center gap-2">
-            <FaGraduationCap className="text-green-600"/> Khóa Học Áp Dụng ({viewData.chi_tiet_marketing?.length || 0})
-        </h3>
-        <button className="flex items-center gap-2 text-xs font-semibold text-green-700 bg-green-100 px-3 py-1.5 rounded-md hover:bg-green-200 transition">
-            {showKhoaHocDetail ? <><FaChevronUp /> Thu gọn</> : <><FaChevronDown /> Xem chi tiết</>}
-        </button>
-    </div>
+                            <div 
+                             className="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition" 
+                            onClick={() => setShowKhoaHocDetail(!showKhoaHocDetail)}
+                            >
+                            <h3 className="text-lg font-bold text-gray-900 border-l-4 border-green-500 pl-3 flex items-center gap-2">
+                        <FaGraduationCap className="text-green-600"/> Khóa Học Áp Dụng ({viewData.chi_tiet_marketing?.length || 0})
+                            </h3>
+                        <button className="flex items-center gap-2 text-xs font-semibold text-green-700 bg-green-100 px-3 py-1.5 rounded-md hover:bg-green-200 transition">
+                          {showKhoaHocDetail ? <><FaChevronUp /> Thu gọn</> : <><FaChevronDown /> Xem chi tiết</>}
+                         </button>
+                        </div>
     
     {showKhoaHocDetail && (
         <div className="px-5 pb-5 pt-0 animate-fade-in-up">
@@ -607,7 +605,6 @@ export default function QuanLyMarketingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {viewData.chi_tiet_marketing.map((ct, idx) => (
                         <div key={idx} className="bg-[#f6fbf7] p-4 rounded-lg border border-green-200 shadow-sm transition hover:shadow-md flex flex-col gap-3">
-                            {/* Header: Tên + Trạng thái */}
                             <div className="flex justify-between items-start gap-2">
                                 <span className="font-bold text-gray-900 text-base line-clamp-1" title={ct.khoa_hoc?.ten_khoa_hoc}>
                                     {ct.khoa_hoc?.ten_khoa_hoc || `Mã KH: ${ct.ma_khoa_hoc}`}
@@ -617,7 +614,6 @@ export default function QuanLyMarketingPage() {
                                 </span>
                             </div>
 
-                            {/* Thông tin chính */}
                             <div className="flex flex-wrap gap-2 text-xs">
                                 <span className="bg-white px-2 py-1 rounded border border-gray-200 text-gray-700 font-semibold">
                                     Trình độ: {ct.khoa_hoc?.trinh_do || 'N/A'}
@@ -627,7 +623,6 @@ export default function QuanLyMarketingPage() {
                                 </span>
                             </div>
 
-                            {/* Mô tả & Học phí */}
                             <div className="text-sm border-t border-green-100 pt-2">
                                 <div className="text-gray-700 font-medium">
                                     Học phí: <span className="font-bold text-red-600">{formatCurrency(ct.khoa_hoc?.hoc_phi || 0)}</span>
@@ -645,7 +640,6 @@ export default function QuanLyMarketingPage() {
     )}
 </div>
 
-                            {/* Khối 3: Đội ngũ Nhân Sự */}
                             <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
                                 <div className="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition" onClick={() => setShowNhanSuDetail(!showNhanSuDetail)}>
                                     <h3 className="text-lg font-bold text-gray-800 border-l-4 border-purple-500 pl-3 flex items-center gap-2"><FaUsers className="text-purple-600"/> Đội Ngũ Nhân Sự Phụ Trách ({viewData.phan_cong?.length || 0})</h3>
@@ -687,7 +681,6 @@ export default function QuanLyMarketingPage() {
                 </div>
             )}
 
-            {/* MODAL THÊM KHÓA HỌC NHANH */}
             {isAddCourseModalOpen && (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[70] p-4">
         <div className="bg-white rounded-lg w-full max-w-lg shadow-2xl animate-fade-in-up flex flex-col border border-gray-200">
@@ -706,7 +699,6 @@ export default function QuanLyMarketingPage() {
             </div>
             
             <div className="p-6 space-y-4">
-                {/* Tên khóa học */}
                 <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1.5">Tên khóa học <span className="text-red-500">*</span></label>
                     <input 
@@ -716,7 +708,6 @@ export default function QuanLyMarketingPage() {
                     {newCourseErrors.ten_khoa_hoc && <p className="text-red-500 text-xs mt-1 font-medium">{newCourseErrors.ten_khoa_hoc}</p>}
                 </div>
 
-                {/* Chương trình & Trình độ */}
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-bold text-gray-700 mb-1.5">Chương trình <span className="text-red-500">*</span></label>
@@ -741,7 +732,6 @@ export default function QuanLyMarketingPage() {
                     </div>
                 </div>
 
-                {/* Học phí & Thời lượng */}
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-bold text-gray-700 mb-1.5">Học phí (VNĐ) <span className="text-red-500">*</span></label>
@@ -777,7 +767,6 @@ export default function QuanLyMarketingPage() {
     </div>
 )}
 
-            {/* MODAL THÊM / SỬA (MARKETING) */}
             {isModalOpen && !isViewMode && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-lg w-full max-w-3xl shadow-2xl animate-fade-in-up flex flex-col max-h-[95vh]">
@@ -799,7 +788,6 @@ export default function QuanLyMarketingPage() {
                                     {formErrors.ten_chuong_trinh_marketing && <p className="text-red-500 text-xs mt-1 font-medium">{formErrors.ten_chuong_trinh_marketing}</p>}
                                 </div>
 
-                                {/* BLOCK: MULTI-SELECT KHÓA HỌC */}
                                 <div className="md:col-span-2 bg-green-50/30 p-4 rounded-lg border border-green-100">
                                     <div className="flex justify-between items-center mb-2">
                                         <label className="block text-sm text-green-800 font-bold flex items-center gap-2"><FaGraduationCap/> Áp dụng cho Khóa học <span className="text-red-500">*</span></label>
@@ -980,7 +968,6 @@ export default function QuanLyMarketingPage() {
                 </div>
             )}
 
-            {/* MODAL XÓA */}
             {isDeleteModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in-up">
@@ -998,7 +985,6 @@ export default function QuanLyMarketingPage() {
                 </div>
             )}
 
-            {/* TOAST */}
             {toast && (
                 <div className="fixed top-5 right-5 z-[70] animate-fade-in-down">
                     <div className={`flex items-center min-w-[300px] p-4 bg-white rounded shadow-xl border-l-4 ${toast.type === 'success' ? 'border-green-500' : 'border-red-500'}`}>

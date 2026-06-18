@@ -1,11 +1,9 @@
 import { prisma } from '@/lib/prisma'
 
 export const layDuLieuBaoCaoMarketing = async (nam: number) => {
-    // Xác định khoảng thời gian đầu năm và cuối năm
     const ngayBatDauNam = new Date(`${nam}-01-01T00:00:00.000Z`)
     const ngayKetThucNam = new Date(`${nam}-12-31T23:59:59.999Z`)
 
-    // Lấy tất cả chương trình trong năm kèm theo nhân sự phân công
     const danhSachChuongTrinh = await prisma.chuongTrinhMarketing.findMany({
         where: {
             ngay_bat_dau: {

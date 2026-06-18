@@ -6,7 +6,6 @@ interface CamKetFilter {
 }
 
 interface CamKetData {
-    
     ngay_ky: Date; ngay_het_han?: Date | null; noi_dung_cam_ket: string; trang_thai: string;
     ma_hoc_vien: number; ma_khoa_hoc: number; so_buoi_vang_cho_phep?: number | null;
     tham_gia_thi_day_du?: boolean | null; so_buoi_di_muon?: number | null;
@@ -35,7 +34,6 @@ export const layDanhSachCamKet = async (filters: CamKetFilter) => {
             khoa_hoc: { select: { ten_khoa_hoc: true } },
             hoc_vien: { 
                 include: { 
-                    // BẮT BUỘC PHẢI INCLUDE ĐOẠN NÀY ĐỂ CÓ DỮ LIỆU LỚP HỌC
                     tham_gia_lop: { 
                         include: { 
                             lop_hoc: { select: { ma_lop_hoc: true, ten_lop: true } } 
@@ -87,68 +85,69 @@ export const capNhatCamKet = async (ma_cam_ket: number, data: Partial<CamKetData
         include: { hoc_vien: { select: { ho_ten: true } }, khoa_hoc: { select: { ten_khoa_hoc: true } } },
     });
 }
+
 export const xoaCamKet = async (ma_cam_ket: number) => {
     return await prisma.camKet.delete({ where: { ma_cam_ket: ma_cam_ket } });
 }
 
-// ------------------------------------------------------------------
-// LOGIC QUÉT VI PHẠM MỚI: KHOANH VÙNG CHÍNH XÁC THEO KHÓA HỌC
-// ------------------------------------------------------------------
 export const kiemTraVaCapNhatViPham = async (ma_cam_ket: number) => {
     const camKet = await prisma.camKet.findUnique({ where: { ma_cam_ket } });
     if (!camKet) throw new Error("Không tìm thấy cam kết");
 
     const { ma_hoc_vien, ma_khoa_hoc } = camKet;
 
-    // 1. Quét Thiếu Bài Tập (Chỉ đếm các buổi học thuộc các Lớp Học của Khóa Học này)
+    let thamGiaLop = await prisma.thamGiaLop.findFirst({
+        where: {
+            ma_hoc_vien: ma_hoc_vien,
+            trang_thai: 'Đang học',
+            lop_hoc: { ma_khoa_hoc: ma_khoa_hoc }
+        },
+        orderBy: { ngay_dang_ky: 'desc' }
+    });
+
+    if (!thamGiaLop) {
+        thamGiaLop = await prisma.thamGiaLop.findFirst({
+            where: {
+                ma_hoc_vien: ma_hoc_vien,
+                lop_hoc: { ma_khoa_hoc: ma_khoa_hoc }
+            },
+            orderBy: { ngay_dang_ky: 'desc' }
+        });
+    }
+
+    const dieuKienLocBuoiHoc = thamGiaLop 
+        ? { ma_lop_hoc: thamGiaLop.ma_lop_hoc } 
+        : { lop_hoc: { ma_khoa_hoc: ma_khoa_hoc } };
+
+
     const thieu_bt = await prisma.nhanXet.count({
         where: { 
             ma_hoc_vien: ma_hoc_vien, 
             da_lam_bai_tap: false,
-            // Truy vấn lồng: Lọc qua bảng BuoiHoc -> LopHoc -> Khóa Học
-            buoi_hoc: {
-                lop_hoc: {
-                    ma_khoa_hoc: ma_khoa_hoc
-                }
-            }
+            buoi_hoc: dieuKienLocBuoiHoc
         }
     });
 
-    // 2. Quét Điểm Danh Vắng (Chỉ đếm các buổi học thuộc Khóa Học này)
     const vang = await prisma.diemDanh.count({
         where: { 
             ma_hoc_vien: ma_hoc_vien, 
-            trang_thai: { contains: 'Vắng', mode: 'insensitive' },
-            buoi_hoc: {
-                lop_hoc: {
-                    ma_khoa_hoc: ma_khoa_hoc
-                }
-            }
+            trang_thai: { in: ['Vắng phép', 'Vắng không phép'] },
+            buoi_hoc: dieuKienLocBuoiHoc
         }
     });
 
-    // 3. Quét Điểm Danh Muộn (Chỉ đếm các buổi học thuộc Khóa Học này)
     const muon = await prisma.diemDanh.count({
         where: { 
             ma_hoc_vien: ma_hoc_vien, 
             trang_thai: 'Đi muộn',
-            buoi_hoc: {
-                lop_hoc: {
-                    ma_khoa_hoc: ma_khoa_hoc
-                }
-            }
+            buoi_hoc: dieuKienLocBuoiHoc
         }
     });
 
-    // 4. Bỏ thi (Cái này trước đó đã chuẩn vì quét bảng Bài Kiểm Tra theo mã khóa học)
     let bo_thi = false;
     if (camKet.tham_gia_thi_day_du && ma_khoa_hoc) {
         const danhSachBaiKiemTra = await prisma.baiKiemTra.findMany({
-            where: { 
-            lop_hoc: {
-            ma_khoa_hoc: ma_khoa_hoc
-        }
-    }
+            where: thamGiaLop ? { ma_lop_hoc: thamGiaLop.ma_lop_hoc } : { lop_hoc: { ma_khoa_hoc: ma_khoa_hoc } }
         });
         
         for (const bkt of danhSachBaiKiemTra) {
@@ -156,10 +155,10 @@ export const kiemTraVaCapNhatViPham = async (ma_cam_ket: number) => {
                 where: { ma_bai_kiem_tra: bkt.ma_bai_kiem_tra, ma_hoc_vien: ma_hoc_vien }
             });
             
-if (ketQua && (ketQua.diem_so === 0 || ketQua.trang_thai?.trim() === 'Bỏ thi')) {
-    bo_thi = true;
-    break;
-}
+            if (ketQua && (ketQua.diem_so === 0 || ketQua.trang_thai?.trim() === 'Bỏ thi')) {
+                bo_thi = true;
+                break;
+            }
         }
     }
 
