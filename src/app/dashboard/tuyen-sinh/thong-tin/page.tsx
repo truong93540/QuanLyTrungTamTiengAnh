@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { 
     FaEdit, FaSearch, FaPlus, FaSave, FaTimes, FaTrash, FaBookOpen, FaEye, 
     FaCheckCircle, FaBullhorn, FaChalkboardTeacher, FaChevronDown, FaChevronUp, 
@@ -236,7 +236,6 @@ export default function QuanLyKhoaHocPage() {
         if (!formData.trinh_do) errors.trinh_do = 'Vui lòng chọn trình độ';
         if (!formData.trang_thai) errors.trang_thai = 'Vui lòng chọn trạng thái';
         if (!formData.mo_ta.trim()) errors.mo_ta = 'Vui lòng nhập mô tả khóa học';
-        if (formData.danh_sach_marketing.length === 0) errors.danh_sach_marketing = 'Vui lòng chọn ít nhất 1 chương trình Marketing áp dụng';
 
         if (Object.keys(errors).length > 0) {
             setFormErrors(errors);
@@ -363,6 +362,19 @@ export default function QuanLyKhoaHocPage() {
         endDate.setHours(23, 59, 59, 999);
         return today.getTime() <= endDate.getTime();
     }).map(ct => ct.chuong_trinh_marketing) || [];
+
+  
+    const danhSachMarketingHopLe = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        return danhSachMarketing.filter(mkt => {
+            const endDate = new Date(mkt.ngay_ket_thuc);
+            endDate.setHours(23, 59, 59, 999);
+            
+            return endDate.getTime() >= today.getTime();
+        });
+    }, [danhSachMarketing]);
 
     return (
         <div className="bg-gray-50 min-h-screen p-6 relative">
@@ -666,8 +678,8 @@ export default function QuanLyKhoaHocPage() {
                                                                             <span className="text-gray-500 block mb-1 text-xs uppercase font-bold tracking-wider">Giáo Viên Phụ Trách</span>
                                                                             <span className="font-bold text-gray-900 text-base">
                                                                                 {lop.phan_cong_giang_day && lop.phan_cong_giang_day.length > 0 
-                                                                                ? lop.phan_cong_giang_day.map(pc => pc.giao_vien?.ho_ten).join(', ') 
-                                                                                : 'Chưa phân công'}
+                                                                                    ? lop.phan_cong_giang_day.map(pc => pc.giao_vien?.ho_ten).join(', ') 
+                                                                                    : 'Chưa phân công'}
                                                                             </span>
                                                                         </div>
                                                                         <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
@@ -848,13 +860,17 @@ export default function QuanLyKhoaHocPage() {
         {formErrors.danh_sach_marketing && <p className="text-red-500 text-sm mt-1.5 font-medium">{formErrors.danh_sach_marketing}</p>}
     </div>
 
+    {danhSachMarketingHopLe.length === 0 && (
+        <p className="text-sm text-red-500 italic mt-2">Hiện tại không có chương trình Marketing nào đang chạy để áp dụng.</p>
+    )}
+
     {tuKhoaMarketing.trim() !== "" && (
         <div className="mt-2 bg-white border border-gray-200 p-2 rounded-md shadow-sm max-h-40 overflow-y-auto">
-            {danhSachMarketing.filter(mkt => mkt.ten_chuong_trinh_marketing.toLowerCase().includes(tuKhoaMarketing.toLowerCase()) && !formData.danh_sach_marketing.includes(mkt.ma_chuong_trinh_marketing)).length === 0 ? (
-                <p className="text-xs text-gray-500 italic p-2 text-center">Không tìm thấy chiến dịch</p>
+            {danhSachMarketingHopLe.filter(mkt => mkt.ten_chuong_trinh_marketing.toLowerCase().includes(tuKhoaMarketing.toLowerCase()) && !formData.danh_sach_marketing.includes(mkt.ma_chuong_trinh_marketing)).length === 0 ? (
+                <p className="text-xs text-gray-500 italic p-2 text-center">Không tìm thấy chiến dịch hợp lệ</p>
             ) : (
                 <div className="flex flex-col gap-1">
-                    {danhSachMarketing.filter(mkt => mkt.ten_chuong_trinh_marketing.toLowerCase().includes(tuKhoaMarketing.toLowerCase()) && !formData.danh_sach_marketing.includes(mkt.ma_chuong_trinh_marketing)).map(mkt => (
+                    {danhSachMarketingHopLe.filter(mkt => mkt.ten_chuong_trinh_marketing.toLowerCase().includes(tuKhoaMarketing.toLowerCase()) && !formData.danh_sach_marketing.includes(mkt.ma_chuong_trinh_marketing)).map(mkt => (
                         <label key={mkt.ma_chuong_trinh_marketing} className="flex items-center gap-2 hover:bg-gray-50 p-2 rounded cursor-pointer border border-transparent hover:border-gray-100 transition text-sm">
                             <input 
                                 type="checkbox" 

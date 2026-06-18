@@ -499,7 +499,6 @@ export default function BaoCaoHoatDongPage() {
 
                             {activeModal === 'lop' && (
                                 <div className="space-y-4 flex flex-col h-full">
-                                    {/* 6. GẮN THANH TÌM KIẾM VÀO BÊN TRONG MODAL CHI TIẾT */}
                                     <div className="relative shrink-0 mb-2">
                                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><FaSearch size={14} /></span>
                                         <input 
