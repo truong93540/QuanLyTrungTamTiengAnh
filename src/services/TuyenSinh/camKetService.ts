@@ -155,10 +155,18 @@ export const kiemTraVaCapNhatViPham = async (ma_cam_ket: number) => {
                 where: { ma_bai_kiem_tra: bkt.ma_bai_kiem_tra, ma_hoc_vien: ma_hoc_vien }
             });
             
-            if (ketQua && (ketQua.diem_so === 0 || ketQua.trang_thai?.trim() === 'Bỏ thi')) {
-                bo_thi = true;
-                break;
-            }
+           if (ketQua) {
+    
+    if (ketQua && (ketQua.diem_so === 0 || ketQua.trang_thai?.trim() === 'Bỏ thi')) {
+        
+        if (ketQua.diem_so > 0) {
+            bo_thi = false;
+        } else {
+            bo_thi = true;
+            break;
+        }
+    }
+}
         }
     }
 

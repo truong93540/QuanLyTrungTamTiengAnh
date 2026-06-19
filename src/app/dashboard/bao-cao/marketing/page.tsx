@@ -116,7 +116,7 @@ export default function BaoCaoMarketingPage() {
                 <div className="bg-white border border-gray-200 p-3 shadow-lg rounded-md outline-none">
                     <p className="text-gray-400 font-medium text-sm mb-1">{label}</p>
                     <p className="text-[#0d9488] font-bold text-sm">
-                        chi_phí : {formatCurrency(payload[0].value)}
+                        chi phí : {formatCurrency(payload[0].value)}
                     </p>
                 </div>
             );
