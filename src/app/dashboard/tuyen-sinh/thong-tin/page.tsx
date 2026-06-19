@@ -424,7 +424,7 @@ export default function QuanLyKhoaHocPage() {
                         <thead className="bg-[#1d4ed8] text-white uppercase font-semibold text-xs tracking-wider">
                             <tr>
                                 <th className="px-5 py-4 text-center border-b border-blue-600">Mã</th>
-                                <th className="px-5 py-4 min-w-[200px] border-b border-blue-600">Tên Khóa Học</th>
+                                <th className="px-5 py-4 min-w-[200px] border-b border-blue-600 ">Tên Khóa Học</th>
                                 <th className="px-5 py-4 text-center border-b border-blue-600">Thời Lượng</th>
                                 <th className="px-5 py-4 text-right border-b border-blue-600">Học Phí</th>
                                 <th className="px-5 py-4 text-center border-b border-blue-600">Trình Độ</th>
@@ -730,7 +730,7 @@ export default function QuanLyKhoaHocPage() {
 
                         <div className="p-6 space-y-5 overflow-y-auto">
                             <div>
-                                <label className="block text-sm text-gray-700 mb-1.5 font-bold">Tên khóa học <span className="text-red-500">*</span></label>
+                                <label className="block text-sm text-gray-700 mb-1.5 font-bold ">Tên khóa học <span className="text-red-500">*</span></label>
                                 <input 
                                     type="text" 
                                     name="ten_khoa_hoc" 
