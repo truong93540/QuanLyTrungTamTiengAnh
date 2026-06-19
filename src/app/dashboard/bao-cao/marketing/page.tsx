@@ -19,7 +19,6 @@ interface ChuongTrinh {
     phan_cong: PhanCong[];
 }
 
-// Bổ sung thêm 'ngan_sach' vào các loại Modal
 type ModalType = 'chuong_trinh' | 'nhan_su' | 'ngan_sach' | null;
 
 export default function BaoCaoMarketingPage() {
@@ -111,7 +110,6 @@ export default function BaoCaoMarketingPage() {
         setExpandedModalItem(null);
     }
 
-    // Giao diện custom Tooltip cho Biểu đồ
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
             return (
@@ -156,7 +154,7 @@ export default function BaoCaoMarketingPage() {
                 <div className="text-center py-20 text-gray-500">Đang tải dữ liệu báo cáo...</div>
             ) : (
                 <>
-                    {/* THẺ TỔNG QUAN (CÓ CLICK MỞ MODAL) */}
+                    {/* THẺ TỔNG QUAN */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
                         {/* Ngân sách */}
                         <div onClick={() => setActiveModal('ngan_sach')} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:border-green-300 hover:shadow-md transition-all group">
@@ -184,7 +182,7 @@ export default function BaoCaoMarketingPage() {
                         </div>
                     </div>
 
-                    {/* BIỂU ĐỒ VỚI HIỆU ỨNG HOVER CHUẨN */}
+                    {/* BIỂU ĐỒ  */}
                     <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mb-6">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-base font-bold text-gray-800">Biểu đồ Ngân sách Marketing ({selectedYear})</h3>
@@ -198,8 +196,6 @@ export default function BaoCaoMarketingPage() {
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
                                     <YAxis tickFormatter={(val: any) => `${Number(val || 0) / 1000000}M`} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                                    
-                                    {/* Sử dụng Custom Tooltip và nền xám khi Hover */}
                                     <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
                                     
                                     <Bar dataKey="ngan_sach" fill="#0d9488" radius={[4, 4, 0, 0]} barSize={30} />
@@ -211,7 +207,7 @@ export default function BaoCaoMarketingPage() {
                     {/* GRID BẢNG CHI TIẾT & NHÂN SỰ BÊN DƯỚI */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                            <div className="p-5 border-b border-gray-100">
+                            <div className="p-5 border-b border-gray-100 pb-4">
                                 <h3 className="text-base font-bold text-gray-800">Chi tiết ngân sách các tháng trong năm</h3>
                             </div>
                             <table className="w-full text-sm text-left">
@@ -219,8 +215,7 @@ export default function BaoCaoMarketingPage() {
                                     <tr>
                                         <th className="px-5 py-4">Thời gian</th>
                                         <th className="px-5 py-4 text-center">Số chương trình</th>
-                                        <th className="px-5 py-4 text-right">Tổng ngân sách</th>
-                                        <th className="px-5 py-4 text-center">Trạng thái</th>
+                                        <th className="px-5 py-4 text-right">Tổng ngân sách dự kiến</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -230,12 +225,6 @@ export default function BaoCaoMarketingPage() {
                                             <td className="px-5 py-4 text-center font-medium text-gray-600">{row.so_chuong_trinh}</td>
                                             <td className="px-5 py-4 text-right font-bold text-[#0d9488]">
                                                 {row.ngan_sach > 0 ? formatCurrency(row.ngan_sach) : '0 ₫'}
-                                            </td>
-                                            <td className="px-5 py-4 text-center">
-                                                {row.so_chuong_trinh > 0 
-                                                    ? <span className="px-2.5 py-1 bg-teal-100 text-teal-700 rounded-md text-xs font-bold">Đã chi</span>
-                                                    : <span className="px-2.5 py-1 bg-gray-100 text-gray-500 rounded-md text-xs font-bold">Chưa phát sinh</span>
-                                                }
                                             </td>
                                         </tr>
                                     ))}
