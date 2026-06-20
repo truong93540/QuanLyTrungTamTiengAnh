@@ -119,7 +119,6 @@ export const kiemTraVaCapNhatViPham = async (ma_cam_ket: number) => {
         ? { ma_lop_hoc: thamGiaLop.ma_lop_hoc } 
         : { lop_hoc: { ma_khoa_hoc: ma_khoa_hoc } };
 
-
     const thieu_bt = await prisma.nhanXet.count({
         where: { 
             ma_hoc_vien: ma_hoc_vien, 
@@ -155,18 +154,10 @@ export const kiemTraVaCapNhatViPham = async (ma_cam_ket: number) => {
                 where: { ma_bai_kiem_tra: bkt.ma_bai_kiem_tra, ma_hoc_vien: ma_hoc_vien }
             });
             
-           if (ketQua) {
-    
-    if (ketQua && (ketQua.diem_so === 0 || ketQua.trang_thai?.trim() === 'Bỏ thi')) {
-        
-        if (ketQua.diem_so > 0) {
-            bo_thi = false;
-        } else {
-            bo_thi = true;
-            break;
-        }
-    }
-}
+           if (ketQua && ketQua.diem_so === 1 && ketQua.nhan_xet?.trim().toLowerCase() === 'bỏ thi') {
+                bo_thi = true;
+                break;
+            }
         }
     }
 
