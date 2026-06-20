@@ -291,11 +291,15 @@ export default function QuanLyLopHocPage() {
                           {detailLop.tham_gia.map((t:any) => {
                             const biViPham = t.hoc_vien?.cam_ket?.some((c: any) => c.ma_khoa_hoc === detailLop.ma_khoa_hoc && c.bi_vi_pham === true);
                             const laNghiHoc = t.hoc_vien?.trang_thai === 'Nghỉ học';
+                            const laBaoLuu = t.hoc_vien?.trang_thai === 'Bảo lưu'; // Thêm logic Bảo lưu
+                            const biKhoa = biViPham || laNghiHoc || laBaoLuu;
+
                             return (
                               <li key={t.ma_hoc_vien} className="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border">
-                                <span className={`font-medium ${biViPham || laNghiHoc ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                                <span className={`font-medium ${biKhoa ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
                                   {t.hoc_vien?.ho_ten} 
                                   {laNghiHoc && <span className="ml-2 text-xs bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold">Nghỉ học</span>}
+                                  {laBaoLuu && <span className="ml-2 text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded font-bold">Bảo lưu</span>}
                                   {biViPham && <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">Vi phạm CK</span>}
                                 </span>
                                 <button onClick={() => fetch(`/api/dao-tao/lop-hoc?action=REMOVE_HOC_VIEN&ma_lop_hoc=${detailLop.ma_lop_hoc}&ma_hoc_vien=${t.ma_hoc_vien}`, { method: 'DELETE' }).then(()=>loadDetail(detailLop.ma_lop_hoc))} className="text-rose-500 font-bold bg-rose-50 px-2 py-1 rounded text-xs">Loại</button>
@@ -406,7 +410,7 @@ export default function QuanLyLopHocPage() {
                </div>
 
                <div className="flex-1 overflow-y-auto p-5 bg-slate-50/50">
-                  {buoiHocTab === 'diemdanh' && <DiemDanhTab maLop={detailLop.ma_lop_hoc} maBuoiHoc={selectedBuoiHoc.ma_buoi_hoc} maKhoaHoc={detailLop.ma_khoa_hoc} />}
+                  {buoiHocTab === 'diemdanh' && <DiemDanhTab maLop={detailLop.ma_lop_hoc} maBuoiHoc={selectedBuoiHoc.ma_buoi_hoc} maKhoaHoc={detailLop.ma_khoa_hoc} dsHocVien={detailLop.tham_gia} />}
                   {buoiHocTab === 'kiemtra' && <KiemTraTab maLop={detailLop.ma_lop_hoc} dsHocVien={detailLop.tham_gia} listBkt={detailLop.bai_kiem_tra} reloadLop={() => loadDetail(detailLop.ma_lop_hoc)} maKhoaHoc={detailLop.ma_khoa_hoc} />}
                   {buoiHocTab === 'nhanxet' && <NhanXetTab maBuoiHoc={selectedBuoiHoc.ma_buoi_hoc} dsHocVien={detailLop.tham_gia} maKhoaHoc={detailLop.ma_khoa_hoc} />}
                </div>
@@ -522,7 +526,13 @@ const KiemTraTab = ({ maLop, dsHocVien, listBkt, reloadLop, maKhoaHoc }: { maLop
     const nhan_xet = (document.getElementById(`nx_kt_${ma_hoc_vien}`) as HTMLInputElement).value;
     if(!diem_so) return alert('Vui lòng nhập điểm số hợp lệ');
 
-    const res = await fetch('/api/dao-tao/lop-hoc', { method: 'POST', body: JSON.stringify({ action: 'UPSERT_KET_QUA_KT', payload: { ma_bai_kiem_tra: Number(selectedBkt), ma_hoc_vien, diem_so: Number(diem_so), nhan_xet } }) }).then(r=>r.json());
+    // Thêm logic bắt buộc điểm số phải trong khoảng 1 đến 10
+    const parsedDiem = Number(diem_so);
+    if (parsedDiem < 1 || parsedDiem > 10) {
+      return alert('Lỗi: Điểm số phải nằm trong khoảng từ 1 đến 10!');
+    }
+
+    const res = await fetch('/api/dao-tao/lop-hoc', { method: 'POST', body: JSON.stringify({ action: 'UPSERT_KET_QUA_KT', payload: { ma_bai_kiem_tra: Number(selectedBkt), ma_hoc_vien, diem_so: parsedDiem, nhan_xet } }) }).then(r=>r.json());
     if (res.success) {
       alert('Đã cập nhật điểm học viên!');
       fetch(`/api/dao-tao/lop-hoc?ma_bai_kiem_tra=${selectedBkt}`).then(r=>r.json()).then(res => setKetQuaList(res.data || []));
@@ -551,20 +561,22 @@ const KiemTraTab = ({ maLop, dsHocVien, listBkt, reloadLop, maKhoaHoc }: { maLop
                 const kq = ketQuaList.find(k => k.ma_hoc_vien === hv.ma_hoc_vien);
                 const biViPham = hv.hoc_vien?.cam_ket?.some((c: any) => c.ma_khoa_hoc === maKhoaHoc && c.bi_vi_pham === true);
                 const laNghiHoc = hv.hoc_vien?.trang_thai === 'Nghỉ học';
-                const biKhoa = biViPham || laNghiHoc;
+                const laBaoLuu = hv.hoc_vien?.trang_thai === 'Bảo lưu'; // Thêm logic Bảo lưu
+                const biKhoa = biViPham || laNghiHoc || laBaoLuu;
 
                 return (
                   <tr key={hv.ma_hoc_vien} className={`border-b hover:bg-slate-50 ${biKhoa ? 'bg-slate-100/60' : ''}`}>
                     <td className="p-4 font-medium">
                       <span className={biKhoa ? 'text-slate-400 line-through' : ''}>{hv.hoc_vien.ho_ten}</span>
                       {laNghiHoc && <p className="text-[11px] text-rose-600 font-bold">Đã nghỉ học</p>}
+                      {laBaoLuu && <p className="text-[11px] text-orange-600 font-bold">Đang bảo lưu</p>}
                       {biViPham && <p className="text-[11px] text-amber-600 font-bold">Vi phạm cam kết</p>}
                     </td>
                     <td className="p-4">
-                      <input type="number" disabled={biKhoa} id={`diem_${hv.ma_hoc_vien}`} defaultValue={kq?.diem_so || ''} step="0.1" min="0" max="10" className="border w-24 p-2 rounded-lg bg-white disabled:bg-slate-200" placeholder="0 - 10" />
+                      <input type="number" disabled={biKhoa} id={`diem_${hv.ma_hoc_vien}`} defaultValue={kq?.diem_so || ''} step="0.1" min="1" max="10" className="border w-24 p-2 rounded-lg bg-white disabled:bg-slate-200" placeholder="1 - 10" />
                     </td>
                     <td className="p-4">
-                      <input type="text" disabled={biKhoa} id={`nx_kt_${hv.ma_hoc_vien}`} defaultValue={kq?.nhan_xet || ''} className="border w-full p-2 rounded-lg bg-white disabled:bg-slate-200" placeholder={biKhoa ? "Bị chặn do nghỉ học hoặc vi phạm cam kết" : "Ghi chú đánh giá bài làm..."} />
+                      <input type="text" disabled={biKhoa} id={`nx_kt_${hv.ma_hoc_vien}`} defaultValue={kq?.nhan_xet || ''} className="border w-full p-2 rounded-lg bg-white disabled:bg-slate-200" placeholder={biKhoa ? "Bị chặn do nghỉ học, bảo lưu hoặc vi phạm" : "Ghi chú đánh giá bài làm..."} />
                     </td>
                     <td className="p-4">
                       <button disabled={biKhoa} onClick={() => handleSaveKetQua(hv.ma_hoc_vien)} className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-full shadow-sm">Lưu</button>
@@ -601,7 +613,7 @@ const KiemTraTab = ({ maLop, dsHocVien, listBkt, reloadLop, maKhoaHoc }: { maLop
   );
 };
 
-const DiemDanhTab = ({ maLop, maBuoiHoc, maKhoaHoc }: { maLop:number, maBuoiHoc:number, maKhoaHoc: number }) => {
+const DiemDanhTab = ({ maLop, maBuoiHoc, maKhoaHoc, dsHocVien }: { maLop:number, maBuoiHoc:number, maKhoaHoc: number, dsHocVien: any[] }) => {
   const [ds, setDs] = useState<any[]>([]);
   useEffect(() => { 
     fetch(`/api/dao-tao/lop-hoc?ma_lop_hoc=${maLop}&ma_buoi_hoc=${maBuoiHoc}`).then(r=>r.json()).then(res => setDs(res.data || [])); 
@@ -618,19 +630,23 @@ const DiemDanhTab = ({ maLop, maBuoiHoc, maKhoaHoc }: { maLop:number, maBuoiHoc:
         <thead className="bg-slate-50 font-bold border-b text-slate-700"><tr><th className="p-4 w-1/4">Học Viên</th><th className="p-4 w-1/4">Trạng thái</th><th className="p-4">Ghi chú</th></tr></thead>
         <tbody>
           {ds.map(d => {
-            const biViPham = d.cam_ket?.some((c: any) => c.ma_khoa_hoc === maKhoaHoc && c.bi_vi_pham === true);
-            const laNghiHoc = d.trang_thai_hv === 'Nghỉ học' || d.trang_thai === 'Nghỉ học';
-            const biKhoa = biViPham || laNghiHoc;
+            const hvInfo = dsHocVien.find((hv: any) => hv.ma_hoc_vien === d.ma_hoc_vien);
+            
+            const biViPham = hvInfo?.hoc_vien?.cam_ket?.some((c: any) => c.ma_khoa_hoc === maKhoaHoc && c.bi_vi_pham === true);
+            const laNghiHoc = hvInfo?.hoc_vien?.trang_thai === 'Nghỉ học';
+            const laBaoLuu = hvInfo?.hoc_vien?.trang_thai === 'Bảo lưu'; // Thêm logic Bảo lưu
+            const biKhoa = biViPham || laNghiHoc || laBaoLuu;
 
             return (
-              <tr key={d.ma_hoc_vien} className={`border-b hover:bg-slate-50 ${biKhoa ? 'bg-slate-100/60' : ''}`}>
+              <tr key={d.ma_hoc_vien} className={`border-b hover:bg-slate-50 ${biKhoa ? 'bg-slate-100/60 opacity-60' : ''}`}>
                 <td className="p-4 font-medium">
                   <span className={biKhoa ? 'text-slate-400 line-through' : ''}>{d.ho_ten}</span>
                   {laNghiHoc && <span className="ml-2 text-xs text-rose-600 font-bold">(Nghỉ học)</span>}
+                  {laBaoLuu && <span className="ml-2 text-xs text-orange-600 font-bold">(Bảo lưu)</span>}
                   {biViPham && <span className="ml-2 text-xs text-amber-600 font-bold">(Vi phạm CK)</span>}
                 </td>
                 <td className="p-4">
-                  <select disabled={biKhoa} value={biKhoa ? "Vắng không phép" : d.trang_thai} onChange={(e) => updateDiemDanh(d.ma_hoc_vien, e.target.value, d.ghi_chu)} className={`border p-2 rounded-lg text-sm w-full font-semibold ${d.trang_thai === 'Có mặt' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-50'}`}>
+                  <select disabled={biKhoa} value={biKhoa ? "Vắng không phép" : d.trang_thai} onChange={(e) => updateDiemDanh(d.ma_hoc_vien, e.target.value, d.ghi_chu)} className={`border p-2 rounded-lg text-sm w-full font-semibold disabled:bg-slate-200 disabled:text-slate-500 disabled:cursor-not-allowed ${d.trang_thai === 'Có mặt' && !biKhoa ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-50'}`}>
                     <option value="Chưa điểm danh">Chưa điểm danh</option>
                     <option value="Có mặt">Có mặt</option>
                     <option value="Vắng phép">Vắng phép</option>
@@ -639,7 +655,7 @@ const DiemDanhTab = ({ maLop, maBuoiHoc, maKhoaHoc }: { maLop:number, maBuoiHoc:
                   </select>
                 </td>
                 <td className="p-4">
-                  <input type="text" disabled={biKhoa} value={biKhoa ? "Học viên dừng học / vi phạm" : (d.ghi_chu||'')} onBlur={(e) => updateDiemDanh(d.ma_hoc_vien, d.trang_thai, e.target.value)} onChange={(e) => setDs(ds.map(item => item.ma_hoc_vien===d.ma_hoc_vien?{...item, ghi_chu:e.target.value}:item))} className="border w-full p-2 rounded-lg bg-white disabled:bg-slate-200" placeholder="Ghi chú thêm..."/>
+                  <input type="text" disabled={biKhoa} value={biKhoa ? "Học viên dừng học, bảo lưu / vi phạm" : (d.ghi_chu||'')} onBlur={(e) => updateDiemDanh(d.ma_hoc_vien, d.trang_thai, e.target.value)} onChange={(e) => setDs(ds.map(item => item.ma_hoc_vien===d.ma_hoc_vien?{...item, ghi_chu:e.target.value}:item))} className="border w-full p-2 rounded-lg bg-white disabled:bg-slate-200 disabled:text-slate-500 disabled:cursor-not-allowed" placeholder="Ghi chú thêm..."/>
                 </td>
               </tr>
             );
@@ -691,7 +707,8 @@ const NhanXetTab = ({ maBuoiHoc, dsHocVien, maKhoaHoc }: { maBuoiHoc:number, dsH
           {dsHocVien.map(t => {
             const biViPham = t.hoc_vien?.cam_ket?.some((c: any) => c.ma_khoa_hoc === maKhoaHoc && c.bi_vi_pham === true);
             const laNghiHoc = t.hoc_vien?.trang_thai === 'Nghỉ học';
-            const biKhoa = biViPham || laNghiHoc;
+            const laBaoLuu = t.hoc_vien?.trang_thai === 'Bảo lưu'; // Thêm logic Bảo lưu
+            const biKhoa = biViPham || laNghiHoc || laBaoLuu;
 
             const currentRecord = dbNhanXet.find(nx => nx.ma_hoc_vien === t.ma_hoc_vien);
 
@@ -700,6 +717,7 @@ const NhanXetTab = ({ maBuoiHoc, dsHocVien, maKhoaHoc }: { maBuoiHoc:number, dsH
                 <td className="p-4 font-medium">
                   <span className={biKhoa ? 'text-slate-400 line-through' : ''}>{t.hoc_vien.ho_ten}</span>
                   {laNghiHoc && <p className="text-[11px] text-rose-600 font-bold">Đã nghỉ học</p>}
+                  {laBaoLuu && <p className="text-[11px] text-orange-600 font-bold">Đang bảo lưu</p>}
                   {biViPham && <p className="text-[11px] text-amber-600 font-bold">Vi phạm cam kết</p>}
                 </td>
                 <td className="p-4 text-center">
